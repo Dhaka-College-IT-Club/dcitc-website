@@ -4,5 +4,5 @@
 
 [build]
   command = "npm run build"
-  # Publish directory: Do NOT set. Let Next.js plugin handle it.
-  # If UI has publish = ".next", clear it - that causes 404.
+  # Must be different from base dir (/) - plugin uses .next output
+  publish = ".next"
