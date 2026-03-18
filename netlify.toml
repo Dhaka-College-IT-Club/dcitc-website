@@ -1,6 +1,8 @@
-# Next.js on Netlify - Zero config, Netlify auto-detects and uses OpenNext adapter
+# Next.js on Netlify - Explicit plugin ensures correct deployment
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
 [build]
   command = "npm run build"
-
-# If your Next.js app is in a subfolder (e.g. dcitc-website), set this in Netlify Dashboard:
-# Site settings → Build & deploy → Build settings → Base directory = "dcitc-website"
+  # Publish directory: Do NOT set. Let Next.js plugin handle it.
+  # If UI has publish = ".next", clear it - that causes 404.
