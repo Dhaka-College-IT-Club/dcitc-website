@@ -2,7 +2,7 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import SectionTitle from "./UI/SectionTitle";
+import SectionTitle from "./ui/SectionTitle";
 
 interface MotionSectionProps {
   id: string;

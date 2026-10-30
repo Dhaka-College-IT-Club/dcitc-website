@@ -39,3 +39,181 @@ section {
     transform: translateY(100vh);
   }
 }
+
+/* ---- Shared design language extracted from the landing page ---- */
+
+:root {
+  --dc-line: rgba(255, 255, 255, 0.1);
+  --dc-line-strong: rgba(255, 255, 255, 0.22);
+  --dc-panel: rgba(255, 255, 255, 0.025);
+  --dc-panel-raised: rgba(255, 255, 255, 0.045);
+}
+
+.tech-grid {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+.panel-surface {
+  border: 1px solid var(--dc-line);
+  background-color: var(--dc-panel);
+}
+
+/* Angular cut on the top-right and bottom-left, matching the skewed CTAs. */
+.clip-notch {
+  clip-path: polygon(
+    0 0,
+    calc(100% - 18px) 0,
+    100% 18px,
+    100% 100%,
+    18px 100%,
+    0 calc(100% - 18px)
+  );
+}
+
+.clip-notch-sm {
+  clip-path: polygon(
+    0 0,
+    calc(100% - 10px) 0,
+    100% 10px,
+    100% 100%,
+    10px 100%,
+    0 calc(100% - 10px)
+  );
+}
+
+@keyframes enter-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes drawer-in {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.enter-rise {
+  animation: enter-rise 0.28s ease-out both;
+}
+
+.drawer-surface[open] {
+  animation: drawer-in 0.22s ease-out both;
+}
+
+.dialog-surface::backdrop {
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(4px);
+}
+
+/* Form controls */
+
+.dc-label {
+  display: block;
+  font-family: var(--font-orbitron), monospace;
+  font-size: 0.6875rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #94a3b8;
+  margin-bottom: 0.45rem;
+}
+
+.dc-input {
+  width: 100%;
+  min-height: 2.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background-color: rgba(0, 0, 0, 0.45);
+  padding: 0.6rem 0.85rem;
+  color: #f8fafc;
+  font-family: var(--font-rajdhani), sans-serif;
+  font-size: 1rem;
+  line-height: 1.4;
+  transition: border-color 150ms ease, box-shadow 150ms ease,
+    background-color 150ms ease;
+}
+
+.dc-input::placeholder {
+  color: #64748b;
+}
+
+.dc-input:hover:not(:disabled) {
+  border-color: rgba(255, 255, 255, 0.24);
+}
+
+.dc-input:focus-visible {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.55);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.35);
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+.dc-input[aria-invalid="true"] {
+  border-color: rgba(248, 113, 113, 0.65);
+}
+
+.dc-input[aria-invalid="true"]:focus-visible {
+  box-shadow: 0 0 0 1px rgba(248, 113, 113, 0.55);
+}
+
+.dc-input:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.dc-input:-webkit-autofill,
+.dc-input:-webkit-autofill:hover,
+.dc-input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #f8fafc;
+  -webkit-box-shadow: 0 0 0 1000px #0a0a0a inset;
+  transition: background-color 9999s ease-in-out 0s;
+}
+
+select.dc-input {
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, #94a3b8 50%),
+    linear-gradient(135deg, #94a3b8 50%, transparent 50%);
+  background-position: calc(100% - 18px) 50%, calc(100% - 12px) 50%;
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+  padding-right: 2.25rem;
+}
+
+textarea.dc-input {
+  min-height: 7rem;
+  resize: vertical;
+}
+
+/* Thin scrollbars inside panels */
+.dc-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .enter-rise,
+  .drawer-surface[open] {
+    animation: none;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

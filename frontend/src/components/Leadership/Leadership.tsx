@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { Facebook, Linkedin, Github, Globe } from "lucide-react";
-import SectionTitle from "../UI/SectionTitle";
+import SectionTitle from "../ui/SectionTitle";
 import { LEADERSHIP } from "../../constants";
 import type { Leader } from "../../lib/api-types";
 

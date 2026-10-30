@@ -2,7 +2,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import SectionTitle from "./UI/SectionTitle";
+import SectionTitle from "./ui/SectionTitle";
 import type { Achievement } from "@/lib/api-types";
 
 const Achievements: React.FC<{ items?: Achievement[] }> = ({ items = [] }) => {

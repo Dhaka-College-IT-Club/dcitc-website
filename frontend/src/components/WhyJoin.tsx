@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import { Code2, Users, Trophy, Rocket, BookOpen, Network } from "lucide-react";
-import SectionTitle from "./UI/SectionTitle";
+import SectionTitle from "./ui/SectionTitle";
 
 const benefits = [
   { icon: Code2, title: "Hands-on Coding", desc: "Build real projects across web, AI, and cybersecurity with peers." },

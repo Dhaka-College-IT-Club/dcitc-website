@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import { DEPARTMENTS } from "../../constants";
-import SectionTitle from "../UI/SectionTitle";
+import SectionTitle from "../ui/SectionTitle";
 import { motion } from "framer-motion";
 
 const Departments: React.FC = () => {

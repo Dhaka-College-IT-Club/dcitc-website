@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { MapPin, Mail, Send } from "lucide-react";
-import SectionTitle from "./UI/SectionTitle";
+import SectionTitle from "./ui/SectionTitle";
 
 const GetInTouch: React.FC = () => {
   const [name, setName] = useState("");
