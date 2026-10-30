@@ -1,8 +1,0 @@
-# Next.js on Netlify - Explicit plugin ensures correct deployment
-[[plugins]]
-  package = "@netlify/plugin-nextjs"
-
-[build]
-  command = "npm run build"
-  # Must be different from base dir (/) - plugin uses .next output
-  publish = ".next"
