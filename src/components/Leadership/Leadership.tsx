@@ -1,22 +1,28 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
+import { Facebook, Linkedin } from "lucide-react";
 import SectionTitle from "../UI/SectionTitle";
 import { LEADERSHIP } from "../../constants";
 import { LeadershipMember } from "../../types";
 
 const LEADERSHIP_MEMBERS: LeadershipMember[] =
   LEADERSHIP.MEMBERS as LeadershipMember[];
+const LEADERSHIP_BATCHES: string[] = ["DC-27", "DC-26", "DC-25"];
 const LEADERSHIP_SUBTITLE: string = LEADERSHIP.SUBTITLE;
 const LEADERSHIP_EXEC_LABEL: string = LEADERSHIP.LABELS.EXECUTIVE;
 const LEADERSHIP_CHIEF_LABEL: string = LEADERSHIP.LABELS.CHIEF;
 const LEADERSHIP_JOINT_LABEL: string = LEADERSHIP.LABELS.JOINT;
 
 const Leadership: React.FC = () => {
-  const executives = LEADERSHIP_MEMBERS.filter((m) => m.tier === "executive");
-  const chiefs = LEADERSHIP_MEMBERS.filter((m) => m.tier === "chief");
-  const joints = LEADERSHIP_MEMBERS.filter((m) => m.tier === "joint");
+  const [activeBatch, setActiveBatch] = useState<string>("DC-26");
+  const batchMembers = LEADERSHIP_MEMBERS.filter(
+    (m) => m.batch === activeBatch
+  );
+  const executives = batchMembers.filter((m) => m.tier === "executive");
+  const chiefs = batchMembers.filter((m) => m.tier === "chief");
+  const joints = batchMembers.filter((m) => m.tier === "joint");
 
   const cardVariants = {
     hidden: { opacity: 0, y: 30 },
@@ -53,7 +59,7 @@ const Leadership: React.FC = () => {
         whileInView="visible"
         viewport={{ once: true }}
         variants={cardVariants}
-        className="group relative flex flex-col items-center"
+        className="group relative flex flex-col items-center h-full"
       >
         <div className={`relative ${sizeClasses[size]} mb-4 overflow-hidden`}>
           <div
@@ -75,7 +81,7 @@ const Leadership: React.FC = () => {
               src={member.image}
               alt={`${member.name} - ${member.role}`}
               fill
-              className="object-cover grayscale group-hover:grayscale-0 transition-all duration-500 group-hover:scale-110"
+              className="object-cover transition-all duration-500 group-hover:scale-110"
             />
             <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
           </div>
@@ -84,13 +90,39 @@ const Leadership: React.FC = () => {
           <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-2 h-2 border-b border-r border-white/30 group-hover:border-white/60 transition-colors"></div>
         </div>
 
-        <div className="text-center">
-          <h3 className="font-orbitron text-white text-sm md:text-base font-bold tracking-wider uppercase mb-1">
+        <div className="text-center flex flex-col items-center flex-1 w-full">
+          <h3 className="font-orbitron text-white text-sm md:text-base font-bold tracking-wider uppercase mb-1 min-h-[2.5rem] md:min-h-[2.75rem] flex items-end justify-center">
             {member.name}
           </h3>
-          <p className="font-rajdhani text-slate-400 text-sm md:text-base tracking-wide">
+          <p className="font-rajdhani text-slate-400 text-sm md:text-base tracking-wide min-h-[1.5rem] flex items-start justify-center">
             {member.role}
           </p>
+          {(member.facebook || member.linkedin) && (
+            <div className="flex justify-center gap-3 mt-auto pt-4">
+              {member.facebook && (
+                <a
+                  href={member.facebook}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center w-9 h-9 rounded-full border border-white/15 bg-white/[0.04] text-slate-300 hover:text-white hover:border-white/40 hover:bg-white/[0.1] transition-all"
+                  aria-label={`${member.name} Facebook`}
+                >
+                  <Facebook className="w-5 h-5" />
+                </a>
+              )}
+              {member.linkedin && (
+                <a
+                  href={member.linkedin}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center w-9 h-9 rounded-full border border-white/15 bg-white/[0.04] text-slate-300 hover:text-white hover:border-white/40 hover:bg-white/[0.1] transition-all"
+                  aria-label={`${member.name} LinkedIn`}
+                >
+                  <Linkedin className="w-5 h-5" />
+                </a>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden opacity-0 group-hover:opacity-100">
@@ -119,6 +151,32 @@ const Leadership: React.FC = () => {
       <div className="max-w-7xl mx-auto px-6 relative z-10">
         <SectionTitle title="Leadership" subtitle={LEADERSHIP_SUBTITLE} />
 
+        <div className="flex justify-center mb-12">
+          <div className="inline-flex items-center gap-1 p-1 rounded-full border border-white/10 bg-white/[0.03] backdrop-blur-sm">
+            {LEADERSHIP_BATCHES.map((batch) => (
+              <button
+                key={batch}
+                onClick={() => setActiveBatch(batch)}
+                className={`px-5 py-2 font-orbitron text-xs tracking-widest uppercase rounded-full transition-all duration-300 ${
+                  activeBatch === batch
+                    ? "bg-white text-black shadow-[0_0_20px_rgba(255,255,255,0.25)]"
+                    : "text-slate-400 hover:text-white"
+                }`}
+              >
+                {batch}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {batchMembers.length === 0 ? (
+          <div className="text-center py-20">
+            <p className="text-slate-500 font-rajdhani text-xl">
+              Panel coming soon
+            </p>
+          </div>
+        ) : (
+          <>
         <div className="mb-16">
           <motion.div
             initial={{ opacity: 0 }}
@@ -136,7 +194,7 @@ const Leadership: React.FC = () => {
           <div className="flex flex-wrap justify-center gap-8 md:gap-16">
             {executives.map((member, index) => (
               <LeaderCard
-                key={member.image}
+                key={member.batch + '-' + member.name}
                 member={member}
                 index={index}
                 size="large"
@@ -159,10 +217,10 @@ const Leadership: React.FC = () => {
             <div className="h-px w-8 sm:w-16 bg-linear-to-l from-transparent to-white/20"></div>
           </motion.div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6 md:gap-10 justify-items-center">
+          <div className="flex flex-wrap justify-center gap-6 md:gap-10">
             {chiefs.map((member, index) => (
               <LeaderCard
-                key={member.image}
+                key={member.batch + '-' + member.name}
                 member={member}
                 index={index + executives.length}
                 size="normal"
@@ -189,7 +247,7 @@ const Leadership: React.FC = () => {
             <div className="flex flex-wrap justify-center gap-6 md:gap-10">
               {joints.map((member, index) => (
                 <LeaderCard
-                  key={member.image}
+                  key={member.batch + '-' + member.name}
                   member={member}
                   index={index + executives.length + chiefs.length}
                   size="small"
@@ -197,6 +255,8 @@ const Leadership: React.FC = () => {
               ))}
             </div>
           </div>
+        )}
+          </>
         )}
       </div>
 

@@ -30,6 +30,9 @@ const TYPES = {
     role: string;
     image: string;
     tier: "executive" | "chief" | "joint";
+    batch: string;
+    facebook?: string;
+    linkedin?: string;
   },
 };
 
