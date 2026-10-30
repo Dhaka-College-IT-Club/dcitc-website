@@ -1,6 +1,6 @@
 import Hero from "@/components/Hero";
-import About from "@/components/About";
-import Domains from "@/components/Domains/Domains";
+import WhyJoin from "@/components/WhyJoin";
+
 import Departments from "@/components/Departments/Departments";
 import Leadership from "@/components/Leadership/Leadership";
 import Achievements from "@/components/Achievements";
@@ -11,8 +11,7 @@ export default function Home() {
   return (
     <>
       <Hero />
-      <About />
-      <Domains />
+      <WhyJoin />
       <Departments />
       <Leadership />
       <Achievements />
