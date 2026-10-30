@@ -24,7 +24,7 @@ const CTASection: React.FC = () => {
           rel="noopener noreferrer"
           className="px-6 sm:px-8 py-3 sm:py-4 bg-white text-black font-orbitron font-bold tracking-wider hover:bg-slate-200 transition-all duration-300 flex items-center justify-center gap-2 -skew-x-10 group shadow-[0_4px_6px_rgba(0,0,0,0.1)] hover:shadow-[0_0_20px_rgba(255,255,255,0.4)] hover:scale-[1.02] cursor-pointer mx-auto"
         >
-          <span className="skew-x-12">APPLY NOW</span>
+          <span className="skew-x-12">JOIN DCITC</span>
         </a>
       </div>
     </section>

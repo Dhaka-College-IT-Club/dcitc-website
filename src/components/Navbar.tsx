@@ -44,6 +44,7 @@ const DesktopNav: React.FC<DesktopNavProps> = ({ pathname }) => (
       );
     })}
 
+    <LoginButton />
     <ApplyButton />
   </div>
 );
@@ -73,7 +74,16 @@ const ApplyButton: React.FC = () => (
     rel="noopener noreferrer"
     className="px-6 py-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-orbitron text-sm tracking-wider rounded-none backdrop-blur-sm transition-all hover:shadow-[0_0_15px_rgba(255,255,255,0.3)] -skew-x-10"
   >
-    <span className="skew-x-10 inline-block cursor-pointer">APPLY NOW</span>
+    <span className="skew-x-10 inline-block cursor-pointer">JOIN DCITC</span>
+  </a>
+);
+
+const LoginButton: React.FC = () => (
+  <a
+    href="/admin1841"
+    className="px-6 py-2 border border-white/20 text-slate-300 hover:text-white hover:border-white/40 font-orbitron text-sm tracking-wider rounded-none transition-all -skew-x-10"
+  >
+    <span className="skew-x-10 inline-block cursor-pointer">LOGIN</span>
   </a>
 );
 
@@ -113,7 +123,8 @@ const MobileNavMenu: React.FC<MobileNavMenuProps> = ({
           </a>
         );
       })}
-      <ApplyButton />
+      <LoginButton />
+    <ApplyButton />
     </div>
   </motion.div>
 );
