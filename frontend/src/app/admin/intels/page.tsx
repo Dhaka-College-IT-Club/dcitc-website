@@ -1,7 +1,18 @@
 "use client";
-import { useState, useEffect } from "react";
+
+import { Plus } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import DataTable, { type Column } from "@/components/admin/DataTable";
+import ImageUpload from "@/components/admin/ImageUpload";
+import PageHeader from "@/components/admin/PageHeader";
+import SlotGrid from "@/components/admin/SlotGrid";
+import Alert from "@/components/ui/Alert";
+import Button from "@/components/ui/Button";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
+import Drawer from "@/components/ui/Drawer";
+import TextField from "@/components/ui/TextField";
+import { useToast } from "@/components/ui/Toast";
 import { apiFetch } from "@/lib/api";
-import { uploadImage } from "@/lib/upload";
 import type { Intel } from "@/lib/api-types";
 
 type FormState = {
@@ -14,77 +25,78 @@ type FormState = {
   image: string;
 };
 
-const empty: FormState = { slug: "", title: "", excerpt: "", content: "", tag: "", date: "", image: "" };
+const emptyForm: FormState = {
+  slug: "",
+  title: "",
+  excerpt: "",
+  content: "",
+  tag: "",
+  date: "",
+  image: "",
+};
+
+function slugFromTitle(title: string) {
+  return title
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 80);
+}
 
 export default function AdminIntelsPage() {
+  const toast = useToast();
   const [items, setItems] = useState<Intel[]>([]);
-  const [form, setForm] = useState<FormState>(empty);
-  const [editingId, setEditingId] = useState<number | null>(null);
-  const [pending, setPending] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [slotSelection, setSlotSelection] = useState<Record<number, string>>({});
+  const [query, setQuery] = useState("");
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [editing, setEditing] = useState<Intel | null>(null);
+  const [form, setForm] = useState<FormState>(emptyForm);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [saving, setSaving] = useState(false);
+  const [slotBusy, setSlotBusy] = useState(false);
+  const [deleting, setDeleting] = useState<Intel | null>(null);
+  const [deletePending, setDeletePending] = useState(false);
 
   async function load() {
     try {
       const data = await apiFetch<Intel[]>("/admin/intels");
       setItems(data);
+      setError("");
     } catch (err) {
-      const e = err as { message?: string };
-      setError(e?.message || "Failed to load");
-    }
-  }
-  useEffect(() => { load(); }, []);
-
-  async function onUpload() {
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = "image/*";
-    input.onchange = async () => {
-      const file = input.files?.[0];
-      if (!file) return;
-      try {
-        const url = await uploadImage(file);
-        setForm((f) => ({ ...f, image: url }));
-      } catch (err) {
-        const e2 = err as { message?: string };
-        setError(e2?.message || "Upload failed");
+      const apiError = err as { message?: string; status?: number };
+      if (apiError?.status !== 401) {
+        setError(apiError?.message || "Failed to load intel.");
       }
-    };
-    input.click();
-  }
-
-  async function submit(e: React.FormEvent) {
-    e.preventDefault();
-    setPending(true);
-    setError("");
-    const body = {
-      slug: form.slug,
-      title: form.title,
-      excerpt: form.excerpt,
-      content: form.content,
-      tag: form.tag,
-      date: form.date,
-      image: form.image || null,
-    };
-    try {
-      if (editingId !== null) {
-        await apiFetch(`/admin/intels/${editingId}`, { method: "PATCH", body });
-      } else {
-        await apiFetch("/admin/intels", { method: "POST", body });
-      }
-      setForm(empty);
-      setEditingId(null);
-      await load();
-    } catch (err) {
-      const e2 = err as { message?: string };
-      setError(e2?.message || "Save failed");
     } finally {
-      setPending(false);
+      setLoading(false);
     }
   }
 
-  function edit(item: Intel) {
-    setEditingId(item.id);
+  useEffect(() => {
+    void load();
+  }, []);
+
+  const filtered = useMemo(() => {
+    const needle = query.trim().toLowerCase();
+    if (!needle) return items;
+    return items.filter((item) =>
+      `${item.title} ${item.slug} ${item.tag} ${item.date}`
+        .toLowerCase()
+        .includes(needle)
+    );
+  }, [items, query]);
+
+  function openCreate() {
+    setEditing(null);
+    setForm(emptyForm);
+    setFieldErrors({});
+    setDrawerOpen(true);
+  }
+
+  function openEdit(item: Intel) {
+    setEditing(item);
     setForm({
       slug: item.slug,
       title: item.title,
@@ -94,83 +106,369 @@ export default function AdminIntelsPage() {
       date: item.date,
       image: item.image ?? "",
     });
+    setFieldErrors({});
+    setDrawerOpen(true);
   }
 
-  async function remove(id: number) {
-    if (!window.confirm("Delete this intel?")) return;
+  function validate() {
+    const errors: Record<string, string> = {};
+    if (!form.title.trim()) errors.title = "Give the intel a title.";
+    if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(form.slug.trim())) {
+      errors.slug = "Use lowercase letters, numbers, and single dashes.";
+    }
+    if (!form.excerpt.trim()) errors.excerpt = "Add a short excerpt.";
+    if (!form.content.trim()) errors.content = "Write the article body.";
+    if (!form.tag.trim()) errors.tag = "Add a tag.";
+    if (!form.date.trim()) errors.date = "Add a date label, e.g. Nov 2025.";
+    return errors;
+  }
+
+  async function submit(event: React.FormEvent) {
+    event.preventDefault();
+    if (saving) return;
+    const errors = validate();
+    setFieldErrors(errors);
+    if (Object.keys(errors).length > 0) return;
+
+    setSaving(true);
+    const body = {
+      slug: form.slug.trim(),
+      title: form.title.trim(),
+      excerpt: form.excerpt.trim(),
+      content: form.content.trim(),
+      tag: form.tag.trim(),
+      date: form.date.trim(),
+      image: form.image || null,
+    };
     try {
-      await apiFetch(`/admin/intels/${id}`, { method: "DELETE" });
+      if (editing) {
+        await apiFetch(`/admin/intels/${editing.id}`, {
+          method: "PATCH",
+          body,
+        });
+        toast.push("Intel updated.");
+      } else {
+        await apiFetch("/admin/intels", { method: "POST", body });
+        toast.push("Intel published.");
+      }
+      setDrawerOpen(false);
       await load();
     } catch (err) {
-      const e2 = err as { message?: string };
-      setError(e2?.message || "Delete failed");
+      const apiError = err as {
+        message?: string;
+        fields?: Record<string, string>;
+        code?: string;
+      };
+      if (apiError?.code === "slug_taken") {
+        setFieldErrors({ slug: "That slug is already in use." });
+      } else if (apiError?.fields) {
+        setFieldErrors(apiError.fields);
+      }
+      toast.push(apiError?.message || "Could not save the intel.", "error");
+    } finally {
+      setSaving(false);
     }
   }
 
-  async function setFeatured(id: number) {
-    const val = slotSelection[id] ?? "";
-    const slot = val === "" ? null : Number(val) - 1;
+  async function assign(id: number, slot: number | null) {
+    if (slotBusy) return;
+    setSlotBusy(true);
     try {
-      await apiFetch(`/admin/intels/${id}/featured`, { method: "PUT", body: { slot } });
+      await apiFetch(`/admin/intels/${id}/featured`, {
+        method: "PUT",
+        body: { slot },
+      });
       await load();
+      toast.push(slot === null ? "Slot cleared." : `Placed in slot ${slot + 1}.`);
     } catch (err) {
-      const e2 = err as { message?: string };
-      setError(e2?.message || "Failed");
+      const apiError = err as { message?: string; code?: string };
+      if (
+        apiError?.code === "slot_taken" ||
+        (apiError?.message ?? "").includes("slot_taken")
+      ) {
+        toast.push("That slot is already taken. Clear it first.", "error");
+      } else {
+        toast.push(apiError?.message || "Could not update the slot.", "error");
+      }
+    } finally {
+      setSlotBusy(false);
     }
   }
+
+  async function confirmDelete() {
+    if (!deleting) return;
+    setDeletePending(true);
+    try {
+      await apiFetch(`/admin/intels/${deleting.id}`, { method: "DELETE" });
+      toast.push("Intel deleted.");
+      setDeleting(null);
+      await load();
+    } catch (err) {
+      const apiError = err as { message?: string };
+      toast.push(apiError?.message || "Could not delete the intel.", "error");
+    } finally {
+      setDeletePending(false);
+    }
+  }
+
+  const columns: Column<Intel>[] = [
+    {
+      key: "title",
+      header: "Intel",
+      mobilePrimary: true,
+      render: (item) => (
+        <div className="flex items-center gap-3">
+          {item.image ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={item.image}
+              alt=""
+              className="h-10 w-14 shrink-0 border border-white/10 object-cover grayscale"
+            />
+          ) : (
+            <span className="h-10 w-14 shrink-0 border border-white/10 bg-white/[0.04]" />
+          )}
+          <span className="min-w-0">
+            <span className="block truncate font-rajdhani text-sm font-semibold text-white">
+              {item.title}
+            </span>
+            <span className="mt-0.5 block truncate font-rajdhani text-xs text-slate-500">
+              /{item.slug}
+            </span>
+          </span>
+        </div>
+      ),
+    },
+    {
+      key: "tag",
+      header: "Tag",
+      render: (item) => (
+        <span className="inline-flex border border-white/10 px-1.5 py-0.5 font-orbitron text-[9px] uppercase tracking-[0.1em] text-slate-400">
+          {item.tag}
+        </span>
+      ),
+    },
+    {
+      key: "date",
+      header: "Date",
+      render: (item) => (
+        <span className="font-rajdhani text-sm text-slate-400">{item.date}</span>
+      ),
+    },
+    {
+      key: "slot",
+      header: "Featured",
+      render: (item) =>
+        item.featuredSlot === null ? (
+          <span className="font-rajdhani text-xs text-slate-500">Not featured</span>
+        ) : (
+          <span className="inline-flex items-center gap-1 border border-white/30 bg-white/[0.06] px-1.5 py-0.5 font-orbitron text-[9px] uppercase tracking-[0.12em] text-white">
+            Slot {item.featuredSlot + 1}
+          </span>
+        ),
+    },
+  ];
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-orbitron font-bold text-white">Intels</h1>
-      {error && <p className="text-sm text-red-400">{error}</p>}
+    <div className="space-y-5">
+      <PageHeader
+        eyebrow="Public archive"
+        title="Intel"
+        description="Articles shown under /intel, plus the three landing-page slots."
+        actions={
+          <Button type="button" size="sm" onClick={openCreate}>
+            <Plus className="h-3.5 w-3.5" aria-hidden="true" />
+            New intel
+          </Button>
+        }
+      />
 
-      <form onSubmit={submit} className="space-y-3 border border-white/10 p-4">
-        <input placeholder="Slug" value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} className="w-full rounded border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100" required />
-        <input placeholder="Title" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className="w-full rounded border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100" required />
-        <input placeholder="Excerpt" value={form.excerpt} onChange={(e) => setForm({ ...form, excerpt: e.target.value })} className="w-full rounded border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100" required />
-        <textarea placeholder="Content" value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} className="w-full rounded border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100" required />
-        <input placeholder="Tag" value={form.tag} onChange={(e) => setForm({ ...form, tag: e.target.value })} className="w-full rounded border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100" required />
-        <input placeholder="Date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} className="w-full rounded border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100" required />
-        <div className="flex gap-2">
-          <input placeholder="Image URL" value={form.image} onChange={(e) => setForm({ ...form, image: e.target.value })} className="flex-1 rounded border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100" />
-          <button type="button" onClick={onUpload} className="px-3 py-2 border border-white/20 text-slate-300">Upload</button>
-        </div>
-        <div className="flex gap-2">
-          <button type="submit" disabled={pending} className="px-6 py-2 bg-white text-black font-orbitron font-bold tracking-wider disabled:opacity-50">
-            {pending ? "Saving…" : editingId !== null ? "Update" : "Create"}
-          </button>
-          {editingId !== null && (
-            <button type="button" onClick={() => { setEditingId(null); setForm(empty); }} className="px-6 py-2 border border-white/20 text-slate-300">Cancel</button>
-          )}
-        </div>
-      </form>
+      {error ? <Alert variant="error">{error}</Alert> : null}
 
-      <div className="space-y-3">
-        {items.map((item) => (
-          <div key={item.id} className="border border-white/10 p-3 space-y-2">
-            <div className="flex items-center justify-between gap-3">
-              <p className="text-white font-rajdhani">{item.title} (slot={item.featuredSlot ?? "none"})</p>
-              <div className="flex gap-2">
-                <button onClick={() => edit(item)} className="px-3 py-1 text-sm border border-white/20 text-slate-300">Edit</button>
-                <button onClick={() => remove(item.id)} className="px-3 py-1 text-sm border border-red-500/40 text-red-400">Delete</button>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <select
-                value={slotSelection[item.id] ?? (item.featuredSlot === null ? "" : String(item.featuredSlot + 1))}
-                onChange={(e) => setSlotSelection({ ...slotSelection, [item.id]: e.target.value })}
-                className="rounded border border-slate-700 bg-slate-900 px-2 py-1 text-slate-100"
+      <SlotGrid
+        count={3}
+        items={items.map((item) => ({
+          id: item.id,
+          title: item.title,
+          slot: item.featuredSlot,
+        }))}
+        onAssign={(id, slot) => void assign(id, slot)}
+        onClear={(id) => void assign(id, null)}
+        busy={slotBusy || loading}
+      />
+
+      <DataTable
+        columns={columns}
+        rows={filtered}
+        getKey={(item) => item.id}
+        loading={loading}
+        search={query}
+        onSearch={setQuery}
+        searchPlaceholder="Search intel…"
+        emptyTitle={items.length === 0 ? "No intel yet" : "No matching intel"}
+        emptyDescription={
+          items.length === 0
+            ? "Publish the first article and optionally feature it on the landing page."
+            : "Try a different search term."
+        }
+        caption="Intel articles"
+        actions={(item) => (
+          <>
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() => openEdit(item)}
+            >
+              Edit
+            </Button>
+            <Button
+              type="button"
+              variant="danger"
+              size="sm"
+              onClick={() => setDeleting(item)}
+            >
+              Delete
+            </Button>
+          </>
+        )}
+      />
+
+      <Drawer
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        title={editing ? "Edit intel" : "New intel"}
+        description="The slug becomes the public URL. Lowercase letters, numbers, and dashes only."
+      >
+        <form onSubmit={submit} className="space-y-5" noValidate>
+          <TextField
+            label="Title"
+            name="title"
+            value={form.title}
+            onChange={(event) => {
+              const nextTitle = event.target.value;
+              setForm((current) => ({
+                ...current,
+                title: nextTitle,
+                slug:
+                  editing || current.slug.trim()
+                    ? current.slug
+                    : slugFromTitle(nextTitle),
+              }));
+            }}
+            error={fieldErrors.title}
+            placeholder="e.g. Behind the Robotics Lab"
+            required
+          />
+
+          <TextField
+            label="Slug"
+            name="slug"
+            value={form.slug}
+            onChange={(event) => setForm({ ...form, slug: event.target.value })}
+            error={fieldErrors.slug}
+            hint="Used as /intel/your-slug."
+            placeholder="behind-the-robotics-lab"
+            required
+          />
+
+          <TextField
+            label="Excerpt"
+            name="excerpt"
+            value={form.excerpt}
+            onChange={(event) => setForm({ ...form, excerpt: event.target.value })}
+            error={fieldErrors.excerpt}
+            placeholder="One or two lines shown on the card."
+            required
+          />
+
+          <div>
+            <label htmlFor="intel-content" className="dc-label">
+              Content
+            </label>
+            <textarea
+              id="intel-content"
+              className="dc-input"
+              rows={8}
+              value={form.content}
+              onChange={(event) => setForm({ ...form, content: event.target.value })}
+              placeholder="Write the article. Blank lines separate paragraphs."
+              aria-invalid={fieldErrors.content ? true : undefined}
+              aria-describedby={
+                fieldErrors.content ? "intel-content-error" : undefined
+              }
+              required
+            />
+            {fieldErrors.content ? (
+              <p
+                id="intel-content-error"
+                role="alert"
+                className="mt-1.5 font-rajdhani text-sm text-red-300"
               >
-                <option value="">None</option>
-                {[1, 2, 3].map((n) => (
-                  <option key={n} value={String(n)}>Slot {n}</option>
-                ))}
-              </select>
-              <button onClick={() => setFeatured(item.id)} className="px-3 py-1 text-sm border border-white/20 text-slate-300">Set featured</button>
-            </div>
+                {fieldErrors.content}
+              </p>
+            ) : null}
           </div>
-        ))}
-      </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <TextField
+              label="Tag"
+              name="tag"
+              value={form.tag}
+              onChange={(event) => setForm({ ...form, tag: event.target.value })}
+              error={fieldErrors.tag}
+              placeholder="e.g. Robotics"
+              required
+            />
+            <TextField
+              label="Date label"
+              name="date"
+              value={form.date}
+              onChange={(event) => setForm({ ...form, date: event.target.value })}
+              error={fieldErrors.date}
+              placeholder="e.g. Nov 2025"
+              required
+            />
+          </div>
+
+          <div className="border-t border-white/10 pt-5">
+            <ImageUpload
+              label="Cover image"
+              value={form.image}
+              onChange={(url) => setForm({ ...form, image: url })}
+              shape="wide"
+            />
+          </div>
+
+          <div className="flex flex-col-reverse gap-2 border-t border-white/10 pt-5 sm:flex-row sm:justify-end">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setDrawerOpen(false)}
+              disabled={saving}
+            >
+              Cancel
+            </Button>
+            <Button type="submit" loading={saving}>
+              {saving ? "Saving" : editing ? "Save changes" : "Publish intel"}
+            </Button>
+          </div>
+        </form>
+      </Drawer>
+
+      <ConfirmDialog
+        open={deleting !== null}
+        title="Delete this intel?"
+        description={
+          deleting
+            ? `“${deleting.title}” will stop resolving at /intel/${deleting.slug}. This cannot be undone.`
+            : ""
+        }
+        confirmLabel="Delete intel"
+        pending={deletePending}
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleting(null)}
+      />
     </div>
   );
 }

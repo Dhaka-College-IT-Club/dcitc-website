@@ -1,10 +1,16 @@
 "use client";
-import { useState, useEffect } from "react";
-import { useRouter, usePathname } from "next/navigation";
+
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import AdminShell from "@/components/admin/AdminShell";
 import { apiFetch } from "@/lib/api";
 import type { Admin } from "@/lib/api-types";
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+export default function AdminLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const router = useRouter();
   const pathname = usePathname();
   const [admin, setAdmin] = useState<Admin | null>(null);
@@ -15,29 +21,58 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       setLoading(false);
       return;
     }
+    let cancelled = false;
     (async () => {
       try {
         const me = await apiFetch<Admin>("/admin/auth/me");
-        setAdmin(me);
+        if (!cancelled) setAdmin(me);
       } catch {
-        router.replace("/admin/login");
+        if (!cancelled) router.replace("/admin/login");
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     })();
+    return () => {
+      cancelled = true;
+    };
   }, [pathname, router]);
 
   if (pathname === "/admin/login") return <>{children}</>;
+
   if (loading) {
     return (
-      <main className="min-h-screen flex items-center justify-center bg-black text-slate-400">
-        Loading…
-      </main>
+      <div className="min-h-screen bg-black" aria-busy="true">
+        <div className="fixed inset-y-0 left-0 hidden w-64 border-r border-white/10 p-5 lg:block">
+          <span className="block h-10 w-28 animate-pulse bg-white/10" />
+          <div className="mt-12 space-y-2">
+            {Array.from({ length: 5 }).map((_, index) => (
+              <span
+                key={index}
+                className="block h-8 animate-pulse bg-white/[0.05]"
+              />
+            ))}
+          </div>
+        </div>
+        <div className="border-b border-white/10 p-4 lg:hidden">
+          <span className="block h-8 w-32 animate-pulse bg-white/10" />
+        </div>
+        <div className="space-y-4 p-6 lg:pl-72">
+          <span className="block h-3 w-24 animate-pulse bg-white/10" />
+          <span className="block h-8 w-56 animate-pulse bg-white/10" />
+          <div className="grid gap-3 sm:grid-cols-3">
+            {Array.from({ length: 3 }).map((_, index) => (
+              <span
+                key={index}
+                className="h-28 animate-pulse bg-white/[0.05]"
+              />
+            ))}
+          </div>
+        </div>
+      </div>
     );
   }
-  if (!admin) return null;
 
-  const isSuper = admin.role === "super_admin";
+  if (!admin) return null;
 
   async function logout() {
     try {
@@ -48,43 +83,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     router.replace("/admin/login");
   }
 
-  const links = [
-    { href: "/admin", label: "Dashboard" },
-    { href: "/admin/settings", label: "Settings" },
-    { href: "/admin/leadership", label: "Leadership" },
-    { href: "/admin/achievements", label: "Achievements" },
-    { href: "/admin/intels", label: "Intels" },
-  ];
-  if (isSuper) {
-    links.push({ href: "/admin/admins", label: "Admins" });
-    links.push({ href: "/admin/audit-log", label: "Audit Log" });
-  }
-
   return (
-    <div className="min-h-screen bg-black text-slate-200 flex">
-      <aside className="w-56 border-r border-white/10 p-4 space-y-2 hidden md:block">
-        <p className="font-orbitron text-xs text-slate-500 uppercase mb-4">
-          {admin.username} ({admin.role})
-        </p>
-        {links.map((l) => (
-          <a
-            key={l.href}
-            href={l.href}
-            className={`block px-3 py-2 rounded text-sm font-rajdhani ${
-              pathname === l.href ? "bg-white/10 text-white" : "text-slate-400 hover:text-white"
-            }`}
-          >
-            {l.label}
-          </a>
-        ))}
-        <button
-          onClick={logout}
-          className="block w-full text-left px-3 py-2 text-sm text-slate-400 hover:text-white"
-        >
-          Logout
-        </button>
-      </aside>
-      <main className="flex-1 p-6">{children}</main>
-    </div>
+    <AdminShell admin={admin} onLogout={logout}>
+      {children}
+    </AdminShell>
   );
 }

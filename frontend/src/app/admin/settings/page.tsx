@@ -1,77 +1,200 @@
 "use client";
-import { useState, useEffect } from "react";
+
+import { ExternalLink } from "lucide-react";
+import { useEffect, useState } from "react";
+import PageHeader from "@/components/admin/PageHeader";
+import Alert from "@/components/ui/Alert";
+import Button from "@/components/ui/Button";
+import TextField from "@/components/ui/TextField";
+import { useToast } from "@/components/ui/Toast";
 import { apiFetch } from "@/lib/api";
 import type { PublicSettings } from "@/lib/api-types";
 
+function urlError(value: string) {
+  const trimmed = value.trim();
+  if (!trimmed) return "";
+  try {
+    const url = new URL(trimmed);
+    if (url.protocol !== "https:" && url.protocol !== "http:") {
+      return "Use an http(s) link.";
+    }
+    return "";
+  } catch {
+    return "Enter a complete URL, including https://.";
+  }
+}
+
 export default function AdminSettingsPage() {
+  const toast = useToast();
   const [formUrl, setFormUrl] = useState("");
   const [price, setPrice] = useState("");
   const [pending, setPending] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
+    let cancelled = false;
     (async () => {
       try {
-        const s = await apiFetch<PublicSettings>("/settings/public");
-        setFormUrl(s.membershipFormUrl ?? "");
-        setPrice(String(s.membershipPriceBdt));
+        const settings = await apiFetch<PublicSettings>("/settings/public");
+        if (cancelled) return;
+        setFormUrl(settings.membershipFormUrl ?? "");
+        setPrice(String(settings.membershipPriceBdt));
       } catch {
-        /* ignore */
+        if (!cancelled) setError("Could not load the current settings.");
+      } finally {
+        if (!cancelled) setLoading(false);
       }
     })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  async function submit(e: React.FormEvent) {
-    e.preventDefault();
-    setPending(true);
+  async function submit(event: React.FormEvent) {
+    event.preventDefault();
+    if (pending) return;
+
+    const nextErrors: Record<string, string> = {};
+    const invalidUrl = urlError(formUrl);
+    if (invalidUrl) nextErrors.membershipFormUrl = invalidUrl;
+    const numericPrice = Number(price);
+    if (!Number.isFinite(numericPrice) || numericPrice <= 0) {
+      nextErrors.membershipPriceBdt = "Enter a price greater than zero.";
+    }
+
+    setFieldErrors(nextErrors);
     setError("");
-    setSuccess(false);
+    if (Object.keys(nextErrors).length > 0) return;
+
+    setPending(true);
     try {
       await apiFetch("/admin/settings", {
         method: "PUT",
-        body: { membershipFormUrl: formUrl, membershipPriceBdt: Number(price) },
+        body: {
+          membershipFormUrl: formUrl.trim(),
+          membershipPriceBdt: numericPrice,
+        },
       });
-      setSuccess(true);
+      toast.push("Membership settings saved.");
     } catch (err) {
-      const e2 = err as { message?: string };
-      setError(e2?.message || "Save failed");
+      const apiError = err as {
+        message?: string;
+        fields?: Record<string, string>;
+      };
+      setError(apiError?.message || "Save failed. Try again.");
+      if (apiError?.fields) setFieldErrors(apiError.fields);
+      toast.push(apiError?.message || "Save failed.", "error");
     } finally {
       setPending(false);
     }
   }
 
+  const canTest = Boolean(formUrl.trim()) && !urlError(formUrl);
+
   return (
-    <div className="max-w-xl space-y-4">
-      <h1 className="text-2xl font-orbitron font-bold text-white">Settings</h1>
-      <form onSubmit={submit} className="space-y-4">
-        <div>
-          <label className="block text-sm text-slate-300 mb-1">Membership form URL</label>
-          <input
-            value={formUrl}
-            onChange={(e) => setFormUrl(e.target.value)}
-            className="w-full rounded border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100"
-          />
+    <div className="space-y-6">
+      <PageHeader
+        eyebrow="Configuration"
+        title="Settings"
+        description="The membership form and price shown on every member dashboard."
+      />
+
+      {loading ? (
+        <div className="grid gap-4 lg:grid-cols-5">
+          <span className="h-72 animate-pulse border border-white/10 bg-white/[0.03] lg:col-span-3" />
+          <span className="h-72 animate-pulse border border-white/10 bg-white/[0.02] lg:col-span-2" />
         </div>
-        <div>
-          <label className="block text-sm text-slate-300 mb-1">Membership price (BDT)</label>
-          <input
-            type="number"
-            value={price}
-            onChange={(e) => setPrice(e.target.value)}
-            className="w-full rounded border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100"
-          />
+      ) : (
+        <div className="grid gap-4 lg:grid-cols-5">
+          <form
+            onSubmit={submit}
+            noValidate
+            className="border border-white/10 bg-white/[0.02] p-5 sm:p-6 lg:col-span-3"
+          >
+            <div className="space-y-5">
+              {error ? <Alert variant="error">{error}</Alert> : null}
+
+              <div>
+                <TextField
+                  label="Membership form URL"
+                  name="membershipFormUrl"
+                  type="url"
+                  inputMode="url"
+                  autoComplete="url"
+                  placeholder="https://forms.gle/…"
+                  value={formUrl}
+                  onChange={(event) => setFormUrl(event.target.value)}
+                  error={fieldErrors.membershipFormUrl}
+                  hint="Members open this link from the dashboard card. Leave empty to show “Membership closed”."
+                />
+                <div className="mt-2">
+                  <button
+                    type="button"
+                    disabled={!canTest}
+                    onClick={() =>
+                      window.open(formUrl.trim(), "_blank", "noopener,noreferrer")
+                    }
+                    className="inline-flex items-center gap-1.5 font-orbitron text-[10px] uppercase tracking-[0.14em] text-slate-400 transition-colors hover:text-white disabled:cursor-not-allowed disabled:text-slate-700"
+                  >
+                    <ExternalLink className="h-3 w-3" aria-hidden="true" />
+                    Test link
+                  </button>
+                </div>
+              </div>
+
+              <TextField
+                label="Membership price (BDT)"
+                name="membershipPriceBdt"
+                type="number"
+                inputMode="numeric"
+                min={1}
+                step={1}
+                value={price}
+                onChange={(event) => setPrice(event.target.value)}
+                error={fieldErrors.membershipPriceBdt}
+                hint="Whole taka. The dashboard displays this beside “Only”."
+              />
+            </div>
+
+            <div className="mt-6 flex flex-wrap gap-2 border-t border-white/10 pt-5">
+              <Button type="submit" loading={pending}>
+                {pending ? "Saving" : "Save settings"}
+              </Button>
+            </div>
+          </form>
+
+          <aside className="border border-white/10 bg-white/[0.02] p-5 sm:p-6 lg:col-span-2">
+            <p className="font-orbitron text-[10px] uppercase tracking-[0.24em] text-slate-500">
+              Member preview
+            </p>
+            <div className="clip-notch mt-4 border border-white/25 bg-white/[0.05] p-4">
+              <p className="font-orbitron text-[9px] uppercase tracking-[0.2em] text-slate-400">
+                Membership
+              </p>
+              <p className="mt-2 font-orbitron text-lg font-bold text-white">
+                Be a Member
+              </p>
+              <p className="mt-3 font-orbitron text-3xl font-bold text-white">
+                {Number(price) > 0 ? price : "—"}
+                <span className="ml-1.5 text-sm font-medium text-slate-400">
+                  BDT
+                </span>
+              </p>
+              <p className="mt-3 font-rajdhani text-sm text-slate-400">
+                {canTest
+                  ? "The button opens your form in a new tab."
+                  : "No live form link yet, so members see the closed state."}
+              </p>
+            </div>
+            <p className="mt-4 font-rajdhani text-xs leading-snug text-slate-500">
+              Changing the price updates the dashboard headline. It does not
+              edit any responses already collected in the form.
+            </p>
+          </aside>
         </div>
-        {error && <p className="text-sm text-red-400">{error}</p>}
-        {success && <p className="text-sm text-green-400">Saved</p>}
-        <button
-          type="submit"
-          disabled={pending}
-          className="px-6 py-2 bg-white text-black font-orbitron font-bold tracking-wider disabled:opacity-50"
-        >
-          {pending ? "Saving…" : "Save"}
-        </button>
-      </form>
+      )}
     </div>
   );
 }

@@ -1,108 +1,454 @@
 "use client";
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { apiFetch } from "@/lib/api";
 
-type Admin = { id: number; username: string; role: string; active: boolean; createdAt: string };
+import { KeyRound, Plus, Shield } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
+import DataTable, { type Column } from "@/components/admin/DataTable";
+import PageHeader from "@/components/admin/PageHeader";
+import Alert from "@/components/ui/Alert";
+import Button from "@/components/ui/Button";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
+import Drawer from "@/components/ui/Drawer";
+import PasswordField from "@/components/ui/PasswordField";
+import TextField from "@/components/ui/TextField";
+import { useToast } from "@/components/ui/Toast";
+import { apiFetch } from "@/lib/api";
+import type { Admin } from "@/lib/api-types";
+
+function formatDate(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "—";
+  return date.toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+}
 
 export default function AdminAdminsPage() {
   const router = useRouter();
+  const toast = useToast();
   const [items, setItems] = useState<Admin[]>([]);
+  const [me, setMe] = useState<{ id: number; role: string } | null>(null);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [form, setForm] = useState({ username: "", password: "", role: "admin" });
-  const [pending, setPending] = useState(false);
-  const [currentId, setCurrentId] = useState<number | null>(null);
+  const [query, setQuery] = useState("");
+
+  const [createOpen, setCreateOpen] = useState(false);
+  const [form, setForm] = useState({
+    username: "",
+    password: "",
+    role: "admin",
+  });
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  const [saving, setSaving] = useState(false);
+
+  const [toggling, setToggling] = useState<Admin | null>(null);
+  const [togglePending, setTogglePending] = useState(false);
+
+  const [rotating, setRotating] = useState<Admin | null>(null);
+  const [rotatePassword, setRotatePassword] = useState("");
+  const [rotateConfirm, setRotateConfirm] = useState("");
+  const [rotateErrors, setRotateErrors] = useState<Record<string, string>>({});
+  const [rotatePending, setRotatePending] = useState(false);
 
   async function load() {
     try {
-      const me = await apiFetch<{ id: number; role: string }>("/admin/auth/me");
-      setCurrentId(me.id);
-      if (me.role !== "super_admin") {
+      const current = await apiFetch<Admin>("/admin/auth/me");
+      setMe({ id: current.id, role: current.role });
+      if (current.role !== "super_admin") {
         router.replace("/admin");
         return;
       }
       const data = await apiFetch<Admin[]>("/super-admin/admins");
       setItems(data);
+      setError("");
     } catch (err) {
-      const e = err as { message?: string };
-      setError(e?.message || "Failed to load");
-    }
-  }
-  useEffect(() => { load(); }, []);
-
-  async function create(e: React.FormEvent) {
-    e.preventDefault();
-    setPending(true);
-    setError("");
-    try {
-      await apiFetch("/super-admin/admins", { method: "POST", body: form });
-      setForm({ username: "", password: "", role: "admin" });
-      await load();
-    } catch (err) {
-      const e2 = err as { message?: string };
-      setError(e2?.message || "Create failed");
+      const apiError = err as { message?: string; status?: number };
+      if (apiError?.status !== 401) {
+        setError(apiError?.message || "Failed to load operators.");
+      }
     } finally {
-      setPending(false);
+      setLoading(false);
     }
   }
 
-  async function toggleActive(item: Admin) {
+  useEffect(() => {
+    void load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const filtered = useMemo(() => {
+    const needle = query.trim().toLowerCase();
+    if (!needle) return items;
+    return items.filter((item) =>
+      `${item.username} ${item.role}`.toLowerCase().includes(needle)
+    );
+  }, [items, query]);
+
+  function openCreate() {
+    setForm({ username: "", password: "", role: "admin" });
+    setFormErrors({});
+    setCreateOpen(true);
+  }
+
+  async function create(event: React.FormEvent) {
+    event.preventDefault();
+    if (saving) return;
+    const errors: Record<string, string> = {};
+    if (!form.username.trim()) errors.username = "Enter a username.";
+    if (form.password.length < 8) {
+      errors.password = "Use at least 8 characters.";
+    }
+    setFormErrors(errors);
+    if (Object.keys(errors).length > 0) return;
+
+    setSaving(true);
     try {
-      await apiFetch(`/super-admin/admins/${item.id}`, { method: "PATCH", body: { active: !item.active } });
+      await apiFetch("/super-admin/admins", {
+        method: "POST",
+        body: {
+          username: form.username.trim(),
+          password: form.password,
+          role: form.role,
+        },
+      });
+      toast.push(`${form.username.trim()} can now sign in.`);
+      setCreateOpen(false);
       await load();
     } catch (err) {
-      const e2 = err as { message?: string };
-      setError(e2?.message || "Update failed");
+      const apiError = err as {
+        message?: string;
+        fields?: Record<string, string>;
+      };
+      if (apiError?.fields) setFormErrors(apiError.fields);
+      toast.push(apiError?.message || "Could not create the operator.", "error");
+    } finally {
+      setSaving(false);
     }
   }
 
-  async function rotatePassword(item: Admin) {
-    const pw = window.prompt("New password:");
-    if (!pw) return;
+  async function confirmToggle() {
+    if (!toggling) return;
+    setTogglePending(true);
     try {
-      await apiFetch(`/super-admin/admins/${item.id}/rotate-password`, { method: "POST", body: { password: pw } });
+      await apiFetch(`/super-admin/admins/${toggling.id}`, {
+        method: "PATCH",
+        body: { active: !toggling.active },
+      });
+      toast.push(
+        toggling.active
+          ? `${toggling.username} deactivated.`
+          : `${toggling.username} reactivated.`
+      );
+      setToggling(null);
       await load();
     } catch (err) {
-      const e2 = err as { message?: string };
-      setError(e2?.message || "Rotate failed");
+      const apiError = err as { message?: string };
+      toast.push(apiError?.message || "Could not update the account.", "error");
+    } finally {
+      setTogglePending(false);
     }
   }
+
+  function openRotate(item: Admin) {
+    setRotating(item);
+    setRotatePassword("");
+    setRotateConfirm("");
+    setRotateErrors({});
+  }
+
+  async function rotate(event: React.FormEvent) {
+    event.preventDefault();
+    if (!rotating || rotatePending) return;
+    const errors: Record<string, string> = {};
+    if (rotatePassword.length < 8) {
+      errors.password = "Use at least 8 characters.";
+    }
+    if (rotateConfirm !== rotatePassword) {
+      errors.confirm = "Passwords do not match.";
+    }
+    setRotateErrors(errors);
+    if (Object.keys(errors).length > 0) return;
+
+    setRotatePending(true);
+    try {
+      await apiFetch(
+        `/super-admin/admins/${rotating.id}/rotate-password`,
+        { method: "POST", body: { password: rotatePassword } }
+      );
+      toast.push(`Password rotated for ${rotating.username}.`);
+      setRotating(null);
+    } catch (err) {
+      const apiError = err as { message?: string };
+      toast.push(apiError?.message || "Could not rotate the password.", "error");
+    } finally {
+      setRotatePending(false);
+    }
+  }
+
+  const columns: Column<Admin>[] = [
+    {
+      key: "username",
+      header: "Operator",
+      mobilePrimary: true,
+      render: (item) => (
+        <span className="flex items-center gap-2">
+          <span className="font-rajdhani text-sm font-semibold text-white">
+            {item.username}
+          </span>
+          {item.id === me?.id ? (
+            <span className="border border-white/20 px-1 py-0.5 font-orbitron text-[8px] uppercase tracking-[0.12em] text-slate-400">
+              You
+            </span>
+          ) : null}
+        </span>
+      ),
+    },
+    {
+      key: "role",
+      header: "Role",
+      render: (item) => (
+        <span
+          className={`inline-flex items-center gap-1 border px-1.5 py-0.5 font-orbitron text-[9px] uppercase tracking-[0.12em] ${
+            item.role === "super_admin"
+              ? "border-white/40 bg-white/[0.08] text-white"
+              : "border-white/10 text-slate-400"
+          }`}
+        >
+          {item.role === "super_admin" ? (
+            <Shield className="h-2.5 w-2.5" aria-hidden="true" />
+          ) : null}
+          {item.role === "super_admin" ? "Super admin" : "Admin"}
+        </span>
+      ),
+    },
+    {
+      key: "status",
+      header: "Status",
+      render: (item) => (
+        <span
+          className={`inline-flex items-center gap-1.5 font-rajdhani text-xs ${
+            item.active ? "text-emerald-300" : "text-slate-500"
+          }`}
+        >
+          <span
+            className={`h-1.5 w-1.5 ${
+              item.active ? "bg-emerald-400" : "bg-slate-600"
+            }`}
+            aria-hidden="true"
+          />
+          {item.active ? "Active" : "Inactive"}
+        </span>
+      ),
+    },
+    {
+      key: "created",
+      header: "Created",
+      render: (item) => (
+        <span className="font-rajdhani text-sm text-slate-400">
+          {formatDate(item.createdAt)}
+        </span>
+      ),
+    },
+  ];
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-orbitron font-bold text-white">Admins</h1>
-      {error && <p className="text-sm text-red-400">{error}</p>}
+    <div className="space-y-5">
+      <PageHeader
+        eyebrow="Super admin"
+        title="Operators"
+        description="Create operator accounts, pause access, or rotate a password. Every action is written to the audit log."
+        actions={
+          <Button type="button" size="sm" onClick={openCreate}>
+            <Plus className="h-3.5 w-3.5" aria-hidden="true" />
+            New operator
+          </Button>
+        }
+      />
 
-      <form onSubmit={create} className="flex flex-wrap gap-2 border border-white/10 p-4">
-        <input placeholder="Username" value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} className="rounded border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100" required />
-        <input placeholder="Password" type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} className="rounded border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100" required />
-        <select value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} className="rounded border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100">
-          <option value="admin">admin</option>
-          <option value="super_admin">super_admin</option>
-        </select>
-        <button type="submit" disabled={pending} className="px-6 py-2 bg-white text-black font-orbitron font-bold tracking-wider disabled:opacity-50">
-          {pending ? "Creating…" : "Create"}
-        </button>
-      </form>
+      {error ? <Alert variant="error">{error}</Alert> : null}
 
-      <div className="space-y-2">
-        {items.map((item) => (
-          <div key={item.id} className="border border-white/10 p-3 flex items-center justify-between gap-3">
-            <p className="text-white font-rajdhani">{item.username} ({item.role}) {item.active ? "" : "[inactive]"}</p>
-            <div className="flex gap-2">
-              <button
-                onClick={() => toggleActive(item)}
-                className="px-3 py-1 text-sm border border-white/20 text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed"
-                disabled={item.id === currentId}
-                title={item.id === currentId ? "You cannot deactivate your own account" : undefined}
+      <DataTable
+        columns={columns}
+        rows={filtered}
+        getKey={(item) => item.id}
+        loading={loading}
+        search={query}
+        onSearch={setQuery}
+        searchPlaceholder="Search operators…"
+        emptyTitle={items.length === 0 ? "No operator accounts" : "No matches"}
+        emptyDescription={
+          items.length === 0
+            ? "Create the first operator account."
+            : "Try a different search term."
+        }
+        caption="Operator accounts"
+        actions={(item) => {
+          const isSelf = item.id === me?.id;
+          return (
+            <>
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                onClick={() => openRotate(item)}
               >
-                {item.active ? "Deactivate" : "Activate"}
-              </button>
-              <button onClick={() => rotatePassword(item)} className="px-3 py-1 text-sm border border-white/20 text-slate-300">Rotate password</button>
-            </div>
+                <KeyRound className="h-3 w-3" aria-hidden="true" />
+                Password
+              </Button>
+              <span
+                title={
+                  isSelf
+                    ? "You cannot deactivate your own account."
+                    : undefined
+                }
+              >
+                <Button
+                  type="button"
+                  variant={item.active ? "danger" : "secondary"}
+                  size="sm"
+                  disabled={isSelf}
+                  onClick={() => setToggling(item)}
+                >
+                  {item.active ? "Deactivate" : "Activate"}
+                </Button>
+              </span>
+            </>
+          );
+        }}
+      />
+
+      <p className="font-rajdhani text-xs leading-snug text-slate-500">
+        Your own row cannot be deactivated. Ask another super admin to change
+        your access.
+      </p>
+
+      <Drawer
+        open={createOpen}
+        onClose={() => setCreateOpen(false)}
+        title="New operator"
+        description="Operators can edit public content. Super admins can also manage accounts and read the audit log."
+      >
+        <form onSubmit={create} className="space-y-5" noValidate>
+          <TextField
+            label="Username"
+            name="username"
+            autoComplete="off"
+            value={form.username}
+            onChange={(event) =>
+              setForm({ ...form, username: event.target.value })
+            }
+            error={formErrors.username}
+            placeholder="e.g. content-lead"
+            required
+          />
+          <PasswordField
+            label="Initial password"
+            name="new-admin-password"
+            autoComplete="new-password"
+            value={form.password}
+            onChange={(event) =>
+              setForm({ ...form, password: event.target.value })
+            }
+            error={formErrors.password}
+            hint="At least 8 characters. Share it securely."
+            required
+          />
+          <div>
+            <label htmlFor="admin-role" className="dc-label">
+              Role
+            </label>
+            <select
+              id="admin-role"
+              className="dc-input"
+              value={form.role}
+              onChange={(event) => setForm({ ...form, role: event.target.value })}
+            >
+              <option value="admin">Admin</option>
+              <option value="super_admin">Super admin</option>
+            </select>
           </div>
-        ))}
-      </div>
+          <div className="flex flex-col-reverse gap-2 border-t border-white/10 pt-5 sm:flex-row sm:justify-end">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setCreateOpen(false)}
+              disabled={saving}
+            >
+              Cancel
+            </Button>
+            <Button type="submit" loading={saving}>
+              {saving ? "Creating" : "Create operator"}
+            </Button>
+          </div>
+        </form>
+      </Drawer>
+
+      <Drawer
+        open={rotating !== null}
+        onClose={() => setRotating(null)}
+        title="Rotate password"
+        description={
+          rotating
+            ? `Set a new password for ${rotating.username}. Existing sessions are invalidated.`
+            : ""
+        }
+      >
+        <form onSubmit={rotate} className="space-y-5" noValidate>
+          <PasswordField
+            label="New password"
+            name="rotate-password"
+            autoComplete="new-password"
+            value={rotatePassword}
+            onChange={(event) => setRotatePassword(event.target.value)}
+            error={rotateErrors.password}
+            hint="At least 8 characters."
+            required
+          />
+          <PasswordField
+            label="Confirm password"
+            name="rotate-confirm"
+            autoComplete="new-password"
+            value={rotateConfirm}
+            onChange={(event) => setRotateConfirm(event.target.value)}
+            error={rotateErrors.confirm}
+            required
+          />
+          <div className="flex flex-col-reverse gap-2 border-t border-white/10 pt-5 sm:flex-row sm:justify-end">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setRotating(null)}
+              disabled={rotatePending}
+            >
+              Cancel
+            </Button>
+            <Button type="submit" loading={rotatePending}>
+              {rotatePending ? "Rotating" : "Rotate password"}
+            </Button>
+          </div>
+        </form>
+      </Drawer>
+
+      <ConfirmDialog
+        open={toggling !== null}
+        title={
+          toggling?.active ? "Deactivate this operator?" : "Reactivate this operator?"
+        }
+        description={
+          toggling
+            ? toggling.active
+              ? `${toggling.username} will be signed out and cannot sign in until reactivated.`
+              : `${toggling.username} will be able to sign in again.`
+            : ""
+        }
+        confirmLabel={toggling?.active ? "Deactivate" : "Reactivate"}
+        destructive={Boolean(toggling?.active)}
+        pending={togglePending}
+        onConfirm={confirmToggle}
+        onCancel={() => setToggling(null)}
+      />
     </div>
   );
 }

@@ -1,7 +1,18 @@
 "use client";
-import { useState, useEffect } from "react";
+
+import { Plus } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import DataTable, { type Column } from "@/components/admin/DataTable";
+import ImageUpload from "@/components/admin/ImageUpload";
+import PageHeader from "@/components/admin/PageHeader";
+import SlotGrid from "@/components/admin/SlotGrid";
+import Alert from "@/components/ui/Alert";
+import Button from "@/components/ui/Button";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
+import Drawer from "@/components/ui/Drawer";
+import TextField from "@/components/ui/TextField";
+import { useToast } from "@/components/ui/Toast";
 import { apiFetch } from "@/lib/api";
-import { uploadImage } from "@/lib/upload";
 import type { Achievement } from "@/lib/api-types";
 
 type FormState = {
@@ -12,83 +23,65 @@ type FormState = {
   gallery: string[];
 };
 
-const empty: FormState = { title: "", detail: "", year: "", image: "", gallery: ["", "", "", ""] };
+const emptyForm: FormState = {
+  title: "",
+  detail: "",
+  year: String(new Date().getFullYear()),
+  image: "",
+  gallery: ["", "", "", ""],
+};
 
 export default function AdminAchievementsPage() {
+  const toast = useToast();
   const [items, setItems] = useState<Achievement[]>([]);
-  const [form, setForm] = useState<FormState>(empty);
-  const [editingId, setEditingId] = useState<number | null>(null);
-  const [pending, setPending] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [slotSelection, setSlotSelection] = useState<Record<number, string>>({});
+  const [query, setQuery] = useState("");
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [editing, setEditing] = useState<Achievement | null>(null);
+  const [form, setForm] = useState<FormState>(emptyForm);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [saving, setSaving] = useState(false);
+  const [slotBusy, setSlotBusy] = useState(false);
+  const [deleting, setDeleting] = useState<Achievement | null>(null);
+  const [deletePending, setDeletePending] = useState(false);
 
   async function load() {
     try {
       const data = await apiFetch<Achievement[]>("/admin/achievements");
       setItems(data);
+      setError("");
     } catch (err) {
-      const e = err as { message?: string };
-      setError(e?.message || "Failed to load");
-    }
-  }
-  useEffect(() => { load(); }, []);
-
-  async function onUpload(field: "image" | "gallery", index?: number) {
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = "image/*";
-    input.onchange = async () => {
-      const file = input.files?.[0];
-      if (!file) return;
-      try {
-        const url = await uploadImage(file);
-        if (field === "image") {
-          setForm((f) => ({ ...f, image: url }));
-        } else if (index !== undefined) {
-          setForm((f) => {
-            const g = [...f.gallery];
-            g[index] = url;
-            return { ...f, gallery: g };
-          });
-        }
-      } catch (err) {
-        const e2 = err as { message?: string };
-        setError(e2?.message || "Upload failed");
+      const apiError = err as { message?: string; status?: number };
+      if (apiError?.status !== 401) {
+        setError(apiError?.message || "Failed to load achievements.");
       }
-    };
-    input.click();
-  }
-
-  async function submit(e: React.FormEvent) {
-    e.preventDefault();
-    setPending(true);
-    setError("");
-    const body = {
-      title: form.title,
-      detail: form.detail,
-      year: Number(form.year),
-      image: form.image || null,
-      gallery: form.gallery.filter(Boolean),
-    };
-    try {
-      if (editingId !== null) {
-        await apiFetch(`/admin/achievements/${editingId}`, { method: "PATCH", body });
-      } else {
-        await apiFetch("/admin/achievements", { method: "POST", body });
-      }
-      setForm(empty);
-      setEditingId(null);
-      await load();
-    } catch (err) {
-      const e2 = err as { message?: string };
-      setError(e2?.message || "Save failed");
     } finally {
-      setPending(false);
+      setLoading(false);
     }
   }
 
-  function edit(item: Achievement) {
-    setEditingId(item.id);
+  useEffect(() => {
+    void load();
+  }, []);
+
+  const filtered = useMemo(() => {
+    const needle = query.trim().toLowerCase();
+    if (!needle) return items;
+    return items.filter((item) =>
+      `${item.title} ${item.detail} ${item.year}`.toLowerCase().includes(needle)
+    );
+  }, [items, query]);
+
+  function openCreate() {
+    setEditing(null);
+    setForm(emptyForm);
+    setFieldErrors({});
+    setDrawerOpen(true);
+  }
+
+  function openEdit(item: Achievement) {
+    setEditing(item);
     setForm({
       title: item.title,
       detail: item.detail,
@@ -96,92 +89,337 @@ export default function AdminAchievementsPage() {
       image: item.image ?? "",
       gallery: [...(item.gallery ?? []), "", "", "", ""].slice(0, 4),
     });
+    setFieldErrors({});
+    setDrawerOpen(true);
   }
 
-  async function remove(id: number) {
-    if (!window.confirm("Delete this achievement?")) return;
-    try {
-      await apiFetch(`/admin/achievements/${id}`, { method: "DELETE" });
-      await load();
-    } catch (err) {
-      const e2 = err as { message?: string };
-      setError(e2?.message || "Delete failed");
+  function validate() {
+    const errors: Record<string, string> = {};
+    if (!form.title.trim()) errors.title = "Give the achievement a title.";
+    if (!form.detail.trim()) errors.detail = "Describe what happened.";
+    const year = Number(form.year);
+    if (!Number.isInteger(year) || year < 1900 || year > 2100) {
+      errors.year = "Enter a four-digit year.";
     }
+    return errors;
   }
 
-  async function setFeatured(id: number) {
-    const val = slotSelection[id] ?? "";
-    const slot = val === "" ? null : Number(val) - 1;
+  async function submit(event: React.FormEvent) {
+    event.preventDefault();
+    if (saving) return;
+    const errors = validate();
+    setFieldErrors(errors);
+    if (Object.keys(errors).length > 0) return;
+
+    setSaving(true);
+    const body = {
+      title: form.title.trim(),
+      detail: form.detail.trim(),
+      year: Number(form.year),
+      image: form.image || null,
+      gallery: form.gallery.filter(Boolean),
+    };
     try {
-      await apiFetch(`/admin/achievements/${id}/featured`, { method: "PUT", body: { slot } });
-      await load();
-    } catch (err) {
-      const e2 = err as { message?: string; code?: string };
-      if (e2?.code === "slot_taken" || (e2?.message || "").includes("slot_taken")) {
-        setError("Slot already taken");
+      if (editing) {
+        await apiFetch(`/admin/achievements/${editing.id}`, {
+          method: "PATCH",
+          body,
+        });
+        toast.push("Achievement updated.");
       } else {
-        setError(e2?.message || "Failed");
+        await apiFetch("/admin/achievements", { method: "POST", body });
+        toast.push("Achievement created.");
       }
+      setDrawerOpen(false);
+      await load();
+    } catch (err) {
+      const apiError = err as {
+        message?: string;
+        fields?: Record<string, string>;
+      };
+      if (apiError?.fields) setFieldErrors(apiError.fields);
+      toast.push(apiError?.message || "Could not save the achievement.", "error");
+    } finally {
+      setSaving(false);
     }
   }
+
+  async function assign(id: number, slot: number | null) {
+    if (slotBusy) return;
+    setSlotBusy(true);
+    try {
+      await apiFetch(`/admin/achievements/${id}/featured`, {
+        method: "PUT",
+        body: { slot },
+      });
+      await load();
+      toast.push(
+        slot === null ? "Slot cleared." : `Placed in slot ${slot + 1}.`
+      );
+    } catch (err) {
+      const apiError = err as { message?: string; code?: string };
+      if (
+        apiError?.code === "slot_taken" ||
+        (apiError?.message ?? "").includes("slot_taken")
+      ) {
+        toast.push("That slot is already taken. Clear it first.", "error");
+      } else {
+        toast.push(apiError?.message || "Could not update the slot.", "error");
+      }
+    } finally {
+      setSlotBusy(false);
+    }
+  }
+
+  async function confirmDelete() {
+    if (!deleting) return;
+    setDeletePending(true);
+    try {
+      await apiFetch(`/admin/achievements/${deleting.id}`, {
+        method: "DELETE",
+      });
+      toast.push("Achievement deleted.");
+      setDeleting(null);
+      await load();
+    } catch (err) {
+      const apiError = err as { message?: string };
+      toast.push(apiError?.message || "Could not delete the achievement.", "error");
+    } finally {
+      setDeletePending(false);
+    }
+  }
+
+  const columns: Column<Achievement>[] = [
+    {
+      key: "title",
+      header: "Achievement",
+      mobilePrimary: true,
+      render: (item) => (
+        <div className="flex items-center gap-3">
+          {item.image ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={item.image}
+              alt=""
+              className="h-10 w-14 shrink-0 border border-white/10 object-cover grayscale"
+            />
+          ) : (
+            <span className="h-10 w-14 shrink-0 border border-white/10 bg-white/[0.04]" />
+          )}
+          <span className="font-rajdhani text-sm font-semibold leading-snug text-white">
+            {item.title}
+          </span>
+        </div>
+      ),
+    },
+    {
+      key: "year",
+      header: "Year",
+      render: (item) => (
+        <span className="font-orbitron text-[10px] tracking-[0.1em] text-slate-400">
+          {item.year}
+        </span>
+      ),
+    },
+    {
+      key: "slot",
+      header: "Featured",
+      render: (item) =>
+        item.featuredSlot === null ? (
+          <span className="font-rajdhani text-xs text-slate-500">Not featured</span>
+        ) : (
+          <span className="inline-flex items-center gap-1 border border-white/30 bg-white/[0.06] px-1.5 py-0.5 font-orbitron text-[9px] uppercase tracking-[0.12em] text-white">
+            Slot {item.featuredSlot + 1}
+          </span>
+        ),
+    },
+  ];
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-orbitron font-bold text-white">Achievements</h1>
-      {error && <p className="text-sm text-red-400">{error}</p>}
+    <div className="space-y-5">
+      <PageHeader
+        eyebrow="Public archive"
+        title="Achievements"
+        description="Every achievement, plus the five slots that headline the landing page."
+        actions={
+          <Button type="button" size="sm" onClick={openCreate}>
+            <Plus className="h-3.5 w-3.5" aria-hidden="true" />
+            New achievement
+          </Button>
+        }
+      />
 
-      <form onSubmit={submit} className="space-y-3 border border-white/10 p-4">
-        <input placeholder="Title" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className="w-full rounded border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100" required />
-        <textarea placeholder="Detail" value={form.detail} onChange={(e) => setForm({ ...form, detail: e.target.value })} className="w-full rounded border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100" required />
-        <input placeholder="Year" type="number" value={form.year} onChange={(e) => setForm({ ...form, year: e.target.value })} className="w-full rounded border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100" required />
-        <div className="flex gap-2">
-          <input placeholder="Image URL" value={form.image} onChange={(e) => setForm({ ...form, image: e.target.value })} className="flex-1 rounded border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100" />
-          <button type="button" onClick={() => onUpload("image")} className="px-3 py-2 border border-white/20 text-slate-300">Upload</button>
-        </div>
-        {form.gallery.map((g, i) => (
-          <div key={i} className="flex gap-2">
-            <input placeholder={`Gallery ${i + 1}`} value={g} onChange={(e) => {
-              const ng = [...form.gallery]; ng[i] = e.target.value; setForm({ ...form, gallery: ng });
-            }} className="flex-1 rounded border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100" />
-            <button type="button" onClick={() => onUpload("gallery", i)} className="px-3 py-2 border border-white/20 text-slate-300">Upload</button>
-          </div>
-        ))}
-        <div className="flex gap-2">
-          <button type="submit" disabled={pending} className="px-6 py-2 bg-white text-black font-orbitron font-bold tracking-wider disabled:opacity-50">
-            {pending ? "Saving…" : editingId !== null ? "Update" : "Create"}
-          </button>
-          {editingId !== null && (
-            <button type="button" onClick={() => { setEditingId(null); setForm(empty); }} className="px-6 py-2 border border-white/20 text-slate-300">Cancel</button>
-          )}
-        </div>
-      </form>
+      {error ? <Alert variant="error">{error}</Alert> : null}
 
-      <div className="space-y-3">
-        {items.map((item) => (
-          <div key={item.id} className="border border-white/10 p-3 space-y-2">
-            <div className="flex items-center justify-between gap-3">
-              <p className="text-white font-rajdhani">{item.title} ({item.year}) slot={item.featuredSlot ?? "none"}</p>
-              <div className="flex gap-2">
-                <button onClick={() => edit(item)} className="px-3 py-1 text-sm border border-white/20 text-slate-300">Edit</button>
-                <button onClick={() => remove(item.id)} className="px-3 py-1 text-sm border border-red-500/40 text-red-400">Delete</button>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <select
-                value={slotSelection[item.id] ?? (item.featuredSlot === null ? "" : String(item.featuredSlot + 1))}
-                onChange={(e) => setSlotSelection({ ...slotSelection, [item.id]: e.target.value })}
-                className="rounded border border-slate-700 bg-slate-900 px-2 py-1 text-slate-100"
+      <SlotGrid
+        count={5}
+        items={items.map((item) => ({
+          id: item.id,
+          title: item.title,
+          slot: item.featuredSlot,
+        }))}
+        onAssign={(id, slot) => void assign(id, slot)}
+        onClear={(id) => void assign(id, null)}
+        busy={slotBusy || loading}
+      />
+
+      <DataTable
+        columns={columns}
+        rows={filtered}
+        getKey={(item) => item.id}
+        loading={loading}
+        search={query}
+        onSearch={setQuery}
+        searchPlaceholder="Search achievements…"
+        emptyTitle={
+          items.length === 0 ? "No achievements yet" : "No matching achievements"
+        }
+        emptyDescription={
+          items.length === 0
+            ? "Create the first achievement and optionally assign it to a landing-page slot."
+            : "Try a different search term."
+        }
+        caption="Achievements"
+        actions={(item) => (
+          <>
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() => openEdit(item)}
+            >
+              Edit
+            </Button>
+            <Button
+              type="button"
+              variant="danger"
+              size="sm"
+              onClick={() => setDeleting(item)}
+            >
+              Delete
+            </Button>
+          </>
+        )}
+      />
+
+      <Drawer
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        title={editing ? "Edit achievement" : "New achievement"}
+        description="Main image and up to four gallery images. Uploads preview before you save."
+      >
+        <form onSubmit={submit} className="space-y-5" noValidate>
+          <TextField
+            label="Title"
+            name="title"
+            value={form.title}
+            onChange={(event) => setForm({ ...form, title: event.target.value })}
+            error={fieldErrors.title}
+            placeholder="e.g. National Robotics Championship Finalist"
+            required
+          />
+
+          <div>
+            <label htmlFor="achievement-detail" className="dc-label">
+              Detail
+            </label>
+            <textarea
+              id="achievement-detail"
+              className="dc-input"
+              rows={5}
+              value={form.detail}
+              onChange={(event) => setForm({ ...form, detail: event.target.value })}
+              placeholder="What happened, who took part, and why it matters."
+              aria-invalid={fieldErrors.detail ? true : undefined}
+              aria-describedby={
+                fieldErrors.detail ? "achievement-detail-error" : undefined
+              }
+              required
+            />
+            {fieldErrors.detail ? (
+              <p
+                id="achievement-detail-error"
+                role="alert"
+                className="mt-1.5 font-rajdhani text-sm text-red-300"
               >
-                <option value="">None</option>
-                {[1, 2, 3, 4, 5].map((n) => (
-                  <option key={n} value={String(n)}>Slot {n}</option>
-                ))}
-              </select>
-              <button onClick={() => setFeatured(item.id)} className="px-3 py-1 text-sm border border-white/20 text-slate-300">Set featured</button>
+                {fieldErrors.detail}
+              </p>
+            ) : null}
+          </div>
+
+          <TextField
+            label="Year"
+            name="year"
+            type="number"
+            inputMode="numeric"
+            min={1900}
+            max={2100}
+            value={form.year}
+            onChange={(event) => setForm({ ...form, year: event.target.value })}
+            error={fieldErrors.year}
+            required
+          />
+
+          <div className="border-t border-white/10 pt-5">
+            <ImageUpload
+              label="Main image"
+              value={form.image}
+              onChange={(url) => setForm({ ...form, image: url })}
+              shape="wide"
+            />
+          </div>
+
+          <div className="border-t border-white/10 pt-5">
+            <p className="font-orbitron text-[10px] uppercase tracking-[0.2em] text-slate-500">
+              Gallery
+            </p>
+            <div className="mt-3 grid gap-4 sm:grid-cols-2">
+              {form.gallery.map((image, index) => (
+                <ImageUpload
+                  key={index}
+                  label={`Image ${index + 1}`}
+                  value={image}
+                  onChange={(url) => {
+                    const next = [...form.gallery];
+                    next[index] = url;
+                    setForm({ ...form, gallery: next });
+                  }}
+                  shape="square"
+                  hint="Optional."
+                />
+              ))}
             </div>
           </div>
-        ))}
-      </div>
+
+          <div className="flex flex-col-reverse gap-2 border-t border-white/10 pt-5 sm:flex-row sm:justify-end">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setDrawerOpen(false)}
+              disabled={saving}
+            >
+              Cancel
+            </Button>
+            <Button type="submit" loading={saving}>
+              {saving ? "Saving" : editing ? "Save changes" : "Create achievement"}
+            </Button>
+          </div>
+        </form>
+      </Drawer>
+
+      <ConfirmDialog
+        open={deleting !== null}
+        title="Delete this achievement?"
+        description={
+          deleting
+            ? `“${deleting.title}” and its gallery images will be removed. This cannot be undone.`
+            : ""
+        }
+        confirmLabel="Delete achievement"
+        pending={deletePending}
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleting(null)}
+      />
     </div>
   );
 }
