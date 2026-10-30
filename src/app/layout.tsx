@@ -29,6 +29,7 @@ export const metadata: Metadata = {
 
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import GetInTouch from "@/components/GetInTouch";
 
 export default function RootLayout({
   children,
@@ -44,6 +45,7 @@ export default function RootLayout({
         <main className="grow">
           {children}
         </main>
+        <GetInTouch />
         <Footer />
       </body>
     </html>
