@@ -22,6 +22,7 @@ export default function Logo({
           alt=""
           fill
           sizes="44px"
+          loading="eager"
           className="object-contain transition-transform duration-300 group-hover:scale-105"
         />
       </span>
