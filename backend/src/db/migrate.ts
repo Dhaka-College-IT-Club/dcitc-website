@@ -7,7 +7,6 @@ const migrationsFolder = fileURLToPath(new URL("../../drizzle", import.meta.url)
 
 export async function runMigrations(): Promise<void> {
   await migrate(db, { migrationsFolder });
-  console.log(JSON.stringify({ level: "info", message: "migrations_applied", migrationsFolder }));
 }
 
 const invokedDirectly = process.argv[1]

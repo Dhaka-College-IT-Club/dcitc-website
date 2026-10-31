@@ -20,7 +20,7 @@ async function boot(): Promise<void> {
   await seedAdmins();
 
   const server = app.listen(env.PORT, () => {
-    console.log(JSON.stringify({ level: "info", message: "listening", port: env.PORT }));
+    console.log(`The server is running on port ${env.PORT}`);
   });
 
   const shutdown = (signal: string) => {
