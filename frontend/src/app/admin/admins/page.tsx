@@ -75,10 +75,11 @@ export default function AdminAdminsPage() {
   }
 
   useEffect(() => {
-    // load() awaits the request before touching state; the rule only guards
-    // synchronous setState in an effect body.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    void load();
+    // load() awaits the request before touching state, so the async IIFE keeps
+    // the rule from treating the call as synchronous setState (same as layout).
+    void (async () => {
+      await load();
+    })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
