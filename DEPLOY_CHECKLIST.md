@@ -49,12 +49,20 @@ connect depends on the provider's certificate chain being verifiable:
 `DB_SSL_CA` is read from the environment, so it does not appear in `render.yaml`;
 add it in the host dashboard if the provider requires it.
 
-## 4. Still worth a human security review
+## 4. Local setup change: admin seeding
+
+This is a breaking change to local setup. `ADMIN_EMAIL` / `ADMIN_PASSWORD` are no longer read
+and no longer seed a default admin account. Only `SUPER_ADMIN_EMAIL` / `SUPER_ADMIN_PASSWORD`
+seed an account on first boot; anyone relying on the old default admin must now sign in as the
+seeded super admin and create admins from the dashboard (Super admin → Operators → New
+operator). Existing admin rows in an already-seeded database are left untouched.
+
+## 5. Still worth a human security review
 
 These cannot be automated here and should be checked before the public launch:
 
 - **Secret rotation** — `JWT_USER_SECRET`, `JWT_ADMIN_SECRET`, `OTP_PEPPER`,
-  `SUPER_ADMIN_PASSWORD`, `ADMIN_PASSWORD`, `SMTP_PASS`, `SUPABASE_SERVICE_ROLE_KEY`
+  `SUPER_ADMIN_PASSWORD`, `SMTP_PASS`, `SUPABASE_SERVICE_ROLE_KEY`
   must be fresh values in the host, not the ones used in local `.env` files, and
   must never have been committed. Rotating the JWT secrets signs everyone out.
 - **Google Console review** — OAuth consent screen, authorized redirect URI, and

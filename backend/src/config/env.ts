@@ -39,8 +39,6 @@ const envSchema = z
 
     SUPER_ADMIN_EMAIL: z.string().email(),
     SUPER_ADMIN_PASSWORD: z.string().min(8),
-    ADMIN_EMAIL: z.string().email().optional(),
-    ADMIN_PASSWORD: z.string().min(8).optional(),
 
     RUN_MIGRATIONS: z
       .enum(["true", "false", "1", "0"])
@@ -76,13 +74,6 @@ const envSchema = z
           ctx.addIssue({ code: "custom", path: [key], message: "placeholder value refused in production" });
         }
       }
-    }
-    if (Boolean(value.ADMIN_EMAIL) !== Boolean(value.ADMIN_PASSWORD)) {
-      ctx.addIssue({
-        code: "custom",
-        path: ["ADMIN_EMAIL"],
-        message: "ADMIN_EMAIL and ADMIN_PASSWORD must be set together",
-      });
     }
   });
 

@@ -21,33 +21,25 @@ export async function writeAudit(entry: {
 }
 
 /**
- * Create the env-seeded operators when their emails are absent.
+ * Create the env-seeded super admin when its email is absent.
  * Never updates an existing row, so a restart cannot reset a password.
+ * Other admins are created from the dashboard by a super admin.
  */
 export async function seedAdmins(): Promise<void> {
-  const seeded: Array<{ email: string; password: string; role: "super_admin" | "admin" }> = [
-    { email: env.SUPER_ADMIN_EMAIL, password: env.SUPER_ADMIN_PASSWORD, role: "super_admin" },
-  ];
-  if (env.ADMIN_EMAIL && env.ADMIN_PASSWORD) {
-    seeded.push({ email: env.ADMIN_EMAIL, password: env.ADMIN_PASSWORD, role: "admin" });
-  }
+  const existing = await db
+    .select({ id: admins.id })
+    .from(admins)
+    .where(eq(admins.email, env.SUPER_ADMIN_EMAIL))
+    .limit(1);
+  if (existing.length > 0) return;
 
-  for (const account of seeded) {
-    const existing = await db
-      .select({ id: admins.id })
-      .from(admins)
-      .where(eq(admins.email, account.email))
-      .limit(1);
-    if (existing.length > 0) continue;
-
-    await db
-      .insert(admins)
-      .values({
-        email: account.email,
-        name: account.role === "super_admin" ? "Super Admin" : "Admin",
-        passwordHash: await hashPassword(account.password),
-        role: account.role,
-      })
-      .onConflictDoNothing();
-  }
+  await db
+    .insert(admins)
+    .values({
+      email: env.SUPER_ADMIN_EMAIL,
+      name: "Super Admin",
+      passwordHash: await hashPassword(env.SUPER_ADMIN_PASSWORD),
+      role: "super_admin",
+    })
+    .onConflictDoNothing();
 }

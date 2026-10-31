@@ -205,4 +205,23 @@ describe("environment validation", () => {
     // Never prints the (missing) value or any secret.
     assert.ok(!result.stderr.includes(process.env.JWT_USER_SECRET ?? "never-there"));
   });
+
+  it("ignores the removed ADMIN_EMAIL and ADMIN_PASSWORD seeding variables", async () => {
+    const env: NodeJS.ProcessEnv = {
+      ...process.env,
+      DOTENV_CONFIG_PATH: "does-not-exist.env",
+      ADMIN_EMAIL: "legacy@example.com",
+      ADMIN_PASSWORD: "LegacyAdmin123!",
+    };
+    const script =
+      "import('./src/config/env.ts').then(({ env }) => console.log(JSON.stringify({ " +
+      "hasEmail: 'ADMIN_EMAIL' in env, hasPassword: 'ADMIN_PASSWORD' in env })))";
+
+    const { stdout } = await run(process.execPath, ["--import", "tsx", "-e", script], {
+      cwd: backendDir,
+      env,
+    });
+
+    assert.deepEqual(JSON.parse(stdout.trim()), { hasEmail: false, hasPassword: false });
+  });
 });

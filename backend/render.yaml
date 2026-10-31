@@ -32,10 +32,6 @@ services:
         sync: false
       - key: SUPER_ADMIN_PASSWORD
         sync: false
-      - key: ADMIN_EMAIL
-        sync: false
-      - key: ADMIN_PASSWORD
-        sync: false
       - key: MAIL_TRANSPORT
         value: smtp
       - key: SMTP_HOST
