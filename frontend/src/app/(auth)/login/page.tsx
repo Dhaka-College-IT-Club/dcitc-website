@@ -12,7 +12,9 @@ import TextField from "@/components/ui/TextField";
 import { apiFetch } from "@/lib/api";
 
 function safeNext(value: string | null) {
-  if (!value || !value.startsWith("/") || value.startsWith("//")) {
+  // Same-origin paths only. `/\evil.com` is normalised to `//evil.com` by the
+  // URL parser, so a leading backslash must be rejected with the second slash.
+  if (!value || !/^\/(?![/\\])/.test(value)) {
     return "/dashboard";
   }
   return value;
