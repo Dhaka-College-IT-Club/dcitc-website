@@ -1,0 +1,182 @@
+/* Long-form article typography for /intel/[slug]. Hand-written instead of the
+   prose plugin so the dark palette and the site's heading font are exact. */
+
+.article {
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  font-size: 18px;
+  line-height: 1.75;
+  color: #dbe3ec;
+  overflow-wrap: break-word;
+}
+
+@media (max-width: 640px) {
+  .article {
+    font-size: 17px;
+  }
+}
+
+.article > :first-child {
+  margin-top: 0;
+}
+
+.article p {
+  margin: 0 0 1.25em;
+}
+
+.article h2,
+.article h3,
+.article h4 {
+  font-family: var(--font-orbitron), sans-serif;
+  color: #ffffff;
+  line-height: 1.25;
+  scroll-margin-top: 7rem;
+}
+
+.article h2 {
+  margin: 2.5em 0 0.75em;
+  padding-left: 0.7rem;
+  border-left: 3px solid #66fcf1;
+  font-size: 1.875rem;
+  font-weight: 700;
+}
+
+.article h3 {
+  margin: 2em 0 0.6em;
+  font-size: 1.375rem;
+  font-weight: 600;
+}
+
+.article h4 {
+  margin: 1.75em 0 0.5em;
+  font-size: 1.125rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.article strong {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.article em {
+  font-style: italic;
+}
+
+.article a {
+  color: #8ff7f0;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.article a:hover {
+  color: #ffffff;
+}
+
+.article ul,
+.article ol {
+  margin: 0 0 1.25em;
+  padding-left: 1.5em;
+}
+
+.article ul {
+  list-style: disc;
+}
+
+.article ol {
+  list-style: decimal;
+}
+
+.article li {
+  margin: 0.4em 0;
+  padding-left: 0.25em;
+}
+
+.article li::marker {
+  color: #66fcf1;
+}
+
+.article li > ul,
+.article li > ol {
+  margin: 0.4em 0 0.4em;
+}
+
+.article blockquote {
+  margin: 1.75em 0;
+  border-left: 3px solid #66fcf1;
+  background: rgba(102, 252, 241, 0.06);
+  padding: 0.75em 1.25em;
+  color: #e8f0f7;
+}
+
+.article blockquote p:last-child {
+  margin-bottom: 0;
+}
+
+.article code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.875em;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.15em 0.35em;
+  border-radius: 3px;
+}
+
+.article pre {
+  margin: 0 0 1.5em;
+  overflow-x: auto;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: #070b0e;
+  padding: 1rem 1.15rem;
+}
+
+.article pre code {
+  background: none;
+  padding: 0;
+  font-size: 0.85em;
+  line-height: 1.6;
+}
+
+.article hr {
+  margin: 2.75em 0;
+  border: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.article .tableWrap {
+  margin: 0 0 1.5em;
+  overflow-x: auto;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.article table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95em;
+}
+
+.article th,
+.article td {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 0.6em 0.9em;
+  text-align: left;
+  vertical-align: top;
+}
+
+.article th {
+  background: rgba(255, 255, 255, 0.04);
+  color: #ffffff;
+  font-family: var(--font-orbitron), sans-serif;
+  font-size: 0.8em;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.article tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.article img {
+  max-width: 100%;
+  height: auto;
+}

@@ -1,4 +1,4 @@
-import ContentImage from "./ContentImage";
+import IntelImage from "./IntelImage";
 import type { Achievement } from "@/lib/api-types";
 
 /**
@@ -12,12 +12,13 @@ export default function AchievementCard({
 }) {
   return (
     <div className="flex h-full flex-col overflow-hidden border border-white/10 bg-white/[0.015]">
-      <div className="relative h-48 overflow-hidden">
-        <ContentImage
+      <div className="relative aspect-video overflow-hidden">
+        <IntelImage
           src={achievement.image}
           alt={achievement.title}
+          focalX={achievement.imageFocalX}
+          focalY={achievement.imageFocalY}
           sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
-          className="object-cover"
         />
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-linear-to-t from-black via-black/60 to-transparent" />
         <span className="absolute bottom-3 left-4 inline-flex border border-white/20 bg-black/60 px-2.5 py-1 font-orbitron text-[10px] uppercase tracking-[0.2em] text-white backdrop-blur-sm">

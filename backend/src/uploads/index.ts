@@ -5,9 +5,13 @@ import { AppError, validationFailed } from "../lib/errors.js";
 
 const CONTENT_TYPES: Record<string, string> = {
   "image/jpeg": "jpg",
+  // Some browsers report .jpg files as image/jpg.
+  "image/jpg": "jpg",
   "image/png": "png",
   "image/webp": "webp",
 };
+
+export const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
 
 export type SignedUpload = {
   uploadUrl: string;
@@ -36,12 +40,19 @@ function supabase() {
   return client;
 }
 
-export async function signUpload(filename: string, contentType: string): Promise<SignedUpload> {
-  const extension = CONTENT_TYPES[contentType];
+export async function signUpload(
+  filename: string,
+  contentType: string,
+  size?: number,
+): Promise<SignedUpload> {
+  const extension = CONTENT_TYPES[contentType.toLowerCase()];
   if (!extension) {
     throw validationFailed({
-      contentType: "Use a JPEG, PNG, or WebP image.",
+      image: "Use a JPEG, PNG, or WebP image.",
     });
+  }
+  if (size !== undefined && size > MAX_UPLOAD_BYTES) {
+    throw validationFailed({ image: "That image is over 5 MB. Compress it and try again." });
   }
 
   const base = filename

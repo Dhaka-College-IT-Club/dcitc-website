@@ -116,6 +116,8 @@ describe("public reads", () => {
       "gallery",
       "id",
       "image",
+      "imageFocalX",
+      "imageFocalY",
       "title",
       "updatedAt",
       "year",
@@ -153,6 +155,8 @@ describe("public reads", () => {
       "featuredSlot",
       "id",
       "image",
+      "imageFocalX",
+      "imageFocalY",
       "slug",
       "tag",
       "title",
@@ -345,6 +349,46 @@ describe("intel administration", () => {
     const missing = await admin.req("/api/v1/admin/intels", { body: payload });
     assert.equal(missing.status, 400);
     assert.ok(missing.body.error.fields.image);
+  });
+
+  dbIt("caps title and excerpt and stores the focal point", async () => {
+    const longTitle = await admin.req("/api/v1/admin/intels", {
+      body: intel("long-title", { title: "x".repeat(121) }),
+    });
+    assert.equal(longTitle.status, 400);
+    assert.ok(longTitle.body.error.fields.title);
+
+    const longExcerpt = await admin.req("/api/v1/admin/intels", {
+      body: intel("long-excerpt", { excerpt: "x".repeat(201) }),
+    });
+    assert.equal(longExcerpt.status, 400);
+    assert.ok(longExcerpt.body.error.fields.excerpt);
+
+    const badFocal = await admin.req("/api/v1/admin/intels", {
+      body: intel("bad-focal", { imageFocalX: 101 }),
+    });
+    assert.equal(badFocal.status, 400);
+    assert.ok(badFocal.body.error.fields.imageFocalX);
+
+    const created = await admin.req("/api/v1/admin/intels", {
+      body: intel("focal-intel", {
+        excerpt: "",
+        content: "## Heading\n\nFirst paragraph of the body.",
+        imageFocalX: 25,
+        imageFocalY: 80,
+      }),
+    });
+    assert.equal(created.status, 201);
+    assert.equal(created.body.data.imageFocalX, 25);
+    assert.equal(created.body.data.imageFocalY, 80);
+    // Empty excerpt is derived from the body with markdown stripped.
+    assert.equal(created.body.data.excerpt, "Heading First paragraph of the body.");
+
+    const defaults = await admin.req("/api/v1/admin/intels", {
+      body: intel("default-focal"),
+    });
+    assert.equal(defaults.body.data.imageFocalX, 50);
+    assert.equal(defaults.body.data.imageFocalY, 50);
   });
 
   dbIt("rejects duplicate slugs and keeps slugs immutable", async () => {
@@ -602,7 +646,13 @@ describe("uploads", () => {
       body: { filename: "vector.svg", contentType: "image/svg+xml" },
     });
     assert.equal(svg.status, 400);
-    assert.ok(svg.body.error.fields.contentType);
+    assert.ok(svg.body.error.fields.image);
+
+    const oversized = await admin.req("/api/v1/admin/uploads/sign", {
+      body: { filename: "huge.png", contentType: "image/png", size: 6 * 1024 * 1024 },
+    });
+    assert.equal(oversized.status, 400);
+    assert.ok(oversized.body.error.fields.image);
 
     const anonymous = await new Client(baseUrl).req("/api/v1/admin/uploads/sign", {
       body: { filename: "photo.png", contentType: "image/png" },

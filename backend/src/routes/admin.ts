@@ -21,6 +21,7 @@ import { validate } from "../middleware/validate.js";
 import { writeAudit } from "../services/admins.js";
 import { updateSettings } from "../services/settings.js";
 import { signUpload } from "../uploads/index.js";
+import { autoExcerpt } from "../lib/excerpt.js";
 
 export const adminRouter = Router();
 
@@ -80,11 +81,15 @@ adminRouter.get("/auth/me", (req, res) => {
 
 // --- achievements -----------------------------------------------------------
 
+const focal = z.coerce.number().int().min(0).max(100);
+
 const achievementBody = z.object({
   title: z.string().trim().min(1, "Enter a title.").max(200),
   detail: z.string().trim().min(1, "Enter the details.").max(5000),
   year: z.coerce.number().int().min(1900).max(2100),
   image: imageField,
+  imageFocalX: focal.optional().default(50),
+  imageFocalY: focal.optional().default(50),
   gallery: z.array(z.string().trim().min(1)).max(8).default([]),
 });
 
@@ -183,13 +188,24 @@ const intelBody = z.object({
     .min(1, "Enter a slug.")
     .max(80)
     .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Use lowercase letters, numbers, and single dashes."),
-  title: z.string().trim().min(1, "Enter a title.").max(200),
-  excerpt: z.string().trim().min(1, "Enter an excerpt.").max(500),
+  title: z
+    .string()
+    .trim()
+    .min(1, "Enter a title.")
+    .max(120, "Keep the title under 120 characters."),
+  // Optional: an empty excerpt is derived from the body so the two never drift.
+  excerpt: z
+    .string()
+    .trim()
+    .max(200, "Keep the excerpt under 200 characters.")
+    .optional(),
   content: z.string().trim().min(1, "Write the article.").max(100_000),
   tag: z.string().trim().min(1, "Enter a tag.").max(60),
   author: z.string().trim().min(1, "Enter an author.").max(120),
   date: z.string().trim().min(1, "Enter a date label.").max(60),
   image: imageField,
+  imageFocalX: focal.optional().default(50),
+  imageFocalY: focal.optional().default(50),
 });
 
 // Slug changes are intentionally not accepted after creation.
@@ -203,7 +219,10 @@ adminRouter.get("/intels", async (_req, res) => {
 adminRouter.post("/intels", validate({ body: intelBody }), async (req, res, next) => {
   const body = req.body as z.infer<typeof intelBody>;
   try {
-    const [row] = await db.insert(intels).values(body).returning();
+    const [row] = await db
+      .insert(intels)
+      .values({ ...body, excerpt: body.excerpt || autoExcerpt(body.content) })
+      .returning();
     await writeAudit({
       actorAdminId: req.currentAdmin!.id,
       action: "intel.created",
@@ -222,9 +241,14 @@ adminRouter.patch("/intels/:id", validate({ body: intelPatch }), async (req, res
   const id = Number(req.params.id);
   if (!Number.isInteger(id)) return next(notFound("Intel not found."));
   const body = req.body as z.infer<typeof intelPatch>;
+  const update: Partial<typeof intels.$inferInsert> = { ...body, updatedAt: new Date() };
+  if (update.excerpt !== undefined && !update.excerpt) {
+    if (update.content) update.excerpt = autoExcerpt(update.content);
+    else delete update.excerpt;
+  }
   const [row] = await db
     .update(intels)
-    .set({ ...body, updatedAt: new Date() })
+    .set(update)
     .where(eq(intels.id, id))
     .returning();
   if (!row) return next(notFound("Intel not found."));
@@ -380,6 +404,7 @@ adminRouter.put("/settings", validate({ body: settingsBody }), async (req, res) 
 const uploadBody = z.object({
   filename: z.string().trim().min(1).max(200),
   contentType: z.string().trim().min(1),
+  size: z.coerce.number().int().positive().optional(),
 });
 
 adminRouter.post(
@@ -387,7 +412,7 @@ adminRouter.post(
   uploadLimiter,
   validate({ body: uploadBody }),
   async (req, res) => {
-    const { filename, contentType } = req.body as z.infer<typeof uploadBody>;
-    res.json({ data: await signUpload(filename, contentType) });
+    const { filename, contentType, size } = req.body as z.infer<typeof uploadBody>;
+    res.json({ data: await signUpload(filename, contentType, size) });
   },
 );

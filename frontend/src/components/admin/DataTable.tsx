@@ -23,6 +23,7 @@ export default function DataTable<T>({
   searchPlaceholder = "Search…",
   actions,
   caption,
+  fixed = false,
 }: {
   columns: Column<T>[];
   rows: T[];
@@ -35,6 +36,8 @@ export default function DataTable<T>({
   searchPlaceholder?: string;
   actions?: (row: T) => ReactNode;
   caption?: string;
+  /** Fixed table layout: columns respect their widths instead of growing. */
+  fixed?: boolean;
 }) {
   const primary = columns.find((column) => column.mobilePrimary) ?? columns[0];
   const secondary = columns.filter((column) => column !== primary);
@@ -96,7 +99,11 @@ export default function DataTable<T>({
         </div>
       ) : (
         <>
-          <table className="hidden w-full border-collapse text-left lg:table">
+          <table
+            className={`hidden w-full border-collapse text-left lg:table ${
+              fixed ? "table-fixed" : ""
+            }`}
+          >
             {caption ? <caption className="sr-only">{caption}</caption> : null}
             <thead>
               <tr className="border-b border-white/10">
@@ -110,7 +117,12 @@ export default function DataTable<T>({
                   </th>
                 ))}
                 {actions ? (
-                  <th scope="col" className="px-4 py-3 text-right">
+                  <th
+                    scope="col"
+                    className={`px-4 py-3 text-right ${
+                      fixed ? "w-[11rem] whitespace-nowrap" : ""
+                    }`}
+                  >
                     <span className="sr-only">Actions</span>
                   </th>
                 ) : null}
@@ -131,8 +143,12 @@ export default function DataTable<T>({
                     </td>
                   ))}
                   {actions ? (
-                    <td className="px-4 py-3.5 text-right">
-                      <div className="flex justify-end gap-2">
+                    <td
+                      className={`px-4 py-3.5 align-middle text-right ${
+                        fixed ? "w-[11rem] whitespace-nowrap" : ""
+                      }`}
+                    >
+                      <div className="flex shrink-0 justify-end gap-2">
                         {actions(row)}
                       </div>
                     </td>
@@ -144,8 +160,8 @@ export default function DataTable<T>({
 
           <ul className="divide-y divide-white/5 lg:hidden">
             {rows.map((row) => (
-              <li key={getKey(row)} className="space-y-3 p-4">
-                <div className="font-rajdhani text-base text-white">
+              <li key={getKey(row)} className="min-w-0 space-y-3 p-4">
+                <div className="min-w-0 font-rajdhani text-base text-white">
                   {primary.render(row)}
                 </div>
                 {secondary.length > 0 ? (
@@ -155,7 +171,7 @@ export default function DataTable<T>({
                         <dt className="font-orbitron text-[9px] uppercase tracking-[0.14em] text-slate-500">
                           {column.header}
                         </dt>
-                        <dd className="mt-0.5 break-words font-rajdhani text-sm text-slate-300">
+                        <dd className="mt-0.5 min-w-0 break-words font-rajdhani text-sm text-slate-300">
                           {column.render(row)}
                         </dd>
                       </div>

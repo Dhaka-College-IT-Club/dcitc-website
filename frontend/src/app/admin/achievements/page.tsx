@@ -12,6 +12,7 @@ import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import Drawer from "@/components/ui/Drawer";
 import TextField from "@/components/ui/TextField";
 import { useToast } from "@/components/ui/Toast";
+import IntelImage from "@/components/ui/IntelImage";
 import { apiFetch } from "@/lib/api";
 import type { Achievement } from "@/lib/api-types";
 
@@ -20,6 +21,8 @@ type FormState = {
   detail: string;
   year: string;
   image: string;
+  imageFocalX: number;
+  imageFocalY: number;
   gallery: string[];
 };
 
@@ -28,6 +31,8 @@ const emptyForm: FormState = {
   detail: "",
   year: String(new Date().getFullYear()),
   image: "",
+  imageFocalX: 50,
+  imageFocalY: 50,
   gallery: ["", "", "", ""],
 };
 
@@ -91,6 +96,8 @@ export default function AdminAchievementsPage() {
       detail: item.detail,
       year: String(item.year),
       image: item.image,
+      imageFocalX: item.imageFocalX ?? 50,
+      imageFocalY: item.imageFocalY ?? 50,
       gallery: [...(item.gallery ?? []), "", "", "", ""].slice(0, 4),
     });
     setFieldErrors({});
@@ -122,6 +129,8 @@ export default function AdminAchievementsPage() {
       detail: form.detail.trim(),
       year: Number(form.year),
       image: form.image,
+      imageFocalX: form.imageFocalX,
+      imageFocalY: form.imageFocalY,
       gallery: form.gallery.filter(Boolean),
     };
     try {
@@ -200,18 +209,22 @@ export default function AdminAchievementsPage() {
       header: "Achievement",
       mobilePrimary: true,
       render: (item) => (
-        <div className="flex items-center gap-3">
-          {item.image ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={item.image}
-              alt=""
-              className="h-10 w-14 shrink-0 border border-white/10 object-cover grayscale"
-            />
-          ) : (
-            <span className="h-10 w-14 shrink-0 border border-white/10 bg-white/[0.04]" />
-          )}
-          <span className="font-rajdhani text-sm font-semibold leading-snug text-white">
+        <div className="flex min-w-0 items-center gap-3">
+          <span className="relative h-10 w-14 shrink-0 overflow-hidden border border-white/10 bg-white/[0.04]">
+            {item.image ? (
+              <IntelImage
+                src={item.image}
+                alt=""
+                focalX={item.imageFocalX}
+                focalY={item.imageFocalY}
+                sizes="56px"
+              />
+            ) : null}
+          </span>
+          <span
+            title={item.title}
+            className="line-clamp-2 min-w-0 flex-1 font-rajdhani text-sm font-semibold leading-snug text-white"
+          >
             {item.title}
           </span>
         </div>
@@ -220,6 +233,7 @@ export default function AdminAchievementsPage() {
     {
       key: "year",
       header: "Year",
+      className: "w-20 whitespace-nowrap",
       render: (item) => (
         <span className="font-orbitron text-[10px] tracking-[0.1em] text-slate-400">
           {item.year}
@@ -229,11 +243,12 @@ export default function AdminAchievementsPage() {
     {
       key: "slot",
       header: "Featured",
+      className: "hidden w-28 xl:table-cell",
       render: (item) =>
         item.featuredSlot === null ? (
           <span className="font-rajdhani text-xs text-slate-500">Not featured</span>
         ) : (
-          <span className="inline-flex items-center gap-1 border border-white/30 bg-white/[0.06] px-1.5 py-0.5 font-orbitron text-[9px] uppercase tracking-[0.12em] text-white">
+          <span className="inline-flex items-center gap-1 whitespace-nowrap border border-white/30 bg-white/[0.06] px-1.5 py-0.5 font-orbitron text-[9px] uppercase tracking-[0.12em] text-white">
             Slot {item.featuredSlot + 1}
           </span>
         ),
@@ -285,6 +300,7 @@ export default function AdminAchievementsPage() {
             : "Try a different search term."
         }
         caption="Achievements"
+        fixed
         actions={(item) => (
           <>
             <Button
@@ -372,6 +388,12 @@ export default function AdminAchievementsPage() {
               onChange={(url) => setForm({ ...form, image: url })}
               shape="wide"
               error={fieldErrors.image}
+              focal={{
+                x: form.imageFocalX,
+                y: form.imageFocalY,
+                onChange: (imageFocalX, imageFocalY) =>
+                  setForm((current) => ({ ...current, imageFocalX, imageFocalY })),
+              }}
             />
           </div>
 

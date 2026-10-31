@@ -18,6 +18,21 @@ carrying oversized or non-image files.
   and re-create the bucket (empty it first; public URLs change for existing objects
   only if object paths change, which they do not on re-create of the same name).
 
+### Frontend image configuration
+
+The public site renders uploads through `next/image`. Set these on the frontend host
+(Vercel):
+
+- `NEXT_PUBLIC_SUPABASE_URL` — hosted project URL. `frontend/next.config.ts` derives
+  the allowed image host from it, and `lib/images.ts` rewrites loopback URLs saved
+  during local development to this origin.
+- `NEXT_PUBLIC_UPLOAD_BUCKET` — defaults to `uploads`.
+- `IMAGE_REMOTE_HOSTS` — only for extra hosts; leave empty when the Supabase URL is set.
+
+The bucket must stay public-read. If it is private, the admin thumbnail (a plain
+`<img>`) still loads for a signed-in browser while every public `next/image` request
+fails, which is exactly the broken state this configuration prevents.
+
 ## 2. Verify `trust proxy` (single reverse proxy)
 
 `app.set("trust proxy", 1)` in `backend/src/app.ts` assumes one platform proxy in

@@ -36,6 +36,13 @@
       "when": 1793434538033,
       "tag": "0004_lying_chat",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1793462455077,
+      "tag": "0005_sleepy_millenium_guard",
+      "breakpoints": true
     }
   ]
 }

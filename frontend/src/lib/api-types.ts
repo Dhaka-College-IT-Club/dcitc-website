@@ -22,6 +22,8 @@ export type Achievement = {
   detail: string;
   year: number;
   image: string;
+  imageFocalX: number;
+  imageFocalY: number;
   gallery: string[];
   featuredSlot: number | null;
 };
@@ -36,6 +38,8 @@ export type Intel = {
   author: string;
   date: string;
   image: string;
+  imageFocalX: number;
+  imageFocalY: number;
   featuredSlot: number | null;
 };
 

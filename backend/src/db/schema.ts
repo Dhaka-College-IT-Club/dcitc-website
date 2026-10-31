@@ -113,12 +113,18 @@ export const achievements = pgTable(
     detail: text("detail").notNull(),
     year: integer("year").notNull(),
     image: text("image").notNull(),
+    // Focal point as a percentage of the image, so object-position can crop
+    // tall or very wide uploads without cutting the subject off.
+    imageFocalX: integer("image_focal_x").default(50),
+    imageFocalY: integer("image_focal_y").default(50),
     gallery: text("gallery").array().notNull().default(sql`'{}'::text[]`),
     featuredSlot: smallint("featured_slot"),
     createdAt,
     updatedAt,
   },
   (t) => [
+    check("achievements_focal_x_check", sql`${t.imageFocalX} between 0 and 100`),
+    check("achievements_focal_y_check", sql`${t.imageFocalY} between 0 and 100`),
     check("achievements_featured_slot_check", sql`${t.featuredSlot} between 0 and 4`),
     uniqueIndex("achievements_featured_slot_unique")
       .on(t.featuredSlot)
@@ -139,11 +145,15 @@ export const intels = pgTable(
     author: text("author").notNull(),
     date: text("date").notNull(),
     image: text("image").notNull(),
+    imageFocalX: integer("image_focal_x").default(50),
+    imageFocalY: integer("image_focal_y").default(50),
     featuredSlot: smallint("featured_slot"),
     createdAt,
     updatedAt,
   },
   (t) => [
+    check("intels_focal_x_check", sql`${t.imageFocalX} between 0 and 100`),
+    check("intels_focal_y_check", sql`${t.imageFocalY} between 0 and 100`),
     check("intels_featured_slot_check", sql`${t.featuredSlot} between 0 and 2`),
     uniqueIndex("intels_featured_slot_unique")
       .on(t.featuredSlot)

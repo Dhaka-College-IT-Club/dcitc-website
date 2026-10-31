@@ -6,6 +6,7 @@ type TextFieldProps = {
   error?: string;
   hint?: string;
   trailing?: ReactNode;
+  counter?: { text: string; over?: boolean };
   className?: string;
 } & Omit<InputHTMLAttributes<HTMLInputElement>, "className">;
 
@@ -14,6 +15,7 @@ export default function TextField({
   error,
   hint,
   trailing,
+  counter,
   className = "",
   id,
   name,
@@ -28,9 +30,20 @@ export default function TextField({
 
   return (
     <div className={className}>
-      <label htmlFor={inputId} className="dc-label">
-        {label}
-      </label>
+      <div className="flex items-baseline justify-between gap-3">
+        <label htmlFor={inputId} className="dc-label">
+          {label}
+        </label>
+        {counter ? (
+          <span
+            className={`font-rajdhani text-xs tabular-nums ${
+              counter.over ? "text-red-300" : "text-slate-500"
+            }`}
+          >
+            {counter.text}
+          </span>
+        ) : null}
+      </div>
       <div className="relative">
         <input
           id={inputId}

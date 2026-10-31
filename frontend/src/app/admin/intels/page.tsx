@@ -12,7 +12,10 @@ import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import Drawer from "@/components/ui/Drawer";
 import TextField from "@/components/ui/TextField";
 import { useToast } from "@/components/ui/Toast";
+import IntelImage from "@/components/ui/IntelImage";
+import IntelMarkdown from "@/components/ui/IntelMarkdown";
 import { apiFetch } from "@/lib/api";
+import { formatShortDate } from "@/lib/intel";
 import type { Intel } from "@/lib/api-types";
 
 type FormState = {
@@ -24,7 +27,12 @@ type FormState = {
   author: string;
   date: string;
   image: string;
+  imageFocalX: number;
+  imageFocalY: number;
 };
+
+const TITLE_MAX = 120;
+const EXCERPT_MAX = 200;
 
 const emptyForm: FormState = {
   slug: "",
@@ -35,6 +43,8 @@ const emptyForm: FormState = {
   author: "",
   date: "",
   image: "",
+  imageFocalX: 50,
+  imageFocalY: 50,
 };
 
 function slugFromTitle(title: string) {
@@ -60,6 +70,7 @@ export default function AdminIntelsPage() {
   const [slotBusy, setSlotBusy] = useState(false);
   const [deleting, setDeleting] = useState<Intel | null>(null);
   const [deletePending, setDeletePending] = useState(false);
+  const [contentTab, setContentTab] = useState<"write" | "preview">("write");
 
   async function load() {
     try {
@@ -98,6 +109,7 @@ export default function AdminIntelsPage() {
     setEditing(null);
     setForm(emptyForm);
     setFieldErrors({});
+    setContentTab("write");
     setDrawerOpen(true);
   }
 
@@ -112,18 +124,26 @@ export default function AdminIntelsPage() {
       author: item.author,
       date: item.date,
       image: item.image ?? "",
+      imageFocalX: item.imageFocalX ?? 50,
+      imageFocalY: item.imageFocalY ?? 50,
     });
     setFieldErrors({});
+    setContentTab("write");
     setDrawerOpen(true);
   }
 
   function validate() {
     const errors: Record<string, string> = {};
     if (!form.title.trim()) errors.title = "Give the intel a title.";
+    if (form.title.trim().length > TITLE_MAX) {
+      errors.title = `Keep the title under ${TITLE_MAX} characters.`;
+    }
     if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(form.slug.trim())) {
       errors.slug = "Use lowercase letters, numbers, and single dashes.";
     }
-    if (!form.excerpt.trim()) errors.excerpt = "Add a short excerpt.";
+    if (form.excerpt.trim().length > EXCERPT_MAX) {
+      errors.excerpt = `Keep the excerpt under ${EXCERPT_MAX} characters.`;
+    }
     if (!form.content.trim()) errors.content = "Write the article body.";
     if (!form.tag.trim()) errors.tag = "Add a tag.";
     if (!form.author.trim()) errors.author = "Add the author.";
@@ -143,12 +163,15 @@ export default function AdminIntelsPage() {
     const body = {
       slug: form.slug.trim(),
       title: form.title.trim(),
+      // Empty means "derive it from the body" on the server.
       excerpt: form.excerpt.trim(),
       content: form.content.trim(),
       tag: form.tag.trim(),
       author: form.author.trim(),
       date: form.date.trim(),
       image: form.image,
+      imageFocalX: form.imageFocalX,
+      imageFocalY: form.imageFocalY,
     };
     try {
       if (editing) {
@@ -227,19 +250,23 @@ export default function AdminIntelsPage() {
       header: "Intel",
       mobilePrimary: true,
       render: (item) => (
-        <div className="flex items-center gap-3">
-          {item.image ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={item.image}
-              alt=""
-              className="h-10 w-14 shrink-0 border border-white/10 object-cover grayscale"
-            />
-          ) : (
-            <span className="h-10 w-14 shrink-0 border border-white/10 bg-white/[0.04]" />
-          )}
-          <span className="min-w-0">
-            <span className="block truncate font-rajdhani text-sm font-semibold text-white">
+        <div className="flex min-w-0 items-center gap-3">
+          <span className="relative h-10 w-14 shrink-0 overflow-hidden border border-white/10 bg-white/[0.04]">
+            {item.image ? (
+              <IntelImage
+                src={item.image}
+                alt=""
+                focalX={item.imageFocalX}
+                focalY={item.imageFocalY}
+                sizes="56px"
+              />
+            ) : null}
+          </span>
+          <span className="min-w-0 flex-1">
+            <span
+              title={item.title}
+              className="line-clamp-2 font-rajdhani text-sm font-semibold leading-snug text-white"
+            >
               {item.title}
             </span>
             <span className="mt-0.5 block truncate font-rajdhani text-xs text-slate-500">
@@ -252,34 +279,50 @@ export default function AdminIntelsPage() {
     {
       key: "tag",
       header: "Tag",
+      className: "w-36",
       render: (item) => (
-        <span className="inline-flex border border-white/10 px-1.5 py-0.5 font-orbitron text-[9px] uppercase tracking-[0.1em] text-slate-400">
-          {item.tag}
+        <span className="block truncate">
+          <span className="inline-flex max-w-full border border-white/10 px-1.5 py-0.5 font-orbitron text-[9px] uppercase tracking-[0.1em] text-slate-400">
+            {item.tag}
+          </span>
         </span>
       ),
     },
     {
       key: "author",
       header: "Author",
+      className: "hidden w-32 xl:table-cell",
       render: (item) => (
-        <span className="font-rajdhani text-sm text-slate-400">{item.author}</span>
+        <span
+          title={item.author}
+          className="block truncate font-rajdhani text-sm text-slate-400"
+        >
+          {item.author}
+        </span>
       ),
     },
     {
       key: "date",
       header: "Date",
+      className: "w-28 whitespace-nowrap",
       render: (item) => (
-        <span className="font-rajdhani text-sm text-slate-400">{item.date}</span>
+        <span
+          className="whitespace-nowrap font-rajdhani text-sm text-slate-400"
+          title={item.date}
+        >
+          {formatShortDate(item.date)}
+        </span>
       ),
     },
     {
       key: "slot",
       header: "Featured",
+      className: "hidden w-28 xl:table-cell",
       render: (item) =>
         item.featuredSlot === null ? (
           <span className="font-rajdhani text-xs text-slate-500">Not featured</span>
         ) : (
-          <span className="inline-flex items-center gap-1 border border-white/30 bg-white/[0.06] px-1.5 py-0.5 font-orbitron text-[9px] uppercase tracking-[0.12em] text-white">
+          <span className="inline-flex items-center gap-1 whitespace-nowrap border border-white/30 bg-white/[0.06] px-1.5 py-0.5 font-orbitron text-[9px] uppercase tracking-[0.12em] text-white">
             Slot {item.featuredSlot + 1}
           </span>
         ),
@@ -329,6 +372,7 @@ export default function AdminIntelsPage() {
             : "Try a different search term."
         }
         caption="Intel articles"
+        fixed
         actions={(item) => (
           <>
             <Button
@@ -374,6 +418,10 @@ export default function AdminIntelsPage() {
               }));
             }}
             error={fieldErrors.title}
+            counter={{
+              text: `${form.title.length}/${TITLE_MAX}`,
+              over: form.title.length > TITLE_MAX,
+            }}
             placeholder="e.g. Behind the Robotics Lab"
             required
           />
@@ -395,27 +443,81 @@ export default function AdminIntelsPage() {
             value={form.excerpt}
             onChange={(event) => setForm({ ...form, excerpt: event.target.value })}
             error={fieldErrors.excerpt}
+            counter={{
+              text: `${form.excerpt.length}/${EXCERPT_MAX}`,
+              over: form.excerpt.length > EXCERPT_MAX,
+            }}
+            hint="Leave blank to generate it from the article body."
             placeholder="One or two lines shown on the card."
-            required
           />
 
           <div>
-            <label htmlFor="intel-content" className="dc-label">
-              Content
-            </label>
-            <textarea
-              id="intel-content"
-              className="dc-input"
-              rows={8}
-              value={form.content}
-              onChange={(event) => setForm({ ...form, content: event.target.value })}
-              placeholder="Write the article. Blank lines separate paragraphs."
-              aria-invalid={fieldErrors.content ? true : undefined}
-              aria-describedby={
-                fieldErrors.content ? "intel-content-error" : undefined
-              }
-              required
-            />
+            <div className="flex items-center justify-between gap-3">
+              <label htmlFor="intel-content" className="dc-label">
+                Content
+              </label>
+              <div
+                role="tablist"
+                aria-label="Content editor"
+                className="flex border border-white/10"
+              >
+                {(["write", "preview"] as const).map((tab) => (
+                  <button
+                    key={tab}
+                    type="button"
+                    role="tab"
+                    aria-selected={contentTab === tab}
+                    onClick={() => setContentTab(tab)}
+                    className={`h-7 px-3 font-orbitron text-[9px] uppercase tracking-[0.16em] transition-colors ${
+                      contentTab === tab
+                        ? "bg-white text-black"
+                        : "text-slate-400 hover:text-white"
+                    }`}
+                  >
+                    {tab === "write" ? "Write" : "Preview"}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {contentTab === "write" ? (
+              <textarea
+                id="intel-content"
+                className="dc-input"
+                rows={12}
+                value={form.content}
+                onChange={(event) =>
+                  setForm({ ...form, content: event.target.value })
+                }
+                placeholder={"## A heading\n\nWrite the article in markdown."}
+                aria-invalid={fieldErrors.content ? true : undefined}
+                aria-describedby={
+                  fieldErrors.content ? "intel-content-error" : "intel-content-hint"
+                }
+                required
+              />
+            ) : (
+              <div className="dc-scroll max-h-[28rem] overflow-y-auto border border-white/15 bg-black/45 px-4 py-3">
+                {form.content.trim() ? (
+                  <IntelMarkdown content={form.content} />
+                ) : (
+                  <p className="font-rajdhani text-sm text-slate-500">
+                    Nothing to preview yet. Write some markdown first.
+                  </p>
+                )}
+              </div>
+            )}
+
+            <p
+              id="intel-content-hint"
+              className="mt-1.5 font-rajdhani text-xs leading-relaxed text-slate-500"
+            >
+              Markdown: <code>## Heading</code>, <code>**bold**</code>,{" "}
+              <code>- list</code>, <code>[link](https://…)</code>,{" "}
+              <code>&gt; quote</code>, <code>```</code> code. Blank lines start a
+              new paragraph.
+            </p>
+
             {fieldErrors.content ? (
               <p
                 id="intel-content-error"
@@ -464,6 +566,12 @@ export default function AdminIntelsPage() {
               onChange={(url) => setForm({ ...form, image: url })}
               shape="wide"
               error={fieldErrors.image}
+              focal={{
+                x: form.imageFocalX,
+                y: form.imageFocalY,
+                onChange: (imageFocalX, imageFocalY) =>
+                  setForm((current) => ({ ...current, imageFocalX, imageFocalY })),
+              }}
             />
           </div>
 
