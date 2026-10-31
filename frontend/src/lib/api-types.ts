@@ -33,6 +33,7 @@ export type Intel = {
   excerpt: string;
   content: string;
   tag: string;
+  author: string;
   date: string;
   image: string;
   featuredSlot: number | null;

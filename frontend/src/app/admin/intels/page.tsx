@@ -21,6 +21,7 @@ type FormState = {
   excerpt: string;
   content: string;
   tag: string;
+  author: string;
   date: string;
   image: string;
 };
@@ -31,6 +32,7 @@ const emptyForm: FormState = {
   excerpt: "",
   content: "",
   tag: "",
+  author: "",
   date: "",
   image: "",
 };
@@ -86,7 +88,7 @@ export default function AdminIntelsPage() {
     const needle = query.trim().toLowerCase();
     if (!needle) return items;
     return items.filter((item) =>
-      `${item.title} ${item.slug} ${item.tag} ${item.date}`
+      `${item.title} ${item.slug} ${item.tag} ${item.author} ${item.date}`
         .toLowerCase()
         .includes(needle)
     );
@@ -107,6 +109,7 @@ export default function AdminIntelsPage() {
       excerpt: item.excerpt,
       content: item.content,
       tag: item.tag,
+      author: item.author,
       date: item.date,
       image: item.image ?? "",
     });
@@ -123,6 +126,7 @@ export default function AdminIntelsPage() {
     if (!form.excerpt.trim()) errors.excerpt = "Add a short excerpt.";
     if (!form.content.trim()) errors.content = "Write the article body.";
     if (!form.tag.trim()) errors.tag = "Add a tag.";
+    if (!form.author.trim()) errors.author = "Add the author.";
     if (!form.date.trim()) errors.date = "Add a date label, e.g. Nov 2025.";
     if (!form.image) errors.image = "Upload the cover image.";
     return errors;
@@ -142,6 +146,7 @@ export default function AdminIntelsPage() {
       excerpt: form.excerpt.trim(),
       content: form.content.trim(),
       tag: form.tag.trim(),
+      author: form.author.trim(),
       date: form.date.trim(),
       image: form.image,
     };
@@ -251,6 +256,13 @@ export default function AdminIntelsPage() {
         <span className="inline-flex border border-white/10 px-1.5 py-0.5 font-orbitron text-[9px] uppercase tracking-[0.1em] text-slate-400">
           {item.tag}
         </span>
+      ),
+    },
+    {
+      key: "author",
+      header: "Author",
+      render: (item) => (
+        <span className="font-rajdhani text-sm text-slate-400">{item.author}</span>
       ),
     },
     {
@@ -415,7 +427,7 @@ export default function AdminIntelsPage() {
             ) : null}
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-4 sm:grid-cols-3">
             <TextField
               label="Tag"
               name="tag"
@@ -423,6 +435,15 @@ export default function AdminIntelsPage() {
               onChange={(event) => setForm({ ...form, tag: event.target.value })}
               error={fieldErrors.tag}
               placeholder="e.g. Robotics"
+              required
+            />
+            <TextField
+              label="Author"
+              name="author"
+              value={form.author}
+              onChange={(event) => setForm({ ...form, author: event.target.value })}
+              error={fieldErrors.author}
+              placeholder="e.g. DCITC Team"
               required
             />
             <TextField
