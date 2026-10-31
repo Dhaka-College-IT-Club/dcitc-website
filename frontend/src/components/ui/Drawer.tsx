@@ -56,8 +56,8 @@ export default function Drawer({
           : "left-0 right-auto border-r border-white/15"
       }`}
     >
-      <div className="flex h-full flex-col">
-        <header className="flex items-start justify-between gap-4 border-b border-white/10 px-5 py-4 sm:px-6">
+      <div className="flex h-full min-h-0 flex-col">
+        <header className="flex shrink-0 items-start justify-between gap-4 border-b border-white/10 px-5 py-4 sm:px-6">
           <div>
             <p className="font-orbitron text-[10px] uppercase tracking-[0.28em] text-slate-500">
               Admin console
@@ -83,7 +83,7 @@ export default function Drawer({
             <X className="h-4 w-4" aria-hidden="true" />
           </button>
         </header>
-        <div className="dc-scroll flex-1 overflow-y-auto px-5 py-5 sm:px-6">
+        <div className="dc-scroll flex-1 min-h-0 overflow-y-auto px-5 py-5 sm:px-6">
           {children}
         </div>
       </div>

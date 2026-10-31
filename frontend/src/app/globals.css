@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
 :root {
+  color-scheme: dark;
   --background: #000000;
   --foreground: #ffffff;
   --font-orbitron: 'Orbitron', monospace;
@@ -191,6 +192,26 @@ select.dc-input {
   padding-right: 2.25rem;
 }
 
+/* Compact size for dense surfaces such as the featured-slot cards. */
+.dc-input.dc-input-sm {
+  min-height: 2rem;
+  padding: 0.2rem 1.75rem 0.2rem 0.5rem;
+  font-size: 0.75rem;
+}
+
+/* Native option lists: color-scheme does most of it, but Chromium and Firefox
+   respect an explicit background/color on <option>, so set it for consistency. */
+select option,
+select optgroup {
+  background-color: #0a0a0a;
+  color: #f8fafc;
+}
+
+select option:disabled {
+  background-color: #0a0a0a;
+  color: #64748b;
+}
+
 textarea.dc-input {
   min-height: 7rem;
   resize: vertical;
@@ -200,6 +221,7 @@ textarea.dc-input {
 .dc-scroll {
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+  overflow-anchor: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
