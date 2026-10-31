@@ -219,7 +219,7 @@ export default function AdminLeadershipPage() {
             <img
               src={item.image}
               alt=""
-              className="h-9 w-9 shrink-0 border border-white/10 object-cover grayscale"
+              className="h-9 w-9 shrink-0 border border-white/10 object-cover"
             />
           ) : (
             <span className="flex h-9 w-9 shrink-0 items-center justify-center border border-white/10 bg-white/[0.04] font-orbitron text-[9px] text-slate-400">

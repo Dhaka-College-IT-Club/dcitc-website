@@ -112,9 +112,7 @@ dcitc-website/
 │   ├── render.yaml
 │   └── .env.example
 ├── docs/
-│   └── api-contract.md          full HTTP API reference
-├── DEPLOY_CHECKLIST.md          production checks for the API and Supabase project
-└── openspec/                    local planning artifacts (gitignored, not part of the build)
+    └── api-contract.md          full HTTP API reference
 ```
 
 ## Getting started

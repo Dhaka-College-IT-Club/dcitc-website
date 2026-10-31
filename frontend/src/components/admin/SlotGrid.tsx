@@ -93,7 +93,7 @@ export default function SlotGrid({
                       const value = Number(event.target.value);
                       if (value) onAssign(value, slot);
                     }}
-                    className="mt-2 h-7 w-full border border-white/10 bg-black px-1.5 font-rajdhani text-xs text-slate-400 disabled:opacity-40"
+                    className="dc-input dc-input-sm mt-2 w-full disabled:opacity-40"
                   >
                     <option value="" disabled>
                       {free.length === 0 ? "No items" : "Feature…"}
