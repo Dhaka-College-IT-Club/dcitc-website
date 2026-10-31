@@ -51,6 +51,7 @@ export function toIntel(row: IntelRow) {
     excerpt: row.excerpt,
     content: row.content,
     tag: row.tag,
+    author: row.author,
     date: row.date,
     image: row.image,
     featuredSlot: row.featuredSlot,

@@ -136,6 +136,7 @@ export const intels = pgTable(
     excerpt: text("excerpt").notNull(),
     content: text("content").notNull(),
     tag: text("tag").notNull(),
+    author: text("author").notNull(),
     date: text("date").notNull(),
     image: text("image").notNull(),
     featuredSlot: smallint("featured_slot"),

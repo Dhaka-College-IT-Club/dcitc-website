@@ -29,6 +29,13 @@
       "when": 1793421100542,
       "tag": "0003_leadership_image_optional",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793434538033,
+      "tag": "0004_lying_chat",
+      "breakpoints": true
     }
   ]
 }

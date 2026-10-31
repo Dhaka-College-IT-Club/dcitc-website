@@ -187,6 +187,7 @@ const intelBody = z.object({
   excerpt: z.string().trim().min(1, "Enter an excerpt.").max(500),
   content: z.string().trim().min(1, "Write the article.").max(100_000),
   tag: z.string().trim().min(1, "Enter a tag.").max(60),
+  author: z.string().trim().min(1, "Enter an author.").max(120),
   date: z.string().trim().min(1, "Enter a date label.").max(60),
   image: imageField,
 });

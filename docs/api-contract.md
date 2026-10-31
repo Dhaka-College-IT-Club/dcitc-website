@@ -40,7 +40,7 @@ Cookies are first-party through the frontend rewrite. There is no CORS.
 User        { id: string(uuid), email, name, hscBatch, createdAt }
 Admin       { id: string(uuid), email, name, role: "admin"|"super_admin", active, lastLoginAt, createdAt }
 Achievement { id: number, title, detail, year: number, image, gallery: string[], featuredSlot: number|null, createdAt, updatedAt }
-Intel       { id: number, slug, title, excerpt, content, tag, date, image, featuredSlot: number|null, createdAt, updatedAt }
+Intel       { id: number, slug, title, excerpt, content, tag, author, date, image, featuredSlot: number|null, createdAt, updatedAt }
 Leader      { id: number, name, role, tier: "executive"|"chief"|"joint", batch, image,
               facebook, linkedin, github, portfolio, sortOrder }
 AuditEntry  { id: number, actorAdminId: string|null, action, targetType, targetId, metadata, createdAt }
@@ -149,7 +149,7 @@ Every route below requires the `dcitc_admin` cookie. A member cookie never satis
 | DELETE | `/admin/achievements/:id` | — | `204` + audit entry |
 | PUT | `/admin/achievements/:id/featured` | `{ slot: 0-4 \| null }` | `200 Achievement` |
 | GET | `/admin/intels` | — | `200 Intel[]` |
-| POST | `/admin/intels` | `{ slug, title, excerpt, content, tag, date, image }` | `201 Intel` |
+| POST | `/admin/intels` | `{ slug, title, excerpt, content, tag, author, date, image }` | `201 Intel` |
 | PATCH | `/admin/intels/:id` | partial; `slug` is ignored | `200 Intel` |
 | DELETE | `/admin/intels/:id` | — | `204` + audit entry |
 | PUT | `/admin/intels/:id/featured` | `{ slot: 0-2 \| null }` | `200 Intel` |
@@ -160,7 +160,8 @@ Every route below requires the `dcitc_admin` cookie. A member cookie never satis
 | PUT | `/admin/settings` | `{ membershipFormUrl?: string\|null, membershipPriceBdt?: integer }` | `200 Settings` |
 | POST | `/admin/uploads/sign` | `{ filename, contentType }` | `200 { uploadUrl, token, path, publicUrl }` |
 
-`image` is required (`400 fields.image` when empty). Featured slots are unique: a taken slot returns
+`image` is required (`400 fields.image` when empty), as is an intel `author` (`400 fields.author` when
+blank). Featured slots are unique: a taken slot returns
 `409 slot_taken` and changes nothing. Duplicate intel slugs return `409 slug_taken`. Admin login is
 case-insensitive on email; inactive admins get `401 invalid_credentials`.
 

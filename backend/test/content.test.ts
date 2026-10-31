@@ -41,6 +41,7 @@ const intel = (slug: string, overrides: Record<string, unknown> = {}) => ({
   excerpt: "Short excerpt.",
   content: "Full article body.",
   tag: "Robotics",
+  author: "DCITC Team",
   date: "Nov 2025",
   image: "https://example.com/i.png",
   ...overrides,
@@ -144,6 +145,7 @@ describe("public reads", () => {
     assert.equal(detail.status, 200);
     assert.equal(detail.body.data.slug, "getting-started-with-dcitc");
     assert.deepEqual(Object.keys(detail.body.data).sort(), [
+      "author",
       "content",
       "createdAt",
       "date",
@@ -156,6 +158,7 @@ describe("public reads", () => {
       "title",
       "updatedAt",
     ]);
+    assert.equal(detail.body.data.author, "DCITC Team");
 
     const missing = await client.req("/api/v1/intels/Getting-Started-With-Dcitc");
     assert.equal(missing.status, 404);
@@ -307,6 +310,35 @@ describe("achievement administration", () => {
 });
 
 describe("intel administration", () => {
+  dbIt("requires an author and returns it", async () => {
+    const omitted = intel("no-author");
+    delete (omitted as { author?: string }).author;
+    const missing = await admin.req("/api/v1/admin/intels", { body: omitted });
+    assert.equal(missing.status, 400);
+    assert.ok(missing.body.error.fields.author);
+
+    const blank = await admin.req("/api/v1/admin/intels", { body: intel("blank-author", { author: "   " }) });
+    assert.equal(blank.status, 400);
+    assert.ok(blank.body.error.fields.author);
+
+    const created = await admin.req("/api/v1/admin/intels", {
+      body: intel("authored-intel", { author: "Ayesha Rahman" }),
+    });
+    assert.equal(created.status, 201);
+    assert.equal(created.body.data.author, "Ayesha Rahman");
+
+    const publicDetail = await new Client(baseUrl).req("/api/v1/intels/authored-intel");
+    assert.equal(publicDetail.status, 200);
+    assert.equal(publicDetail.body.data.author, "Ayesha Rahman");
+
+    const patched = await admin.req(`/api/v1/admin/intels/${created.body.data.id}`, {
+      method: "PATCH",
+      body: { author: "Tanvir Ahmed" },
+    });
+    assert.equal(patched.status, 200);
+    assert.equal(patched.body.data.author, "Tanvir Ahmed");
+  });
+
   dbIt("requires an image", async () => {
     const payload = intel("no-image");
     delete (payload as { image?: string }).image;
