@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-export function middleware(req: NextRequest) {
+export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const hasUser = !!req.cookies.get("dcitc_at")?.value;
   const hasAdmin = !!req.cookies.get("dcitc_admin")?.value;
