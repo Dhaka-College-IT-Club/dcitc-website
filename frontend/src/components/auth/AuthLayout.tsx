@@ -38,19 +38,10 @@ export default function AuthLayout({
           <p className="mt-6 max-w-sm font-rajdhani text-lg leading-relaxed tracking-wide text-slate-400">
             {panelNote}
           </p>
-          <div className="mt-10 flex items-center gap-3">
-            <span className="h-px flex-1 bg-linear-to-r from-white/35 to-transparent" />
-            <span className="font-orbitron text-[10px] uppercase tracking-[0.3em] text-slate-500">
-              Est. 2025
-            </span>
-          </div>
         </div>
 
-        <div className="relative z-10 flex items-center justify-between font-rajdhani text-xs tracking-wide text-slate-500">
+        <div className="relative z-10 font-rajdhani text-xs tracking-wide text-slate-500">
           <span>Dhaka College Information &amp; Technology Club</span>
-          <span className="font-orbitron text-[10px] tracking-[0.2em]">
-            DCITC / 02
-          </span>
         </div>
       </aside>
 
