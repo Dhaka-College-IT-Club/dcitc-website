@@ -1,4 +1,4 @@
-import { createHmac, randomInt } from "node:crypto";
+import { createHmac, randomInt, timingSafeEqual } from "node:crypto";
 import { and, desc, eq, gt, isNull, sql } from "drizzle-orm";
 import { env } from "../config/env.js";
 import { db } from "../db/pool.js";
@@ -16,6 +16,14 @@ const normalize = (email: string) => email.trim().toLowerCase();
 
 function hashCode(code: string): string {
   return createHmac("sha256", env.OTP_PEPPER).update(code).digest("hex");
+}
+
+/** Constant-time comparison of the submitted code's HMAC with the stored one. */
+function codeMatches(code: string, storedHex: string): boolean {
+  const submitted = Buffer.from(hashCode(code), "hex");
+  const stored = Buffer.from(storedHex, "hex");
+  if (submitted.length !== stored.length || stored.length === 0) return false;
+  return timingSafeEqual(submitted, stored);
 }
 
 function cooldownError(seconds: number): AppError {
@@ -93,7 +101,7 @@ export async function verifyOtp(email: string, purpose: OtpPurpose, code: string
     .returning({ attempts: otpCodes.attempts });
   const attempts = updated?.attempts ?? MAX_ATTEMPTS;
 
-  if (hashCode(code) !== row.codeHash) {
+  if (!codeMatches(code, row.codeHash)) {
     throw attempts >= MAX_ATTEMPTS ? otpExhausted() : invalidOtp();
   }
 

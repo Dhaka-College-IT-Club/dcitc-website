@@ -27,6 +27,7 @@ export async function verifyGoogleIdToken(
     const { payload } = await jwtVerify(idToken, jwks, {
       issuer: ["https://accounts.google.com", "accounts.google.com"],
       audience,
+      algorithms: ["RS256"],
     });
     if (typeof payload.sub !== "string" || typeof payload.email !== "string") return null;
     return {

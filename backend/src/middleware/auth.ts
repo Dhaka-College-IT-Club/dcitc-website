@@ -43,8 +43,8 @@ export async function requireAdmin(req: Request, _res: Response, next: NextFunct
   next();
 }
 
-export function requireSuperAdmin(req: Request, res: Response, next: NextFunction): void {
-  void requireAdmin(req, res, (error?: unknown) => {
+export async function requireSuperAdmin(req: Request, res: Response, next: NextFunction): Promise<void> {
+  await requireAdmin(req, res, (error?: unknown) => {
     if (error) return next(error);
     if (req.currentAdmin?.role !== "super_admin") return next(forbidden());
     next();

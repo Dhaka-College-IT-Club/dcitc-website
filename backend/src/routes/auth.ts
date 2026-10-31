@@ -18,7 +18,7 @@ import { hashPassword, verifyPassword } from "../lib/password.js";
 import { toUser } from "../lib/serialize.js";
 import { sendEmailRecovery, sendResetOtp, sendSignupOtp } from "../mail/index.js";
 import { requireUser } from "../middleware/auth.js";
-import { authLimiter, otpLimiter, passwordResetLimiter } from "../middleware/rateLimit.js";
+import { authLimiter, loginLimiter, otpLimiter, passwordResetLimiter } from "../middleware/rateLimit.js";
 import { validate } from "../middleware/validate.js";
 import { buildAuthorizeUrl, currentGoogleClient, resolveGoogleUser } from "../services/google.js";
 import { issueOtp, verifyOtp } from "../services/otp.js";
@@ -80,11 +80,11 @@ authRouter.post(
         const code = await issueOtp(email, "signup");
         await sendSignupOtp(email, code);
       } catch (error) {
-        // Mail failures must not change the response or reveal anything.
+        // Includes the per-address cooldown. Answering 429 only for addresses
+        // that are not registered would turn this endpoint into an account
+        // existence oracle, so every outcome answers "sent".
         if (!(error instanceof AppError)) {
           console.error(JSON.stringify({ level: "error", message: "signup_otp_send_failed" }));
-        } else {
-          throw error;
         }
       }
     }
@@ -127,7 +127,7 @@ authRouter.post(
   },
 );
 
-authRouter.post("/login", authLimiter, validate({ body: loginBody }), async (req, res, next) => {
+authRouter.post("/login", loginLimiter, validate({ body: loginBody }), async (req, res, next) => {
   const { email, password } = req.body as z.infer<typeof loginBody>;
   const [row] = await db
     .select()
@@ -198,10 +198,10 @@ authRouter.post(
         const code = await issueOtp(email, "password_reset");
         await sendResetOtp(email, code);
       } catch (error) {
+        // Same reasoning as signup: a cooldown-only 429 would reveal that the
+        // address has an account.
         if (!(error instanceof AppError)) {
           console.error(JSON.stringify({ level: "error", message: "reset_otp_send_failed" }));
-        } else {
-          throw error;
         }
       }
     }

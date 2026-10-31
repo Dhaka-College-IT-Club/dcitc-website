@@ -22,6 +22,21 @@ export const authLimiter = rateLimit({
   keyGenerator: byIp,
 });
 
+/**
+ * Login is throttled per source address *and* submitted email, so targeted
+ * guessing against one account has its own bucket instead of sharing the
+ * source-wide budget with unrelated emails.
+ */
+export const loginLimiter = rateLimit({
+  ...shared,
+  windowMs: 15 * 60 * 1000,
+  limit: 10,
+  keyGenerator: (req) => {
+    const email = typeof req.body?.email === "string" ? req.body.email.toLowerCase() : "";
+    return `${byIp(req)}:${email}`;
+  },
+});
+
 export const adminLoginLimiter = rateLimit({
   ...shared,
   windowMs: 15 * 60 * 1000,

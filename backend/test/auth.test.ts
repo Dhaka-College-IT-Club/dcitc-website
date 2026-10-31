@@ -110,13 +110,34 @@ describe("signup", () => {
     assert.equal(testOutbox.length, 0);
   });
 
-  dbIt("enforces the 60 second resend cooldown", async () => {
+  dbIt("enforces the 60 second resend cooldown without revealing the account state", async () => {
     const email = "cooldown@example.com";
     const first = await requestSignupOtp(email);
     assert.equal(first.status, 200);
     const second = await client.req("/api/v1/auth/signup/request-otp", { body: { email } });
-    assert.equal(second.status, 429);
-    assert.ok(second.headers.get("retry-after"));
+    assert.equal(second.status, 200);
+    assert.deepEqual(second.body, { data: { sent: true } });
+    assert.equal(testOutbox.length, 1, "the cooldown must still block a second send");
+  });
+
+  dbIt("answers identically during cooldown for known and unknown addresses", async () => {
+    const known = "cooldown-known@example.com";
+    const unknown = "cooldown-unknown@example.com";
+    await signup(known);
+
+    testOutbox.length = 0;
+    const knownFirst = await client.req("/api/v1/auth/signup/request-otp", { body: { email: known } });
+    const knownSecond = await client.req("/api/v1/auth/signup/request-otp", { body: { email: known } });
+    assert.equal(knownFirst.status, 200);
+    assert.equal(knownSecond.status, 200);
+    assert.equal(testOutbox.length, 0);
+
+    const unknownFirst = await client.req("/api/v1/auth/signup/request-otp", { body: { email: unknown } });
+    const unknownSecond = await client.req("/api/v1/auth/signup/request-otp", { body: { email: unknown } });
+    assert.equal(unknownFirst.status, 200);
+    assert.equal(unknownSecond.status, 200);
+    assert.equal(testOutbox.length, 1, "the cooldown blocks the second mail");
+    assert.deepEqual(knownSecond.body, unknownSecond.body);
   });
 
   dbIt("rejects an expired code", async () => {
@@ -191,6 +212,20 @@ describe("login and session", () => {
     });
     assert.equal(admin.status, 200);
     const me = await client.req("/api/v1/auth/me");
+    assert.equal(me.status, 401);
+  });
+
+  dbIt("does not accept a signup token as a session cookie", async () => {
+    const email = "signup-token-confusion@example.com";
+    const first = await requestSignupOtp(email);
+    const verified = await client.req("/api/v1/auth/signup/verify-otp", {
+      body: { email, code: first.code },
+    });
+    assert.equal(verified.status, 200);
+
+    const forged = new Client(baseUrl);
+    forged.cookie = `dcitc_at=${verified.body.data.signupToken}`;
+    const me = await forged.req("/api/v1/auth/me");
     assert.equal(me.status, 401);
   });
 });
