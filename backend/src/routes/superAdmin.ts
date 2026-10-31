@@ -1,4 +1,4 @@
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, sql } from "drizzle-orm";
 import { Router } from "express";
 import { z } from "zod";
 import { db } from "../db/pool.js";
@@ -21,12 +21,10 @@ const createAdmin = z.object({
   role: z.enum(["admin", "super_admin"]),
 });
 
-const patchAdmin = z
-  .object({
-    name: z.string().trim().min(1, "Enter a name.").max(120).optional(),
-    email: z.string().trim().toLowerCase().email().max(254).optional(),
-    active: z.boolean().optional(),
-  })
+const patchAdmin = createAdmin
+  .pick({ name: true, email: true })
+  .partial()
+  .extend({ active: z.boolean().optional() })
   .refine((body) => Object.values(body).some((value) => value !== undefined), {
     message: "Nothing to update.",
   });
@@ -71,36 +69,37 @@ superAdminRouter.patch(
   validate({ params: uuidParam, body: patchAdmin }),
   async (req, res, next) => {
     const { id } = req.params as unknown as z.infer<typeof uuidParam>;
-    const { name, email, active } = req.body as z.infer<typeof patchAdmin>;
-    // Also the last-super-admin guard: an actor can never deactivate itself, so at
+    const body = req.body as z.infer<typeof patchAdmin>;
+    // Last-super-admin guard: an actor can never modify its own account, so at
     // least one active super admin always remains.
     if (id === req.currentAdmin!.id) return next(cannotModifySelf());
-
-    const [current] = await db.select().from(admins).where(eq(admins.id, id)).limit(1);
-    if (!current) return next(notFound("Admin not found."));
 
     try {
       const [row] = await db
         .update(admins)
         .set({
-          ...(name === undefined ? {} : { name }),
-          ...(email === undefined ? {} : { email }),
+          ...body,
           // Deactivation and reactivation both invalidate outstanding sessions.
-          ...(active === undefined ? {} : { active, tokenVersion: current.tokenVersion + 1 }),
+          ...(body.active === undefined ? {} : { tokenVersion: sql`${admins.tokenVersion} + 1` }),
           updatedAt: new Date(),
         })
         .where(eq(admins.id, id))
         .returning();
+      if (!row) return next(notFound("Admin not found."));
 
       await writeAudit({
         actorAdminId: req.currentAdmin!.id,
         action:
-          active === undefined ? "admin.updated" : active ? "admin.activated" : "admin.deactivated",
+          body.active === undefined
+            ? "admin.updated"
+            : body.active
+              ? "admin.activated"
+              : "admin.deactivated",
         targetType: "admin",
         targetId: id,
-        metadata: { email: row!.email, changes: Object.keys(req.body as object) },
+        metadata: { email: row.email, changes: Object.keys(body) },
       });
-      res.json({ data: toAdmin(row!) });
+      res.json({ data: toAdmin(row) });
     } catch (error) {
       if (isUniqueViolation(error)) return next(emailTaken());
       next(error);

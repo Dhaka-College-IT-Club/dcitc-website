@@ -2,13 +2,11 @@ import "./setup.js";
 import assert from "node:assert/strict";
 import { after, before, describe, it } from "node:test";
 import { eq } from "drizzle-orm";
-import { env } from "../src/config/env.js";
 import { db } from "../src/db/pool.js";
 import { admins, users } from "../src/db/schema.js";
 import { signUserToken } from "../src/lib/jwt.js";
 import { hashPassword } from "../src/lib/password.js";
 import { testOutbox } from "../src/mail/index.js";
-import { seedAdmins } from "../src/services/admins.js";
 import { closePool, hasTestDb, prepareDatabase } from "./db.js";
 import { Client, startServer } from "./helpers.js";
 
@@ -60,6 +58,18 @@ after(async () => {
   if (!hasTestDb) return;
   await close();
   await closePool();
+});
+
+describe("admin seeding", () => {
+  dbIt("seeds only the super admin on boot", async () => {
+    // prepareDatabase() truncates and re-seeds, so this runs before any test
+    // creates an operator. A legacy ADMIN_EMAIL/ADMIN_PASSWORD pair would leave
+    // a second row here.
+    const rows = await db.select().from(admins);
+    assert.equal(rows.length, 1);
+    assert.equal(rows[0]!.email, superEmail());
+    assert.equal(rows[0]!.role, "super_admin");
+  });
 });
 
 describe("health and platform", () => {
@@ -744,24 +754,6 @@ describe("super admin", () => {
     assert.equal(selfDeactivate.status, 400);
     assert.equal(selfDeactivate.body.error.code, "cannot_modify_self");
     assert.match(selfDeactivate.body.error.message, /own account/i);
-  });
-
-  dbIt("seeds only the super admin, never ADMIN_EMAIL or ADMIN_PASSWORD", async () => {
-    process.env.ADMIN_EMAIL = "legacy-admin@example.com";
-    process.env.ADMIN_PASSWORD = "LegacyAdmin123!";
-    try {
-      await seedAdmins();
-      const legacy = await db
-        .select()
-        .from(admins)
-        .where(eq(admins.email, "legacy-admin@example.com"));
-      assert.equal(legacy.length, 0);
-      assert.equal("ADMIN_EMAIL" in env, false);
-      assert.equal("ADMIN_PASSWORD" in env, false);
-    } finally {
-      delete process.env.ADMIN_EMAIL;
-      delete process.env.ADMIN_PASSWORD;
-    }
   });
 
   dbIt("returns audit entries newest first and caps the limit", async () => {

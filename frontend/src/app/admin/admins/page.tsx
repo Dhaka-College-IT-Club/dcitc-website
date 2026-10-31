@@ -25,6 +25,15 @@ function formatDate(value: string) {
   });
 }
 
+function validateDetails(values: { name: string; email: string }) {
+  const errors: Record<string, string> = {};
+  if (!values.name.trim()) errors.name = "Enter a name.";
+  if (!/^\S+@\S+\.\S+$/.test(values.email.trim())) {
+    errors.email = "Enter a valid email address.";
+  }
+  return errors;
+}
+
 export default function AdminAdminsPage() {
   const router = useRouter();
   const toast = useToast();
@@ -105,11 +114,7 @@ export default function AdminAdminsPage() {
   async function create(event: React.FormEvent) {
     event.preventDefault();
     if (saving) return;
-    const errors: Record<string, string> = {};
-    if (!form.name.trim()) errors.name = "Enter a name.";
-    if (!/^\S+@\S+\.\S+$/.test(form.email.trim())) {
-      errors.email = "Enter a valid email address.";
-    }
+    const errors = validateDetails(form);
     if (form.password.length < 8) {
       errors.password = "Use at least 8 characters.";
     }
@@ -181,11 +186,7 @@ export default function AdminAdminsPage() {
   async function saveEdit(event: React.FormEvent) {
     event.preventDefault();
     if (!editing || editPending) return;
-    const errors: Record<string, string> = {};
-    if (!editForm.name.trim()) errors.name = "Enter a name.";
-    if (!/^\S+@\S+\.\S+$/.test(editForm.email.trim())) {
-      errors.email = "Enter a valid email address.";
-    }
+    const errors = validateDetails(editForm);
     setEditErrors(errors);
     if (Object.keys(errors).length > 0) return;
 
@@ -349,17 +350,22 @@ export default function AdminAdminsPage() {
           const isSelf = item.id === me?.id;
           return (
             <>
-              <Button
-                type="button"
-                variant="secondary"
-                size="sm"
-                disabled={isSelf}
-                title={isSelf ? "You cannot edit your own account here." : undefined}
-                onClick={() => openEdit(item)}
+              <span
+                title={
+                  isSelf ? "You cannot edit your own account here." : undefined
+                }
               >
-                <Pencil className="h-3 w-3" aria-hidden="true" />
-                Edit
-              </Button>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  disabled={isSelf}
+                  onClick={() => openEdit(item)}
+                >
+                  <Pencil className="h-3 w-3" aria-hidden="true" />
+                  Edit
+                </Button>
+              </span>
               <Button
                 type="button"
                 variant="secondary"
