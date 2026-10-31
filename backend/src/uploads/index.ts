@@ -67,7 +67,13 @@ export async function signUpload(filename: string, contentType: string): Promise
 
 export async function ensureBucket(): Promise<void> {
   const storage = supabase().storage;
-  const { error } = await storage.createBucket(env.UPLOAD_BUCKET, { public: true });
+  // The bucket, not the signing endpoint, is the last line of defence: it also
+  // rejects non-image uploads and oversized files if a signed URL leaks.
+  const { error } = await storage.createBucket(env.UPLOAD_BUCKET, {
+    public: true,
+    fileSizeLimit: 5 * 1024 * 1024,
+    allowedMimeTypes: Object.keys(CONTENT_TYPES),
+  });
   if (error && !/already exists/i.test(error.message)) throw error;
   console.log(JSON.stringify({ level: "info", message: "storage_bucket_ready", bucket: env.UPLOAD_BUCKET }));
 }
