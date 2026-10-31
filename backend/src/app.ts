@@ -3,6 +3,7 @@ import cookieParser from "cookie-parser";
 import express from "express";
 import helmet from "helmet";
 import { ping } from "./db/pool.js";
+import { AppError } from "./lib/errors.js";
 import { errorHandler, notFoundHandler } from "./middleware/error.js";
 import { requestLogger } from "./middleware/logger.js";
 import { adminRouter } from "./routes/admin.js";
@@ -21,6 +22,14 @@ export function createApp(): express.Express {
   app.use(express.json({ limit: "128kb" }));
   app.use(cookieParser());
   app.use(requestLogger);
+
+  // Postgres text cannot store NUL; reject it before it reaches a query.
+  app.use((req, _res, next) => {
+    if (req.url.includes("%00") || req.url.includes("\0")) {
+      return next(new AppError(400, "validation_failed", "Invalid characters in the request."));
+    }
+    next();
+  });
 
   app.get("/api/v1/health", async (_req, res) => {
     const up = await ping();

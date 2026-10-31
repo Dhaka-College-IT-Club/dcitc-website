@@ -31,9 +31,13 @@ publicRouter.get("/achievements", async (req, res) => {
   res.json({ data: rows.map(toAchievement) });
 });
 
+const ID_PATTERN = /^\d{1,9}$/;
+const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
 publicRouter.get("/achievements/:id", async (req, res, next) => {
-  const id = Number(req.params.id);
-  if (!Number.isInteger(id)) return next(notFound("Achievement not found."));
+  const raw = req.params.id ?? "";
+  if (!ID_PATTERN.test(raw)) return next(notFound("Achievement not found."));
+  const id = Number(raw);
   const [row] = await db.select().from(achievements).where(eq(achievements.id, id)).limit(1);
   if (!row) return next(notFound("Achievement not found."));
   res.json({ data: toAchievement(row) });
@@ -54,7 +58,9 @@ publicRouter.get("/intels", async (req, res) => {
 });
 
 publicRouter.get("/intels/:slug", async (req, res, next) => {
-  const [row] = await db.select().from(intels).where(eq(intels.slug, req.params.slug ?? "")).limit(1);
+  const slug = req.params.slug ?? "";
+  if (!SLUG_PATTERN.test(slug) || slug.length > 80) return next(notFound("Intel not found."));
+  const [row] = await db.select().from(intels).where(eq(intels.slug, slug)).limit(1);
   if (!row) return next(notFound("Intel not found."));
   res.json({ data: toIntel(row) });
 });

@@ -119,9 +119,10 @@ returns `502 delivery_failed`.
 
 Rules: passwords ≥ 8 characters; OTPs are 6 digits, expire in 10 minutes, allow 5 attempts, have a
 60-second resend cooldown and a 3-per-hour cap per email. `request-otp`, `verify-otp`, `forgot` and
-`email/recover` never reveal whether an address exists. Changing or resetting a password bumps
-`token_version`, so older cookies return `401`. Google sign-in requires a verified email and links
-`google_sub` onto an existing password account.
+`email/recover` never reveal whether an address exists; signup/forgot always answer `200`
+`{ sent: true }`, even during the cooldown — the cooldown blocks the send, not the response.
+Changing or resetting a password bumps `token_version`, so older cookies return `401`. Google
+sign-in requires a verified email and links `google_sub` onto an existing password account.
 
 ```bash
 curl -s -c jar.txt -H "content-type: application/json" \

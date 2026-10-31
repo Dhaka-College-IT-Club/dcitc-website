@@ -111,11 +111,15 @@ describe("public reads", () => {
     assert.equal(detail.status, 200);
     assert.equal(detail.body.data.title, first.title);
 
-    for (const path of ["/api/v1/achievements/999999", "/api/v1/achievements/not-a-number"]) {
+    for (const path of ["/api/v1/achievements/999999", "/api/v1/achievements/not-a-number", "/api/v1/achievements/1e3"]) {
       const missing = await client.req(path);
       assert.equal(missing.status, 404);
       assert.equal(missing.body.error.code, "not_found");
     }
+
+    const nul = await client.req("/api/v1/intels/a%00b");
+    assert.equal(nul.status, 400);
+    assert.equal(nul.body.error.code, "validation_failed");
   });
 
   dbIt("lists intels and resolves exact slugs", async () => {
