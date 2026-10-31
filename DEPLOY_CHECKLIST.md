@@ -11,9 +11,9 @@ Signed uploads plus those bucket limits are what stop a leaked signed URL from
 carrying oversized or non-image files.
 
 - Fresh production Supabase project: run `npm run storage:setup` once and nothing
-  else is needed — the bucket is created with both limits already enforced.
+  else is needed â€” the bucket is created with both limits already enforced.
 - Only relevant when reusing an existing bucket created before this logic: the
-  script leaves an existing bucket untouched, so open Storage → `uploads` →
+  script leaves an existing bucket untouched, so open Storage â†’ `uploads` â†’
   settings and set the 5 MiB size limit and the three image MIME types, or delete
   and re-create the bucket (empty it first; public URLs change for existing objects
   only if object paths change, which they do not on re-create of the same name).
@@ -23,11 +23,11 @@ carrying oversized or non-image files.
 The public site renders uploads through `next/image`. Set these on the frontend host
 (Vercel):
 
-- `NEXT_PUBLIC_SUPABASE_URL` — hosted project URL. `frontend/next.config.ts` derives
+- `NEXT_PUBLIC_SUPABASE_URL` â€” hosted project URL. `frontend/next.config.ts` derives
   the allowed image host from it, and `lib/images.ts` rewrites loopback URLs saved
   during local development to this origin.
-- `NEXT_PUBLIC_UPLOAD_BUCKET` — defaults to `uploads`.
-- `IMAGE_REMOTE_HOSTS` — only for extra hosts; leave empty when the Supabase URL is set.
+- `NEXT_PUBLIC_UPLOAD_BUCKET` â€” defaults to `uploads`.
+- `IMAGE_REMOTE_HOSTS` â€” only for extra hosts; leave empty when the Supabase URL is set.
 
 The bucket must stay public-read. If it is private, the admin thumbnail (a plain
 `<img>`) still loads for a signed-in browser while every public `next/image` request
@@ -40,10 +40,10 @@ front of the service (Render/Railway default). Rate limiters and per-IP logging 
 off `req.ip`, so a wrong hop count silently groups every visitor under the
 load-balancer IP.
 
-After the first deploy, log `req.ip` for one incoming request — run the request
+After the first deploy, log `req.ip` for one incoming request â€” run the request
 logger at debug level for a minute, or add a temporary `console.log(req.ip)` in
 `src/app.ts` and remove it afterwards. Then call a public endpoint from your own
-network (for example `GET /api/v1/health`) and confirm the logged address is your
+network (for example `GET /api/v2/health`) and confirm the logged address is your
 real public client IP, not a private address such as `10.x.x.x` or the platform's
 internal load-balancer address. If it shows the wrong address, the proxy chain has
 a different number of hops: change the `trust proxy` value to match it instead of
@@ -57,7 +57,7 @@ connect depends on the provider's certificate chain being verifiable:
 - Supabase's pooler certificate chains to a public CA: no extra configuration.
 - A provider that signs with its own CA: set `DB_SSL_CA` in the host's environment
   to the provider's PEM certificate (write newlines as `\n`). Without it the
-  connection fails closed rather than downgrading verification — that is intended.
+  connection fails closed rather than downgrading verification â€” that is intended.
 - Never set `NODE_ENV=production` for a local database you expect to reach without
   TLS; local hosts are detected and skip TLS, but anything remote will verify.
 
@@ -69,23 +69,23 @@ add it in the host dashboard if the provider requires it.
 This is a breaking change to local setup. `ADMIN_EMAIL` / `ADMIN_PASSWORD` are no longer read
 and no longer seed a default admin account. Only `SUPER_ADMIN_EMAIL` / `SUPER_ADMIN_PASSWORD`
 seed an account on first boot; anyone relying on the old default admin must now sign in as the
-seeded super admin and create admins from the dashboard (Super admin → Operators → New
+seeded super admin and create admins from the dashboard (Super admin â†’ Operators â†’ New
 operator). Existing admin rows in an already-seeded database are left untouched.
 
 ## 5. Still worth a human security review
 
 These cannot be automated here and should be checked before the public launch:
 
-- **Secret rotation** — `JWT_USER_SECRET`, `JWT_ADMIN_SECRET`, `OTP_PEPPER`,
+- **Secret rotation** â€” `JWT_USER_SECRET`, `JWT_ADMIN_SECRET`, `OTP_PEPPER`,
   `SUPER_ADMIN_PASSWORD`, `SMTP_PASS`, `SUPABASE_SERVICE_ROLE_KEY`
   must be fresh values in the host, not the ones used in local `.env` files, and
   must never have been committed. Rotating the JWT secrets signs everyone out.
-- **Google Console review** — OAuth consent screen, authorized redirect URI, and
+- **Google Console review** â€” OAuth consent screen, authorized redirect URI, and
   branding match the real frontend origin; test the full sign-in flow from the
   production domain, not just localhost.
-- **SMTP deliverability** — SPF, DKIM, and DMARC for the sending domain; send a
+- **SMTP deliverability** â€” SPF, DKIM, and DMARC for the sending domain; send a
   real signup and password-reset email to Gmail and Outlook and confirm neither is
   filed as spam. `MAIL_TRANSPORT=smtp` is enforced in production.
-- **Bucket policy review** — confirm `uploads` is public-read only (no
+- **Bucket policy review** â€” confirm `uploads` is public-read only (no
   unauthenticated writes), object paths are unguessable, and the service-role key
   is used only by the API.

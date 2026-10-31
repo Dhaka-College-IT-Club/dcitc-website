@@ -1,7 +1,7 @@
-# DCITC API contract (`/api/v1`)
+# DCITC API contract (`/api/v2`)
 
 Base URL locally: `http://localhost:4000` (browser traffic goes through the Next rewrite at
-`/api/v1/*`).
+`/api/v2/*`).
 
 ## Envelopes
 
@@ -11,7 +11,7 @@ Success:
 { "data": { } }
 ```
 
-Error (any status ≥ 400):
+Error (any status â‰¥ 400):
 
 ```json
 { "error": { "code": "validation_failed", "message": "Some fields are invalid.", "fields": { "email": "Invalid email" } } }
@@ -54,10 +54,10 @@ Settings    { membershipFormUrl: string|null, membershipPriceBdt: number }
 
 ### GET /health
 
-`200` `{ "data": { "status": "ok", "database": "up" } }` — `503` with `"degraded"`/`"down"` if the database is unreachable.
+`200` `{ "data": { "status": "ok", "database": "up" } }` â€” `503` with `"degraded"`/`"down"` if the database is unreachable.
 
 ```bash
-curl -s http://localhost:4000/api/v1/health
+curl -s http://localhost:4000/api/v2/health
 ```
 
 ### GET /achievements
@@ -71,7 +71,7 @@ One achievement, or `404 not_found` (also for non-numeric ids).
 
 ### GET /intels
 
-All intels, newest first, capped at 200. `?featured=true` → featured only, slot order, max 3.
+All intels, newest first, capped at 200. `?featured=true` â†’ featured only, slot order, max 3.
 
 ### GET /intels/:slug
 
@@ -87,7 +87,7 @@ All members ordered by batch descending, tier (`executive`, `chief`, `joint`), t
 Exactly two keys: `membershipFormUrl` and `membershipPriceBdt` (integer).
 
 ```bash
-curl -s http://localhost:4000/api/v1/settings/public
+curl -s http://localhost:4000/api/v2/settings/public
 ```
 
 ### POST /contact
@@ -97,38 +97,38 @@ curl -s http://localhost:4000/api/v1/settings/public
 ```
 
 `202` `{ "data": { "accepted": true } }`. `website` is a honeypot: a non-empty value returns the same
-`202` and sends nothing. Limits: name 1–100, message 1–5000, 5 requests/hour/IP. Delivery failure
+`202` and sends nothing. Limits: name 1â€“100, message 1â€“5000, 5 requests/hour/IP. Delivery failure
 returns `502 delivery_failed`.
 
 ## Member auth
 
 | Method | Path | Auth | Body | Success |
 |---|---|---|---|---|
-| POST | `/auth/signup/request-otp` | — | `{ email }` | `200 { data: { sent: true } }` |
-| POST | `/auth/signup/verify-otp` | — | `{ email, code }` | `200 { data: { signupToken } }` |
-| POST | `/auth/signup/complete` | — | `{ signupToken, name, hscBatch, password }` | `201 User` + `dcitc_at` |
-| POST | `/auth/login` | — | `{ email, password }` | `200 User` + `dcitc_at` |
-| POST | `/auth/logout` | — | — | `204`, clears `dcitc_at` |
-| GET | `/auth/me` | user | — | `200 User` or `401 unauthenticated` |
+| POST | `/auth/signup/request-otp` | â€” | `{ email }` | `200 { data: { sent: true } }` |
+| POST | `/auth/signup/verify-otp` | â€” | `{ email, code }` | `200 { data: { signupToken } }` |
+| POST | `/auth/signup/complete` | â€” | `{ signupToken, name, hscBatch, password }` | `201 User` + `dcitc_at` |
+| POST | `/auth/login` | â€” | `{ email, password }` | `200 User` + `dcitc_at` |
+| POST | `/auth/logout` | â€” | â€” | `204`, clears `dcitc_at` |
+| GET | `/auth/me` | user | â€” | `200 User` or `401 unauthenticated` |
 | PATCH | `/auth/password` | user | `{ currentPassword, newPassword }` | `200 { data: { updated: true } }` |
-| POST | `/auth/password/forgot` | — | `{ email }` | `200 { data: { sent: true } }` always |
-| POST | `/auth/password/reset` | — | `{ email, code, password }` | `200 { data: { reset: true } }` |
-| POST | `/auth/email/recover` | — | `{ name, hscBatch }` | `200 { data: { sent: true } }` always |
-| GET | `/auth/google/start` | — | — | `302` to Google |
-| GET | `/auth/google/callback` | — | `?code&state` | `302` to `/dashboard` + `dcitc_at`, or `/login?error=…` |
+| POST | `/auth/password/forgot` | â€” | `{ email }` | `200 { data: { sent: true } }` always |
+| POST | `/auth/password/reset` | â€” | `{ email, code, password }` | `200 { data: { reset: true } }` |
+| POST | `/auth/email/recover` | â€” | `{ name, hscBatch }` | `200 { data: { sent: true } }` always |
+| GET | `/auth/google/start` | â€” | â€” | `302` to Google |
+| GET | `/auth/google/callback` | â€” | `?code&state` | `302` to `/dashboard` + `dcitc_at`, or `/login?error=â€¦` |
 
-Rules: passwords ≥ 8 characters; OTPs are 6 digits, expire in 10 minutes, allow 5 attempts, have a
+Rules: passwords â‰¥ 8 characters; OTPs are 6 digits, expire in 10 minutes, allow 5 attempts, have a
 60-second resend cooldown and a 3-per-hour cap per email. `request-otp`, `verify-otp`, `forgot` and
 `email/recover` never reveal whether an address exists; signup/forgot always answer `200`
-`{ sent: true }`, even during the cooldown — the cooldown blocks the send, not the response.
+`{ sent: true }`, even during the cooldown â€” the cooldown blocks the send, not the response.
 Changing or resetting a password bumps `token_version`, so older cookies return `401`. Google
 sign-in requires a verified email and links `google_sub` onto an existing password account.
 
 ```bash
 curl -s -c jar.txt -H "content-type: application/json" \
   -d '{"email":"member@example.com","password":"Password123!"}' \
-  http://localhost:4000/api/v1/auth/login
-curl -s -b jar.txt http://localhost:4000/api/v1/auth/me
+  http://localhost:4000/api/v2/auth/login
+curl -s -b jar.txt http://localhost:4000/api/v2/auth/me
 ```
 
 `signupToken` is a 15-minute JWT bound to the verified email. `complete` returns
@@ -141,22 +141,22 @@ Every route below requires the `dcitc_admin` cookie. A member cookie never satis
 | Method | Path | Body | Success |
 |---|---|---|---|
 | POST | `/admin/auth/login` | `{ email, password }` | `200 Admin` + `dcitc_admin` |
-| POST | `/admin/auth/logout` | — | `204` |
-| GET | `/admin/auth/me` | — | `200 Admin` |
-| GET | `/admin/achievements` | — | `200 Achievement[]` |
+| POST | `/admin/auth/logout` | â€” | `204` |
+| GET | `/admin/auth/me` | â€” | `200 Admin` |
+| GET | `/admin/achievements` | â€” | `200 Achievement[]` |
 | POST | `/admin/achievements` | `{ title, detail, year, image, gallery? }` | `201 Achievement` |
 | PATCH | `/admin/achievements/:id` | partial of the above | `200 Achievement` |
-| DELETE | `/admin/achievements/:id` | — | `204` + audit entry |
+| DELETE | `/admin/achievements/:id` | â€” | `204` + audit entry |
 | PUT | `/admin/achievements/:id/featured` | `{ slot: 0-4 \| null }` | `200 Achievement` |
-| GET | `/admin/intels` | — | `200 Intel[]` |
+| GET | `/admin/intels` | â€” | `200 Intel[]` |
 | POST | `/admin/intels` | `{ slug, title, excerpt, content, tag, author, date, image }` | `201 Intel` |
 | PATCH | `/admin/intels/:id` | partial; `slug` is ignored | `200 Intel` |
-| DELETE | `/admin/intels/:id` | — | `204` + audit entry |
+| DELETE | `/admin/intels/:id` | â€” | `204` + audit entry |
 | PUT | `/admin/intels/:id/featured` | `{ slot: 0-2 \| null }` | `200 Intel` |
 | GET | `/admin/leadership` | `?batch=` | `200 Leader[]` |
 | POST | `/admin/leadership` | `{ name, role, tier, batch, image, facebook?, linkedin?, github?, portfolio?, sortOrder? }` | `201 Leader` |
 | PATCH | `/admin/leadership/:id` | partial | `200 Leader` |
-| DELETE | `/admin/leadership/:id` | — | `204` + audit entry |
+| DELETE | `/admin/leadership/:id` | â€” | `204` + audit entry |
 | PUT | `/admin/settings` | `{ membershipFormUrl?: string\|null, membershipPriceBdt?: integer }` | `200 Settings` |
 | POST | `/admin/uploads/sign` | `{ filename, contentType }` | `200 { uploadUrl, token, path, publicUrl }` |
 
@@ -171,14 +171,14 @@ stores `publicUrl`. The service-role key never appears in a response.
 ```bash
 curl -s -c admin.jar -H "content-type: application/json" \
   -d '{"email":"super@dcitc.local","password":"SuperAdmin123!"}' \
-  http://localhost:4000/api/v1/admin/auth/login
+  http://localhost:4000/api/v2/admin/auth/login
 
 curl -s -b admin.jar -H "content-type: application/json" \
   -d '{"title":"Robotics Finalist","detail":"Top six nationwide.","year":2026,"image":"/hero.png"}' \
-  http://localhost:4000/api/v1/admin/achievements
+  http://localhost:4000/api/v2/admin/achievements
 
 curl -s -b admin.jar -X PUT -H "content-type: application/json" \
-  -d '{"slot":0}' http://localhost:4000/api/v1/admin/achievements/7/featured
+  -d '{"slot":0}' http://localhost:4000/api/v2/admin/achievements/7/featured
 ```
 
 ## Super admin
@@ -187,11 +187,11 @@ Requires `dcitc_admin` with `role: "super_admin"`; an `admin` gets `403 forbidde
 
 | Method | Path | Body | Success |
 |---|---|---|---|
-| GET | `/super-admin/admins` | — | `200 Admin[]` |
+| GET | `/super-admin/admins` | â€” | `200 Admin[]` |
 | POST | `/super-admin/admins` | `{ email, name, password, role }` | `201 Admin` |
 | PATCH | `/super-admin/admins/:id` | `{ name?, email?, active? }` | `200 Admin` |
 | POST | `/super-admin/admins/:id/rotate-password` | `{ password }` | `200 { data: { rotated: true } }` |
-| GET | `/super-admin/audit-log?limit=50` | — | `200 AuditEntry[]` (newest first, max 200) |
+| GET | `/super-admin/audit-log?limit=50` | â€” | `200 AuditEntry[]` (newest first, max 200) |
 
 Duplicate admin emails are case-insensitive (`409 email_taken`). Editing writes `admin.updated`,
 deactivating/reactivating writes `admin.deactivated`/`admin.activated`, each with the acting
@@ -203,6 +203,6 @@ deactivations cannot leave zero).
 
 ## Status codes used
 
-`200` read/update · `201` created · `202` contact accepted · `204` deleted/logged out ·
-`400` validation or OTP problem · `401` auth · `403` role · `404` missing · `409` conflict ·
-`413` body too large · `429` rate limited · `502` mail/upload failure · `503` health degraded.
+`200` read/update Â· `201` created Â· `202` contact accepted Â· `204` deleted/logged out Â·
+`400` validation or OTP problem Â· `401` auth Â· `403` role Â· `404` missing Â· `409` conflict Â·
+`413` body too large Â· `429` rate limited Â· `502` mail/upload failure Â· `503` health degraded.
