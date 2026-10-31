@@ -1,6 +1,6 @@
 "use client";
 
-import { KeyRound, Plus, Shield } from "lucide-react";
+import { KeyRound, Pencil, Plus, Shield } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import DataTable, { type Column } from "@/components/admin/DataTable";
@@ -46,6 +46,11 @@ export default function AdminAdminsPage() {
 
   const [toggling, setToggling] = useState<Admin | null>(null);
   const [togglePending, setTogglePending] = useState(false);
+
+  const [editing, setEditing] = useState<Admin | null>(null);
+  const [editForm, setEditForm] = useState({ name: "", email: "" });
+  const [editErrors, setEditErrors] = useState<Record<string, string>>({});
+  const [editPending, setEditPending] = useState(false);
 
   const [rotating, setRotating] = useState<Admin | null>(null);
   const [rotatePassword, setRotatePassword] = useState("");
@@ -167,6 +172,44 @@ export default function AdminAdminsPage() {
     setRotateErrors({});
   }
 
+  function openEdit(item: Admin) {
+    setEditing(item);
+    setEditForm({ name: item.name, email: item.email });
+    setEditErrors({});
+  }
+
+  async function saveEdit(event: React.FormEvent) {
+    event.preventDefault();
+    if (!editing || editPending) return;
+    const errors: Record<string, string> = {};
+    if (!editForm.name.trim()) errors.name = "Enter a name.";
+    if (!/^\S+@\S+\.\S+$/.test(editForm.email.trim())) {
+      errors.email = "Enter a valid email address.";
+    }
+    setEditErrors(errors);
+    if (Object.keys(errors).length > 0) return;
+
+    setEditPending(true);
+    try {
+      await apiFetch(`/super-admin/admins/${editing.id}`, {
+        method: "PATCH",
+        body: { name: editForm.name.trim(), email: editForm.email.trim() },
+      });
+      toast.push(`${editForm.email.trim()} updated.`);
+      setEditing(null);
+      await load();
+    } catch (err) {
+      const apiError = err as {
+        message?: string;
+        fields?: Record<string, string>;
+      };
+      if (apiError?.fields) setEditErrors(apiError.fields);
+      toast.push(apiError?.message || "Could not update the operator.", "error");
+    } finally {
+      setEditPending(false);
+    }
+  }
+
   async function rotate(event: React.FormEvent) {
     event.preventDefault();
     if (!rotating || rotatePending) return;
@@ -204,7 +247,11 @@ export default function AdminAdminsPage() {
       render: (item) => (
         <span className="flex flex-col">
           <span className="flex items-center gap-2">
-            <span className="font-rajdhani text-sm font-semibold text-white">
+            <span
+              className={`font-rajdhani text-sm font-semibold ${
+                item.active ? "text-white" : "text-slate-500"
+              }`}
+            >
               {item.name}
             </span>
             {item.id === me?.id ? (
@@ -272,7 +319,7 @@ export default function AdminAdminsPage() {
       <PageHeader
         eyebrow="Super admin"
         title="Operators"
-        description="Create operator accounts, pause access, or rotate a password. Every action is written to the audit log."
+        description="Create operator accounts, edit their details, pause access, or rotate a password. Every action is written to the audit log."
         actions={
           <Button type="button" size="sm" onClick={openCreate}>
             <Plus className="h-3.5 w-3.5" aria-hidden="true" />
@@ -306,6 +353,17 @@ export default function AdminAdminsPage() {
                 type="button"
                 variant="secondary"
                 size="sm"
+                disabled={isSelf}
+                title={isSelf ? "You cannot edit your own account here." : undefined}
+                onClick={() => openEdit(item)}
+              >
+                <Pencil className="h-3 w-3" aria-hidden="true" />
+                Edit
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
                 onClick={() => openRotate(item)}
               >
                 <KeyRound className="h-3 w-3" aria-hidden="true" />
@@ -334,8 +392,9 @@ export default function AdminAdminsPage() {
       />
 
       <p className="font-rajdhani text-xs leading-snug text-slate-500">
-        Your own row cannot be deactivated. Ask another super admin to change
-        your access.
+        Your own row cannot be edited or deactivated, so at least one active
+        super admin always remains. Ask another super admin to change your
+        access.
       </p>
 
       <Drawer
@@ -403,6 +462,55 @@ export default function AdminAdminsPage() {
             </Button>
             <Button type="submit" loading={saving}>
               {saving ? "Creating" : "Create operator"}
+            </Button>
+          </div>
+        </form>
+      </Drawer>
+
+      <Drawer
+        open={editing !== null}
+        onClose={() => setEditing(null)}
+        title="Edit operator"
+        description={
+          editing ? `Update the name or email for ${editing.email}.` : ""
+        }
+      >
+        <form onSubmit={saveEdit} className="space-y-5" noValidate>
+          <TextField
+            label="Name"
+            name="edit-name"
+            autoComplete="off"
+            value={editForm.name}
+            onChange={(event) =>
+              setEditForm({ ...editForm, name: event.target.value })
+            }
+            error={editErrors.name}
+            required
+          />
+          <TextField
+            label="Email"
+            name="edit-email"
+            type="email"
+            autoComplete="off"
+            value={editForm.email}
+            onChange={(event) =>
+              setEditForm({ ...editForm, email: event.target.value })
+            }
+            error={editErrors.email}
+            hint="Changing the email changes the sign-in address."
+            required
+          />
+          <div className="flex flex-col-reverse gap-2 border-t border-white/10 pt-5 sm:flex-row sm:justify-end">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setEditing(null)}
+              disabled={editPending}
+            >
+              Cancel
+            </Button>
+            <Button type="submit" loading={editPending}>
+              {editPending ? "Saving" : "Save changes"}
             </Button>
           </div>
         </form>
