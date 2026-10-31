@@ -188,13 +188,16 @@ Requires `dcitc_admin` with `role: "super_admin"`; an `admin` gets `403 forbidde
 |---|---|---|---|
 | GET | `/super-admin/admins` | — | `200 Admin[]` |
 | POST | `/super-admin/admins` | `{ email, name, password, role }` | `201 Admin` |
-| PATCH | `/super-admin/admins/:id` | `{ active: boolean }` | `200 Admin` |
+| PATCH | `/super-admin/admins/:id` | `{ name?, email?, active? }` | `200 Admin` |
 | POST | `/super-admin/admins/:id/rotate-password` | `{ password }` | `200 { data: { rotated: true } }` |
 | GET | `/super-admin/audit-log?limit=50` | — | `200 AuditEntry[]` (newest first, max 200) |
 
-Duplicate admin emails are case-insensitive (`409 email_taken`). Deactivating or rotating bumps
-`token_version`, so existing cookies fail immediately. Self-deactivation and self-rotation return
-`400 cannot_modify_self`.
+Duplicate admin emails are case-insensitive (`409 email_taken`). Editing writes `admin.updated`,
+deactivating/reactivating writes `admin.deactivated`/`admin.activated`, each with the acting
+super admin as `actorAdminId`. Deactivating or rotating bumps `token_version`, so existing
+cookies fail immediately; a deactivated admin gets `401 invalid_credentials` at login. Editing,
+deactivating, and rotating your own account returns `400 cannot_modify_self` — which also
+guarantees at least one active super admin always remains.
 
 ## Status codes used
 

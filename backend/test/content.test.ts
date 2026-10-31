@@ -2,11 +2,13 @@ import "./setup.js";
 import assert from "node:assert/strict";
 import { after, before, describe, it } from "node:test";
 import { eq } from "drizzle-orm";
+import { env } from "../src/config/env.js";
 import { db } from "../src/db/pool.js";
 import { admins, users } from "../src/db/schema.js";
 import { signUserToken } from "../src/lib/jwt.js";
 import { hashPassword } from "../src/lib/password.js";
 import { testOutbox } from "../src/mail/index.js";
+import { seedAdmins } from "../src/services/admins.js";
 import { closePool, hasTestDb, prepareDatabase } from "./db.js";
 import { Client, startServer } from "./helpers.js";
 
@@ -600,6 +602,45 @@ describe("contact", () => {
 });
 
 describe("super admin", () => {
+  dbIt("edits an admin name and email and records it", async () => {
+    const created = await admin.req("/api/v1/super-admin/admins", {
+      body: { email: "editable@example.com", name: "Editable", password: "Editable123!", role: "admin" },
+    });
+    assert.equal(created.status, 201);
+
+    const edited = await admin.req(`/api/v1/super-admin/admins/${created.body.data.id}`, {
+      method: "PATCH",
+      body: { name: "Edited Name", email: "Edited@Example.com" },
+    });
+    assert.equal(edited.status, 200);
+    assert.equal(edited.body.data.name, "Edited Name");
+    assert.equal(edited.body.data.email, "edited@example.com");
+    assert.equal(edited.body.data.active, true);
+
+    const duplicate = await admin.req(`/api/v1/super-admin/admins/${created.body.data.id}`, {
+      method: "PATCH",
+      body: { email: superEmail() },
+    });
+    assert.equal(duplicate.status, 409);
+    assert.equal(duplicate.body.error.code, "email_taken");
+
+    const empty = await admin.req(`/api/v1/super-admin/admins/${created.body.data.id}`, {
+      method: "PATCH",
+      body: {},
+    });
+    assert.equal(empty.status, 400);
+    assert.equal(empty.body.error.code, "validation_failed");
+
+    const audit = await admin.req("/api/v1/super-admin/audit-log?limit=20");
+    const entry = audit.body.data.find(
+      (row: { action: string; targetId: string }) =>
+        row.action === "admin.updated" && row.targetId === created.body.data.id,
+    );
+    assert.ok(entry, "admin.updated audit entry missing");
+    const me = await admin.req("/api/v1/admin/auth/me");
+    assert.equal(entry.actorAdminId, me.body.data.id);
+  });
+
   dbIt("creates, deactivates and rotates admins with a case-insensitive unique email", async () => {
     const created = await admin.req("/api/v1/super-admin/admins", {
       body: { email: "Operator@Example.com", name: "Operator", password: "Operator123!", role: "admin" },
@@ -636,12 +677,29 @@ describe("super admin", () => {
     const stale = await operator.req("/api/v1/admin/auth/me");
     assert.equal(stale.status, 401);
 
+    // A deactivated admin is refused at login even with the correct password.
+    const blocked = await new Client(baseUrl).req("/api/v1/admin/auth/login", {
+      body: { email: "operator@example.com", password: "Operator123!" },
+    });
+    assert.equal(blocked.status, 401);
+    assert.equal(blocked.body.error.code, "invalid_credentials");
+
     const reactivated = await admin.req(`/api/v1/super-admin/admins/${created.body.data.id}`, {
       method: "PATCH",
       body: { active: true },
     });
     assert.equal(reactivated.status, 200);
     const backIn = await loginAdmin("operator@example.com", "Operator123!");
+
+    const audits = await admin.req("/api/v1/super-admin/audit-log?limit=50");
+    for (const action of ["admin.deactivated", "admin.activated"]) {
+      const entry = audits.body.data.find(
+        (row: { action: string; targetId: string }) =>
+          row.action === action && row.targetId === created.body.data.id,
+      );
+      assert.ok(entry, `${action} audit entry missing`);
+      assert.ok(entry.actorAdminId, `${action} audit entry missing an actor`);
+    }
 
     const rotated = await admin.req(`/api/v1/super-admin/admins/${created.body.data.id}/rotate-password`, {
       body: { password: "Rotated123!" },
@@ -654,6 +712,56 @@ describe("super admin", () => {
     const me = await withNewPassword.req("/api/v1/admin/auth/me");
     assert.equal(me.status, 200);
     assert.equal(me.body.data.lastLoginAt !== null, true);
+  });
+
+  dbIt("refuses to deactivate the last active super admin", async () => {
+    const me = (await admin.req("/api/v1/admin/auth/me")).body.data;
+    const other = await admin.req("/api/v1/super-admin/admins", {
+      body: {
+        email: "second-super@example.com",
+        name: "Second Super",
+        password: "SecondSuper123!",
+        role: "super_admin",
+      },
+    });
+    assert.equal(other.status, 201);
+    const deactivated = await admin.req(`/api/v1/super-admin/admins/${other.body.data.id}`, {
+      method: "PATCH",
+      body: { active: false },
+    });
+    assert.equal(deactivated.status, 200);
+
+    const remaining = (await admin.req("/api/v1/super-admin/admins")).body.data.filter(
+      (row: { role: string; active: boolean }) => row.role === "super_admin" && row.active,
+    );
+    assert.equal(remaining.length, 1);
+    assert.equal(remaining[0].id, me.id);
+
+    const selfDeactivate = await admin.req(`/api/v1/super-admin/admins/${me.id}`, {
+      method: "PATCH",
+      body: { active: false },
+    });
+    assert.equal(selfDeactivate.status, 400);
+    assert.equal(selfDeactivate.body.error.code, "cannot_modify_self");
+    assert.match(selfDeactivate.body.error.message, /own account/i);
+  });
+
+  dbIt("seeds only the super admin, never ADMIN_EMAIL or ADMIN_PASSWORD", async () => {
+    process.env.ADMIN_EMAIL = "legacy-admin@example.com";
+    process.env.ADMIN_PASSWORD = "LegacyAdmin123!";
+    try {
+      await seedAdmins();
+      const legacy = await db
+        .select()
+        .from(admins)
+        .where(eq(admins.email, "legacy-admin@example.com"));
+      assert.equal(legacy.length, 0);
+      assert.equal("ADMIN_EMAIL" in env, false);
+      assert.equal("ADMIN_PASSWORD" in env, false);
+    } finally {
+      delete process.env.ADMIN_EMAIL;
+      delete process.env.ADMIN_PASSWORD;
+    }
   });
 
   dbIt("returns audit entries newest first and caps the limit", async () => {

@@ -21,7 +21,15 @@ const createAdmin = z.object({
   role: z.enum(["admin", "super_admin"]),
 });
 
-const patchAdmin = z.object({ active: z.boolean() });
+const patchAdmin = z
+  .object({
+    name: z.string().trim().min(1, "Enter a name.").max(120).optional(),
+    email: z.string().trim().toLowerCase().email().max(254).optional(),
+    active: z.boolean().optional(),
+  })
+  .refine((body) => Object.values(body).some((value) => value !== undefined), {
+    message: "Nothing to update.",
+  });
 
 const rotatePassword = z.object({ password: z.string().min(8, "Use at least 8 characters.").max(200) });
 
@@ -63,31 +71,40 @@ superAdminRouter.patch(
   validate({ params: uuidParam, body: patchAdmin }),
   async (req, res, next) => {
     const { id } = req.params as unknown as z.infer<typeof uuidParam>;
-    const { active } = req.body as z.infer<typeof patchAdmin>;
+    const { name, email, active } = req.body as z.infer<typeof patchAdmin>;
+    // Also the last-super-admin guard: an actor can never deactivate itself, so at
+    // least one active super admin always remains.
     if (id === req.currentAdmin!.id) return next(cannotModifySelf());
 
     const [current] = await db.select().from(admins).where(eq(admins.id, id)).limit(1);
     if (!current) return next(notFound("Admin not found."));
 
-    const [row] = await db
-      .update(admins)
-      .set({
-        active,
-        // Deactivation and reactivation both invalidate outstanding sessions.
-        tokenVersion: current.tokenVersion + 1,
-        updatedAt: new Date(),
-      })
-      .where(eq(admins.id, id))
-      .returning();
+    try {
+      const [row] = await db
+        .update(admins)
+        .set({
+          ...(name === undefined ? {} : { name }),
+          ...(email === undefined ? {} : { email }),
+          // Deactivation and reactivation both invalidate outstanding sessions.
+          ...(active === undefined ? {} : { active, tokenVersion: current.tokenVersion + 1 }),
+          updatedAt: new Date(),
+        })
+        .where(eq(admins.id, id))
+        .returning();
 
-    await writeAudit({
-      actorAdminId: req.currentAdmin!.id,
-      action: active ? "admin.activated" : "admin.deactivated",
-      targetType: "admin",
-      targetId: id,
-      metadata: { email: current.email },
-    });
-    res.json({ data: toAdmin(row!) });
+      await writeAudit({
+        actorAdminId: req.currentAdmin!.id,
+        action:
+          active === undefined ? "admin.updated" : active ? "admin.activated" : "admin.deactivated",
+        targetType: "admin",
+        targetId: id,
+        metadata: { email: row!.email, changes: Object.keys(req.body as object) },
+      });
+      res.json({ data: toAdmin(row!) });
+    } catch (error) {
+      if (isUniqueViolation(error)) return next(emailTaken());
+      next(error);
+    }
   },
 );
 
