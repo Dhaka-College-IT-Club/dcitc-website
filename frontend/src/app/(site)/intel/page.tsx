@@ -1,6 +1,5 @@
-import Link from "next/link";
-import ContentImage from "@/components/ui/ContentImage";
 import { apiServer } from "@/lib/api";
+import IntelCard from "@/components/ui/IntelCard";
 import type { Intel } from "@/lib/api-types";
 
 export const revalidate = 60;
@@ -37,41 +36,7 @@ export default async function IntelsPage() {
         ) : (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {intels.map((intel) => (
-              <Link
-                key={intel.id}
-                href={`/intel/${intel.slug}`}
-                className="group relative bg-dc-panel p-0 border border-white/5 hover:border-white/30 transition-all duration-300 overflow-hidden cursor-pointer flex flex-col"
-              >
-                <div className="relative h-48 overflow-hidden">
-                  <ContentImage
-                    src={intel.image}
-                    alt={intel.title}
-                    sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
-                    className="object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                  <span className="absolute top-3 left-3 px-3 py-1 text-xs font-orbitron tracking-widest uppercase rounded bg-black/70 text-white">
-                    {intel.tag}
-                  </span>
-                </div>
-
-                <div className="p-5 flex flex-col grow">
-                  <h3 className="text-xl font-orbitron font-bold text-white mb-2 group-hover:text-slate-200 leading-tight">
-                    {intel.title}
-                  </h3>
-                  <p className="font-rajdhani text-slate-400 text-sm mb-3 grow">
-                    {intel.excerpt}
-                  </p>
-
-                  <div className="flex justify-between items-center pt-2 border-t border-white/5 mt-auto">
-                    <span className="text-xs font-rajdhani text-slate-500">
-                      {intel.date}
-                    </span>
-                    <span className="text-sm font-orbitron text-white/80 border-b border-transparent group-hover:border-white/50 transition-colors">
-                      Read More →
-                    </span>
-                  </div>
-                </div>
-              </Link>
+              <IntelCard key={intel.id} intel={intel} />
             ))}
           </div>
         )}
