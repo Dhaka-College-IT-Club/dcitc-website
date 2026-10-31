@@ -65,15 +65,15 @@ The first super admin comes from `SUPER_ADMIN_EMAIL` / `SUPER_ADMIN_PASSWORD` on
 # log in (sets the dcitc_admin cookie)
 curl -s -c admin.jar -H "content-type: application/json" \
   -d '{"email":"super@dcitc.local","password":"SuperAdmin123!"}' \
-  http://localhost:4000/api/v1/admin/auth/login
+  http://localhost:4000/api/v2/admin/auth/login
 
 # create a standard admin
 curl -s -b admin.jar -H "content-type: application/json" \
   -d '{"email":"ops@example.com","name":"Ops","password":"OpsPass123!","role":"admin"}' \
-  http://localhost:4000/api/v1/super-admin/admins
+  http://localhost:4000/api/v2/super-admin/admins
 
 # read the audit log
-curl -s -b admin.jar "http://localhost:4000/api/v1/super-admin/audit-log?limit=20"
+curl -s -b admin.jar "http://localhost:4000/api/v2/super-admin/audit-log?limit=20"
 ```
 
 Rotation and deactivation bump `token_version`, so every previous cookie for that admin

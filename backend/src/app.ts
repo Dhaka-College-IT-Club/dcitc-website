@@ -31,18 +31,18 @@ export function createApp(): express.Express {
     next();
   });
 
-  app.get("/api/v1/health", async (_req, res) => {
+  app.get("/api/v2/health", async (_req, res) => {
     const up = await ping();
     res.status(up ? 200 : 503).json({
       data: { status: up ? "ok" : "degraded", database: up ? "up" : "down" },
     });
   });
 
-  app.use("/api/v1/auth", authRouter);
-  app.use("/api/v1/admin", adminRouter);
-  app.use("/api/v1/super-admin", superAdminRouter);
-  app.use("/api/v1", publicRouter);
-  app.use("/api/v1", contactRouter);
+  app.use("/api/v2/auth", authRouter);
+  app.use("/api/v2/admin", adminRouter);
+  app.use("/api/v2/super-admin", superAdminRouter);
+  app.use("/api/v2", publicRouter);
+  app.use("/api/v2", contactRouter);
 
   app.use(notFoundHandler);
   app.use(errorHandler);

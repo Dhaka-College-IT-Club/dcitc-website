@@ -24,14 +24,14 @@ const codeFromLastMail = (): string => {
 
 async function requestSignupOtp(email: string): Promise<{ status: number; code?: string }> {
   testOutbox.length = 0;
-  const response = await client.req("/api/v1/auth/signup/request-otp", { body: { email } });
+  const response = await client.req("/api/v2/auth/signup/request-otp", { body: { email } });
   return { status: response.status, code: testOutbox.length ? codeFromLastMail() : undefined };
 }
 
 async function signup(email: string, name = "Test User", hscBatch = "DC-27"): Promise<string> {
   const first = await requestSignupOtp(email);
-  const verified = await client.req("/api/v1/auth/signup/verify-otp", { body: { email, code: first.code } });
-  const completed = await client.req("/api/v1/auth/signup/complete", {
+  const verified = await client.req("/api/v2/auth/signup/verify-otp", { body: { email, code: first.code } });
+  const completed = await client.req("/api/v2/auth/signup/complete", {
     body: { signupToken: verified.body.data.signupToken, name, hscBatch, password: "Password123!" },
   });
   assert.equal(completed.status, 201);
@@ -67,15 +67,15 @@ describe("signup", () => {
     assert.equal(first.status, 200);
     assert.equal(first.code?.length, 6);
 
-    const wrong = await client.req("/api/v1/auth/signup/verify-otp", { body: { email, code: "000000" } });
+    const wrong = await client.req("/api/v2/auth/signup/verify-otp", { body: { email, code: "000000" } });
     assert.equal(wrong.status, 400);
     assert.equal(wrong.body.error.code, "invalid_otp");
 
-    const verified = await client.req("/api/v1/auth/signup/verify-otp", { body: { email, code: first.code } });
+    const verified = await client.req("/api/v2/auth/signup/verify-otp", { body: { email, code: first.code } });
     assert.equal(verified.status, 200);
     assert.equal(typeof verified.body.data.signupToken, "string");
 
-    const completed = await client.req("/api/v1/auth/signup/complete", {
+    const completed = await client.req("/api/v2/auth/signup/complete", {
       body: {
         signupToken: verified.body.data.signupToken,
         name: "Signup User",
@@ -93,7 +93,7 @@ describe("signup", () => {
     assert.match(cookie!, /SameSite=Lax/i);
     assert.match(cookie!, /Path=\//i);
 
-    const me = await client.req("/api/v1/auth/me");
+    const me = await client.req("/api/v2/auth/me");
     assert.equal(me.status, 200);
     assert.equal(me.body.data.email, email);
     assert.equal(me.body.data.passwordHash, undefined);
@@ -102,7 +102,7 @@ describe("signup", () => {
   dbIt("returns a generic response and sends no mail for an existing account", async () => {
     await signup("existing@example.com");
     testOutbox.length = 0;
-    const response = await client.req("/api/v1/auth/signup/request-otp", {
+    const response = await client.req("/api/v2/auth/signup/request-otp", {
       body: { email: "existing@example.com" },
     });
     assert.equal(response.status, 200);
@@ -114,7 +114,7 @@ describe("signup", () => {
     const email = "cooldown@example.com";
     const first = await requestSignupOtp(email);
     assert.equal(first.status, 200);
-    const second = await client.req("/api/v1/auth/signup/request-otp", { body: { email } });
+    const second = await client.req("/api/v2/auth/signup/request-otp", { body: { email } });
     assert.equal(second.status, 200);
     assert.deepEqual(second.body, { data: { sent: true } });
     assert.equal(testOutbox.length, 1, "the cooldown must still block a second send");
@@ -126,14 +126,14 @@ describe("signup", () => {
     await signup(known);
 
     testOutbox.length = 0;
-    const knownFirst = await client.req("/api/v1/auth/signup/request-otp", { body: { email: known } });
-    const knownSecond = await client.req("/api/v1/auth/signup/request-otp", { body: { email: known } });
+    const knownFirst = await client.req("/api/v2/auth/signup/request-otp", { body: { email: known } });
+    const knownSecond = await client.req("/api/v2/auth/signup/request-otp", { body: { email: known } });
     assert.equal(knownFirst.status, 200);
     assert.equal(knownSecond.status, 200);
     assert.equal(testOutbox.length, 0);
 
-    const unknownFirst = await client.req("/api/v1/auth/signup/request-otp", { body: { email: unknown } });
-    const unknownSecond = await client.req("/api/v1/auth/signup/request-otp", { body: { email: unknown } });
+    const unknownFirst = await client.req("/api/v2/auth/signup/request-otp", { body: { email: unknown } });
+    const unknownSecond = await client.req("/api/v2/auth/signup/request-otp", { body: { email: unknown } });
     assert.equal(unknownFirst.status, 200);
     assert.equal(unknownSecond.status, 200);
     assert.equal(testOutbox.length, 1, "the cooldown blocks the second mail");
@@ -144,7 +144,7 @@ describe("signup", () => {
     const email = "expired@example.com";
     const first = await requestSignupOtp(email);
     await db.execute(sql`update otp_codes set expires_at = now() - interval '1 minute'`);
-    const verified = await client.req("/api/v1/auth/signup/verify-otp", { body: { email, code: first.code } });
+    const verified = await client.req("/api/v2/auth/signup/verify-otp", { body: { email, code: first.code } });
     assert.equal(verified.status, 400);
     assert.equal(verified.body.error.code, "otp_expired");
   });
@@ -153,24 +153,24 @@ describe("signup", () => {
     const email = "attempts@example.com";
     const first = await requestSignupOtp(email);
     for (let attempt = 1; attempt <= 4; attempt++) {
-      const response = await client.req("/api/v1/auth/signup/verify-otp", {
+      const response = await client.req("/api/v2/auth/signup/verify-otp", {
         body: { email, code: "999999" },
       });
       assert.equal(response.body.error.code, "invalid_otp");
     }
-    const fifth = await client.req("/api/v1/auth/signup/verify-otp", { body: { email, code: "999999" } });
+    const fifth = await client.req("/api/v2/auth/signup/verify-otp", { body: { email, code: "999999" } });
     assert.equal(fifth.status, 400);
     assert.equal(fifth.body.error.code, "otp_exhausted");
 
-    const correct = await client.req("/api/v1/auth/signup/verify-otp", { body: { email, code: first.code } });
+    const correct = await client.req("/api/v2/auth/signup/verify-otp", { body: { email, code: first.code } });
     assert.equal(correct.body.error.code, "otp_exhausted");
   });
 
   dbIt("refuses a weak password", async () => {
     const email = "weak@example.com";
     const first = await requestSignupOtp(email);
-    const verified = await client.req("/api/v1/auth/signup/verify-otp", { body: { email, code: first.code } });
-    const completed = await client.req("/api/v1/auth/signup/complete", {
+    const verified = await client.req("/api/v2/auth/signup/verify-otp", { body: { email, code: first.code } });
+    const completed = await client.req("/api/v2/auth/signup/complete", {
       body: { signupToken: verified.body.data.signupToken, name: "Weak", hscBatch: "", password: "short" },
     });
     assert.equal(completed.status, 400);
@@ -182,50 +182,50 @@ describe("login and session", () => {
   dbIt("logs in, rejects bad credentials and logs out", async () => {
     const email = "login@example.com";
     await signup(email, "Login User");
-    await client.req("/api/v1/auth/logout");
+    await client.req("/api/v2/auth/logout");
 
-    const wrong = await client.req("/api/v1/auth/login", { body: { email, password: "nope" } });
+    const wrong = await client.req("/api/v2/auth/login", { body: { email, password: "nope" } });
     assert.equal(wrong.status, 401);
     assert.equal(wrong.body.error.code, "invalid_credentials");
     assert.equal(wrong.setCookies.length, 0);
 
-    const unknown = await client.req("/api/v1/auth/login", {
+    const unknown = await client.req("/api/v2/auth/login", {
       body: { email: "ghost@example.com", password: "Password123!" },
     });
     assert.equal(unknown.status, 401);
     assert.equal(unknown.body.error.code, "invalid_credentials");
 
-    const ok = await client.req("/api/v1/auth/login", { body: { email, password: "Password123!" } });
+    const ok = await client.req("/api/v2/auth/login", { body: { email, password: "Password123!" } });
     assert.equal(ok.status, 200);
     assert.ok(ok.setCookies.some((c) => c.startsWith("dcitc_at=")));
 
-    const logout = await client.req("/api/v1/auth/logout", { method: "POST" });
+    const logout = await client.req("/api/v2/auth/logout", { method: "POST" });
     assert.equal(logout.status, 204);
-    const me = await client.req("/api/v1/auth/me");
+    const me = await client.req("/api/v2/auth/me");
     assert.equal(me.status, 401);
   });
 
   dbIt("does not accept an admin cookie for /auth/me", async () => {
-    await client.req("/api/v1/auth/logout");
-    const admin = await client.req("/api/v1/admin/auth/login", {
+    await client.req("/api/v2/auth/logout");
+    const admin = await client.req("/api/v2/admin/auth/login", {
       body: { email: process.env.SUPER_ADMIN_EMAIL!, password: process.env.SUPER_ADMIN_PASSWORD! },
     });
     assert.equal(admin.status, 200);
-    const me = await client.req("/api/v1/auth/me");
+    const me = await client.req("/api/v2/auth/me");
     assert.equal(me.status, 401);
   });
 
   dbIt("does not accept a signup token as a session cookie", async () => {
     const email = "signup-token-confusion@example.com";
     const first = await requestSignupOtp(email);
-    const verified = await client.req("/api/v1/auth/signup/verify-otp", {
+    const verified = await client.req("/api/v2/auth/signup/verify-otp", {
       body: { email, code: first.code },
     });
     assert.equal(verified.status, 200);
 
     const forged = new Client(baseUrl);
     forged.cookie = `dcitc_at=${verified.body.data.signupToken}`;
-    const me = await forged.req("/api/v1/auth/me");
+    const me = await forged.req("/api/v2/auth/me");
     assert.equal(me.status, 401);
   });
 });
@@ -238,27 +238,27 @@ describe("password reset", () => {
     assert.ok(oldCookie.includes("dcitc_at="));
 
     testOutbox.length = 0;
-    const forgot = await client.req("/api/v1/auth/password/forgot", { body: { email } });
+    const forgot = await client.req("/api/v2/auth/password/forgot", { body: { email } });
     assert.equal(forgot.status, 200);
     const code = codeFromLastMail();
 
-    const reset = await client.req("/api/v1/auth/password/reset", {
+    const reset = await client.req("/api/v2/auth/password/reset", {
       body: { email, code, password: "BrandNew123!" },
     });
     assert.equal(reset.status, 200);
 
     client.cookie = oldCookie;
-    const stale = await client.req("/api/v1/auth/me");
+    const stale = await client.req("/api/v2/auth/me");
     assert.equal(stale.status, 401);
 
     client.cookie = "";
-    const login = await client.req("/api/v1/auth/login", { body: { email, password: "BrandNew123!" } });
+    const login = await client.req("/api/v2/auth/login", { body: { email, password: "BrandNew123!" } });
     assert.equal(login.status, 200);
   });
 
   dbIt("returns the same generic response for an unknown email", async () => {
     testOutbox.length = 0;
-    const response = await client.req("/api/v1/auth/password/forgot", { body: { email: "nobody@example.com" } });
+    const response = await client.req("/api/v2/auth/password/forgot", { body: { email: "nobody@example.com" } });
     assert.equal(response.status, 200);
     assert.deepEqual(response.body, { data: { sent: true } });
     assert.equal(testOutbox.length, 0);
@@ -268,7 +268,7 @@ describe("password reset", () => {
 describe("email recovery", () => {
   dbIt("mails a match and stays silent otherwise, with identical responses", async () => {
     testOutbox.length = 0;
-    const matched = await client.req("/api/v1/auth/email/recover", {
+    const matched = await client.req("/api/v2/auth/email/recover", {
       body: { name: "signup user", hscBatch: "dc-26" },
     });
     assert.equal(matched.status, 200);
@@ -276,7 +276,7 @@ describe("email recovery", () => {
     assert.equal(testOutbox[0]!.to, "signup@example.com");
 
     testOutbox.length = 0;
-    const missed = await client.req("/api/v1/auth/email/recover", {
+    const missed = await client.req("/api/v2/auth/email/recover", {
       body: { name: "Nobody Here", hscBatch: "DC-99" },
     });
     assert.equal(missed.status, 200);
@@ -287,7 +287,7 @@ describe("email recovery", () => {
 
 describe("google oauth", () => {
   const start = async (target: Client) => {
-    const response = await target.req("/api/v1/auth/google/start", { method: "GET" });
+    const response = await target.req("/api/v2/auth/google/start", { method: "GET" });
     assert.equal(response.status, 302);
     const location = new URL(response.headers.get("location")!);
     return { location, state: location.searchParams.get("state")! };
@@ -299,12 +299,12 @@ describe("google oauth", () => {
     assert.ok(location.searchParams.get("state"));
     assert.ok(location.searchParams.get("client_id"));
     assert.equal(location.searchParams.get("scope"), "openid email profile");
-    assert.ok(location.searchParams.get("redirect_uri")?.endsWith("/api/v1/auth/google/callback"));
+    assert.ok(location.searchParams.get("redirect_uri")?.endsWith("/api/v2/auth/google/callback"));
   });
 
   dbIt("rejects a callback without the state cookie", async () => {
     const fresh = new Client(baseUrl);
-    const response = await fresh.req("/api/v1/auth/google/callback?code=abc&state=forged", { method: "GET" });
+    const response = await fresh.req("/api/v2/auth/google/callback?code=abc&state=forged", { method: "GET" });
     assert.equal(response.status, 302);
     assert.match(response.headers.get("location")!, /\/login\?error=oauth_state$/);
     assert.equal(response.setCookies.some((cookie) => cookie.startsWith("dcitc_at=")), false);
@@ -322,7 +322,7 @@ describe("google oauth", () => {
     });
 
     const { state } = await start(client);
-    const callback = await client.req(`/api/v1/auth/google/callback?code=abc&state=${state}`, { method: "GET" });
+    const callback = await client.req(`/api/v2/auth/google/callback?code=abc&state=${state}`, { method: "GET" });
     assert.equal(callback.status, 302);
     assert.match(callback.headers.get("location")!, /\/dashboard$/);
     assert.ok(callback.setCookies.some((c) => c.startsWith("dcitc_at=")));
@@ -344,7 +344,7 @@ describe("google oauth", () => {
     });
 
     const { state } = await start(client);
-    const callback = await client.req(`/api/v1/auth/google/callback?code=abc&state=${state}`, { method: "GET" });
+    const callback = await client.req(`/api/v2/auth/google/callback?code=abc&state=${state}`, { method: "GET" });
     assert.equal(callback.status, 302);
     assert.match(callback.headers.get("location")!, /\/dashboard$/);
 
@@ -352,7 +352,7 @@ describe("google oauth", () => {
     assert.equal(row?.email, "login@example.com");
 
     // Password login still works after linking.
-    const login = await client.req("/api/v1/auth/login", {
+    const login = await client.req("/api/v2/auth/login", {
       body: { email: "login@example.com", password: "Password123!" },
     });
     assert.equal(login.status, 200);
@@ -371,7 +371,7 @@ describe("google oauth", () => {
 
     const fresh = new Client(baseUrl);
     const { state } = await start(fresh);
-    const callback = await fresh.req(`/api/v1/auth/google/callback?code=abc&state=${state}`, { method: "GET" });
+    const callback = await fresh.req(`/api/v2/auth/google/callback?code=abc&state=${state}`, { method: "GET" });
     assert.equal(callback.status, 302);
     assert.match(callback.headers.get("location")!, /\/login\?error=oauth_email$/);
     assert.equal(callback.setCookies.some((c) => c.startsWith("dcitc_at=")), false);

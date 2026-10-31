@@ -88,7 +88,7 @@ function load(): Env {
   const parsed = envSchema.safeParse(source);
   if (!parsed.success) {
     const names = parsed.error.issues.map((issue) => issue.path.join(".") || "(root)");
-    // Only variable names are printed — never values.
+    // Only variable names are printed â€” never values.
     console.error(`Invalid environment configuration: ${[...new Set(names)].join(", ")}`);
     process.exit(1);
   }
@@ -99,4 +99,4 @@ export const env = load();
 
 export const isProduction = env.NODE_ENV === "production";
 export const googleRedirectUri =
-  env.GOOGLE_REDIRECT_URI ?? `${env.FRONTEND_URL.replace(/\/$/, "")}/api/v1/auth/google/callback`;
+  env.GOOGLE_REDIRECT_URI ?? `${env.FRONTEND_URL.replace(/\/$/, "")}/api/v2/auth/google/callback`;

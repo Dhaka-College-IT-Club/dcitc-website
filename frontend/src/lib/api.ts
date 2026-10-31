@@ -25,7 +25,7 @@ export async function apiFetch<T>(path: string, init?: Omit<RequestInit, "body">
   } else if (body instanceof FormData) {
     payload = body;
   }
-  const res = await fetch(`/api/v1${path}`, {
+  const res = await fetch(`/api/v2${path}`, {
     ...rest,
     headers,
     body: payload,
@@ -50,7 +50,7 @@ export async function apiFetch<T>(path: string, init?: Omit<RequestInit, "body">
 export async function apiServer<T>(path: string, revalidate?: number): Promise<T> {
   const origin = process.env.API_ORIGIN;
   if (!origin) throw new Error("API_ORIGIN is not set");
-  const res = await fetch(`${origin}/api/v1${path}`, {
+  const res = await fetch(`${origin}/api/v2${path}`, {
     next: revalidate !== undefined ? { revalidate } : undefined,
   });
   const text = await res.text();

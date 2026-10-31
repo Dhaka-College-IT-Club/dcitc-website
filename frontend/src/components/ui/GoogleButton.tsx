@@ -1,6 +1,6 @@
 export default function GoogleButton({
   label = "Continue with Google",
-  href = "/api/v1/auth/google/start",
+  href = "/api/v2/auth/google/start",
 }: {
   label?: string;
   href?: string;
