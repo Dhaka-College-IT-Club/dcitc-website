@@ -90,7 +90,7 @@ export const leadership = pgTable(
     role: text("role").notNull(),
     tier: text("tier").notNull(),
     batch: text("batch").notNull(),
-    image: text("image").notNull(),
+    image: text("image"),
     facebook: text("facebook"),
     linkedin: text("linkedin"),
     github: text("github"),

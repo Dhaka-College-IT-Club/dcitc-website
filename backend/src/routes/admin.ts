@@ -24,6 +24,11 @@ import { signUpload } from "../uploads/index.js";
 export const adminRouter = Router();
 
 const imageField = z.string().trim().min(1, "Upload an image.");
+// Leadership photos are optional; achievements and intels still use imageField.
+const optionalImage = z
+  .union([z.string().trim().min(1, "Upload an image."), z.null()])
+  .optional()
+  .default(null);
 const optionalLink = z
   .union([
     z.string().trim().url("Use a full http(s) link.").regex(/^https?:\/\//i, "Use a full http(s) link."),
@@ -228,7 +233,7 @@ const leaderBody = z.object({
   role: z.string().trim().min(1, "Enter a role.").max(120),
   tier: z.enum(["executive", "chief", "joint"]),
   batch: z.string().trim().min(1, "Enter a batch.").max(40),
-  image: imageField,
+  image: optionalImage,
   facebook: optionalLink.optional().default(null),
   linkedin: optionalLink.optional().default(null),
   github: optionalLink.optional().default(null),

@@ -7,6 +7,11 @@ import SectionTitle from "../ui/SectionTitle";
 import { LEADERSHIP } from "../../constants";
 import type { Leader } from "../../lib/api-types";
 
+function initials(name: string) {
+  const parts = name.trim().split(/\s+/);
+  return `${parts[0]?.[0] ?? ""}${parts[1]?.[0] ?? ""}`.toUpperCase() || "DC";
+}
+
 const LEADERSHIP_SUBTITLE: string = LEADERSHIP.SUBTITLE;
 const LEADERSHIP_EXEC_LABEL: string = LEADERSHIP.LABELS.EXECUTIVE;
 const LEADERSHIP_CHIEF_LABEL: string = LEADERSHIP.LABELS.CHIEF;
@@ -77,12 +82,20 @@ const Leadership: React.FC<{ members?: Leader[] }> = ({ members = [] }) => {
                 "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)",
             }}
           >
-            <Image
-              src={member.image ?? "/logo.png"}
-              alt={`${member.name} - ${member.role}`}
-              fill
-              className="object-cover transition-all duration-500 group-hover:scale-110"
-            />
+            {member.image ? (
+              <Image
+                src={member.image}
+                alt={`${member.name} - ${member.role}`}
+                fill
+                className="object-cover transition-all duration-500 group-hover:scale-110"
+              />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-white/10 to-black">
+                <span className="font-orbitron text-xl font-bold tracking-[0.2em] text-slate-400 md:text-2xl">
+                  {initials(member.name)}
+                </span>
+              </div>
+            )}
             <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
           </div>
 

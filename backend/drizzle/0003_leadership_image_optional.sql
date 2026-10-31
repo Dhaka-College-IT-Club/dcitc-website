@@ -1,0 +1,1 @@
+ALTER TABLE "leadership" ALTER COLUMN "image" DROP NOT NULL;

@@ -51,7 +51,6 @@ function validate(form: FormState) {
   if (!form.name.trim()) errors.name = "Enter the member's name.";
   if (!form.role.trim()) errors.role = "Enter a role or title.";
   if (!form.batch.trim()) errors.batch = "Enter the HSC batch.";
-  if (!form.image) errors.image = "Upload a photo.";
   for (const key of linkKeys) {
     const value = form[key].trim();
     if (value && !/^https?:\/\/\S+$/i.test(value)) {
@@ -97,6 +96,9 @@ export default function AdminLeadershipPage() {
   }
 
   useEffect(() => {
+    // load() awaits the request before touching state; the rule only guards
+    // synchronous setState in an effect body.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void load();
   }, []);
 
@@ -130,7 +132,7 @@ export default function AdminLeadershipPage() {
       role: item.role,
       tier: item.tier,
       batch: item.batch,
-      image: item.image,
+      image: item.image ?? "",
       facebook: item.facebook ?? "",
       linkedin: item.linkedin ?? "",
       github: item.github ?? "",
@@ -157,7 +159,7 @@ export default function AdminLeadershipPage() {
       role: form.role.trim(),
       tier: form.tier,
       batch: form.batch.trim(),
-      image: form.image,
+      image: form.image || null,
       facebook: form.facebook.trim() || null,
       linkedin: form.linkedin.trim() || null,
       github: form.github.trim() || null,
@@ -448,7 +450,7 @@ export default function AdminLeadershipPage() {
               onChange={(url) => update("image", url)}
               shape="portrait"
               error={fieldErrors.image}
-              hint="Square portrait works best. Falls back to the club logo."
+              hint="Optional. Falls back to the member's initials when empty."
             />
           </div>
 

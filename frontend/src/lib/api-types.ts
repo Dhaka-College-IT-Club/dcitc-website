@@ -44,7 +44,7 @@ export type Leader = {
   role: string;
   tier: "executive" | "chief" | "joint";
   batch: string;
-  image: string;
+  image: string | null;
   facebook: string | null;
   linkedin: string | null;
   github: string | null;
