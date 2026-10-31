@@ -31,21 +31,21 @@ const Logo: React.FC = () => (
 );
 
 const ApplyButton: React.FC = () => (
-  <a
+  <Link
     href="/signup"
     className="px-6 py-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-orbitron text-sm tracking-wider rounded-none backdrop-blur-sm transition-all hover:shadow-[0_0_15px_rgba(255,255,255,0.3)] -skew-x-10"
   >
     <span className="skew-x-10 inline-block cursor-pointer">JOIN DCITC</span>
-  </a>
+  </Link>
 );
 
 const LoginButton: React.FC = () => (
-  <a
+  <Link
     href="/login"
     className="px-6 py-2 border border-white/20 text-slate-300 hover:text-white hover:border-white/40 font-orbitron text-sm tracking-wider rounded-none transition-all -skew-x-10"
   >
     <span className="skew-x-10 inline-block cursor-pointer">LOGIN</span>
-  </a>
+  </Link>
 );
 
 interface AccountMenuProps {
@@ -164,7 +164,7 @@ const DesktopNav: React.FC<DesktopNavProps> = ({ pathname, auth, signingOut, onL
         ? pathname === "/"
         : pathname === item.href || pathname.startsWith(`${item.href}/`);
       return (
-        <a
+        <Link
           key={item.label}
           href={item.href}
           className={`font-rajdhani font-semibold text-lg transition-colors relative group tracking-wider ${isActive ? "text-white" : "text-slate-400 hover:text-white"
@@ -172,7 +172,7 @@ const DesktopNav: React.FC<DesktopNavProps> = ({ pathname, auth, signingOut, onL
         >
           {item.label}
           <span className={`absolute -bottom-1 left-0 h-0.5 bg-white transition-all ${isActive ? "w-full" : "w-0 group-hover:w-full"}`}></span>
-        </a>
+        </Link>
       );
     })}
 
@@ -229,7 +229,7 @@ const MobileNavMenu: React.FC<MobileNavMenuProps> = ({
           ? pathname === "/"
           : pathname === item.href || pathname.startsWith(`${item.href}/`);
         return (
-          <a
+          <Link
             key={item.label}
             href={item.href}
             onClick={onClose}
@@ -237,7 +237,7 @@ const MobileNavMenu: React.FC<MobileNavMenuProps> = ({
               }`}
           >
             {item.label}
-          </a>
+          </Link>
         );
       })}
 

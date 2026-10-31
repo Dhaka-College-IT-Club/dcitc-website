@@ -53,12 +53,12 @@ const Footer: React.FC = () => {
             <ul className="space-y-2">
               {NAV_ITEMS.map((item) => (
                 <li key={item.label}>
-                  <a
+                  <Link
                     href={item.href}
                     className="font-rajdhani text-slate-400 text-sm tracking-wide hover:text-white transition-colors"
                   >
                     {item.label}
-                  </a>
+                  </Link>
                 </li>
               ))}
               <li>
@@ -109,7 +109,7 @@ const Footer: React.FC = () => {
             &copy; {new Date().getFullYear()} Dhaka College Information & Technology Club. All rights reserved.
           </p>
           <p>
-            Designed & Developed by <span className="text-orange-500">DC Swartz</span>
+            Designed & Developed by <span className="text-orange-500">DCITC Team</span>
           </p>
         </div>
       </div>

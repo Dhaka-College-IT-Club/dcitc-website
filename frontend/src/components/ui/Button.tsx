@@ -1,4 +1,5 @@
 import { Loader2 } from "lucide-react";
+import Link from "next/link";
 import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ReactNode } from "react";
 
 const variants = {
@@ -74,6 +75,20 @@ export default function Button({
   );
 
   if (href) {
+    // Internal routes must go through Link, otherwise every click is a full page load.
+    if (!/^([a-z]+:)?\/\//i.test(href)) {
+      return (
+        <Link
+          href={href}
+          target={target}
+          rel={rel}
+          className={classes}
+          {...(props as AnchorHTMLAttributes<HTMLAnchorElement>)}
+        >
+          {content}
+        </Link>
+      );
+    }
     return (
       <a
         href={href}
