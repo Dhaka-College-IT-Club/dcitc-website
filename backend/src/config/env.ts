@@ -12,6 +12,7 @@ const envSchema = z
 
     DATABASE_URL: z.string().min(1),
     TEST_DATABASE_URL: z.string().min(1).optional(),
+    DB_SSL_CA: z.string().min(1).optional(),
 
     JWT_USER_SECRET: z.string().min(32, "must be at least 32 characters"),
     JWT_ADMIN_SECRET: z.string().min(32, "must be at least 32 characters"),

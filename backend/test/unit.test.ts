@@ -7,6 +7,7 @@ import { describe, it } from "node:test";
 import { hashPassword, verifyPassword } from "../src/lib/password.js";
 import { signAdminToken, signUserToken, verifyAdminToken, verifyUserToken } from "../src/lib/jwt.js";
 import { verifyGoogleIdToken } from "../src/services/google.js";
+import { sslConfig } from "../src/db/ssl.js";
 import { renderOtpEmail } from "../src/mail/index.js";
 import { SignJWT, createLocalJWKSet, exportJWK, generateKeyPair } from "jose";
 
@@ -156,6 +157,32 @@ describe("mail failure handling", () => {
     assert.equal(result.code, 0, `expected MailDeliveryError, got exit ${result.code}`);
     assert.ok(!result.output.includes("123456"));
     assert.ok(!result.output.includes("secret-recipient@example.com"));
+  });
+});
+
+describe("database TLS", () => {
+  const remote = "postgresql://user:pass@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres";
+  const local = "postgresql://postgres:postgres@127.0.0.1:54322/postgres";
+
+  it("skips TLS for local hosts even in production", () => {
+    assert.equal(sslConfig(local, "production"), false);
+    assert.equal(sslConfig("postgresql://postgres:postgres@localhost:54322/postgres", "production"), false);
+  });
+
+  it("verifies the certificate for remote production connections", () => {
+    assert.deepEqual(sslConfig(remote, "production"), { rejectUnauthorized: true });
+  });
+
+  it("keeps TLS off outside production", () => {
+    assert.equal(sslConfig(remote, "development"), false);
+    assert.equal(sslConfig(remote, "test"), false);
+  });
+
+  it("passes a configured CA without weakening verification", () => {
+    assert.deepEqual(sslConfig(remote, "production", "PEM\\nLINE"), {
+      rejectUnauthorized: true,
+      ca: "PEM\nLINE",
+    });
   });
 });
 

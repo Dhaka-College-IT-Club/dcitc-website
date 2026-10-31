@@ -2,14 +2,13 @@ import { drizzle } from "drizzle-orm/node-postgres";
 import pg from "pg";
 import { env } from "../config/env.js";
 import * as schema from "./schema.js";
-
-const isLocal = /(^|@)(localhost|127\.0\.0\.1|::1)[:/]/.test(env.DATABASE_URL);
+import { sslConfig } from "./ssl.js";
 
 export function createPool(connectionString: string): pg.Pool {
   return new pg.Pool({
     connectionString,
     max: 10,
-    ssl: isLocal ? false : { rejectUnauthorized: false },
+    ssl: sslConfig(connectionString, env.NODE_ENV, env.DB_SSL_CA),
   });
 }
 
