@@ -1,5 +1,4 @@
-import Link from "next/link";
-import ContentImage from "@/components/ui/ContentImage";
+import AchievementCard from "@/components/ui/AchievementCard";
 import { apiServer } from "@/lib/api";
 import type { Achievement } from "@/lib/api-types";
 
@@ -37,34 +36,7 @@ export default async function AchievementsPage() {
         ) : (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {achievements.map((item) => (
-              <Link
-                key={item.id}
-                href={`/achievements/${item.id}`}
-                className="group bg-dc-panel border border-white/10 p-6 flex flex-col gap-3 hover:border-white/40 hover:-translate-y-2 transition-all duration-300"
-              >
-                <div className="relative w-full h-40 mb-2 overflow-hidden border border-white/10 bg-black/40">
-                  <ContentImage
-                    src={item.image}
-                    alt={item.title}
-                    sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
-                    className="object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                </div>
-                <span className="text-xs font-orbitron tracking-[0.3em] text-slate-500 uppercase">
-                  {item.year}
-                </span>
-                <h2 className="text-lg md:text-xl font-orbitron text-white group-hover:text-slate-200">
-                  {item.title}
-                </h2>
-                <p className="font-rajdhani text-slate-400 text-sm leading-relaxed line-clamp-3">
-                  {item.detail}
-                </p>
-                <div className="mt-auto pt-4 border-t border-white/5 flex justify-end">
-                  <span className="text-sm font-orbitron text-white/80 border-b border-transparent group-hover:border-white/50 transition-colors">
-                    Mission Briefing →
-                  </span>
-                </div>
-              </Link>
+              <AchievementCard key={item.id} achievement={item} />
             ))}
           </div>
         )}
