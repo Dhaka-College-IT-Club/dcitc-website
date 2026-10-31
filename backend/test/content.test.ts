@@ -194,6 +194,12 @@ describe("achievement administration", () => {
     assert.equal(missing.status, 400);
     assert.ok(missing.body.error.fields.image);
 
+    const omitted = achievement();
+    delete (omitted as { image?: string }).image;
+    const withoutImage = await admin.req("/api/v1/admin/achievements", { body: omitted });
+    assert.equal(withoutImage.status, 400);
+    assert.ok(withoutImage.body.error.fields.image);
+
     const created = await admin.req("/api/v1/admin/achievements", { body: achievement() });
     assert.equal(created.status, 201);
     assert.equal(created.body.data.year, 2025);
@@ -257,6 +263,14 @@ describe("achievement administration", () => {
 });
 
 describe("intel administration", () => {
+  dbIt("requires an image", async () => {
+    const payload = intel("no-image");
+    delete (payload as { image?: string }).image;
+    const missing = await admin.req("/api/v1/admin/intels", { body: payload });
+    assert.equal(missing.status, 400);
+    assert.ok(missing.body.error.fields.image);
+  });
+
   dbIt("rejects duplicate slugs and keeps slugs immutable", async () => {
     const created = await admin.req("/api/v1/admin/intels", { body: intel("my-intel") });
     assert.equal(created.status, 201);
@@ -296,15 +310,34 @@ describe("intel administration", () => {
     assert.equal(conflict.status, 409);
     assert.equal(conflict.body.error.code, "slot_taken");
   });
+
+  dbIt("deletes an intel and records the deletion", async () => {
+    const created = await admin.req("/api/v1/admin/intels", { body: intel("delete-intel") });
+    assert.equal(created.status, 201);
+
+    const deleted = await admin.req(`/api/v1/admin/intels/${created.body.data.id}`, { method: "DELETE" });
+    assert.equal(deleted.status, 204);
+
+    const missing = await new Client(baseUrl).req("/api/v1/intels/delete-intel");
+    assert.equal(missing.status, 404);
+
+    const audit = await admin.req("/api/v1/super-admin/audit-log?limit=20");
+    assert.ok(
+      audit.body.data.some(
+        (entry: { action: string; targetId: string }) =>
+          entry.action === "intel.deleted" && entry.targetId === String(created.body.data.id),
+      ),
+    );
+  });
 });
 
 describe("leadership administration", () => {
-  dbIt("requires an image, validates tier and links, and orders by sortOrder", async () => {
+  dbIt("makes the image optional, validates tier and links, and orders by sortOrder", async () => {
     const missingImage = await admin.req("/api/v1/admin/leadership", {
       body: { name: "No Image", role: "Member", tier: "joint", batch: "DC-27" },
     });
-    assert.equal(missingImage.status, 400);
-    assert.ok(missingImage.body.error.fields.image);
+    assert.equal(missingImage.status, 201);
+    assert.equal(missingImage.body.data.image, null);
 
     const badTier = await admin.req("/api/v1/admin/leadership", {
       body: { name: "Bad Tier", role: "Member", tier: "director", batch: "DC-27", image: "/x.png" },
@@ -359,9 +392,93 @@ describe("leadership administration", () => {
     const after = await names();
     assert.ok(after.indexOf("Reorder Me") < after.indexOf("Only LinkedIn"));
 
-    for (const id of [created.body.data.id, sibling.body.data.id]) {
+    const promoted = await admin.req(`/api/v1/admin/leadership/${created.body.data.id}`, {
+      method: "PATCH",
+      body: { batch: "DC-26", tier: "chief", role: "Deputy" },
+    });
+    assert.equal(promoted.status, 200);
+    assert.equal(promoted.body.data.batch, "DC-26");
+    assert.equal(promoted.body.data.tier, "chief");
+
+    const moved = await new Client(baseUrl).req("/api/v1/leadership?batch=DC-26");
+    const published = moved.body.data.find((row: { id: number }) => row.id === created.body.data.id);
+    assert.equal(published?.batch, "DC-26");
+    assert.equal(published?.tier, "chief");
+    assert.equal(published?.role, "Deputy");
+
+    for (const id of [created.body.data.id, sibling.body.data.id, missingImage.body.data.id]) {
       const removed = await admin.req(`/api/v1/admin/leadership/${id}`, { method: "DELETE" });
       assert.equal(removed.status, 204);
+    }
+
+    const audit = await admin.req("/api/v1/super-admin/audit-log?limit=20");
+    assert.ok(audit.body.data.some((entry: { action: string }) => entry.action === "leadership.deleted"));
+  });
+});
+
+describe("plain admin content access", () => {
+  dbIt("can create, update and delete all three content types but cannot reach super-admin routes", async () => {
+    await db.insert(admins).values({
+      email: "content-admin@example.com",
+      name: "Content Admin",
+      passwordHash: await hashPassword("Content123!"),
+      role: "admin",
+    });
+    const session = await loginAdmin("content-admin@example.com", "Content123!");
+
+    const achievementCreated = await session.req("/api/v1/admin/achievements", {
+      body: achievement({ title: "Plain admin achievement" }),
+    });
+    assert.equal(achievementCreated.status, 201);
+    const achievementPatched = await session.req(
+      `/api/v1/admin/achievements/${achievementCreated.body.data.id}`,
+      { method: "PATCH", body: { detail: "Updated by a plain admin." } },
+    );
+    assert.equal(achievementPatched.status, 200);
+    const achievementDeleted = await session.req(
+      `/api/v1/admin/achievements/${achievementCreated.body.data.id}`,
+      { method: "DELETE" },
+    );
+    assert.equal(achievementDeleted.status, 204);
+
+    const intelCreated = await session.req("/api/v1/admin/intels", {
+      body: intel("plain-admin-intel"),
+    });
+    assert.equal(intelCreated.status, 201);
+    const intelPatched = await session.req(`/api/v1/admin/intels/${intelCreated.body.data.id}`, {
+      method: "PATCH",
+      body: { title: "Plain admin intel" },
+    });
+    assert.equal(intelPatched.status, 200);
+    const intelDeleted = await session.req(`/api/v1/admin/intels/${intelCreated.body.data.id}`, {
+      method: "DELETE",
+    });
+    assert.equal(intelDeleted.status, 204);
+
+    const leaderCreated = await session.req("/api/v1/admin/leadership", {
+      body: { name: "Plain Admin Leader", role: "Member", tier: "joint", batch: "DC-27" },
+    });
+    assert.equal(leaderCreated.status, 201);
+    const leaderPatched = await session.req(
+      `/api/v1/admin/leadership/${leaderCreated.body.data.id}`,
+      { method: "PATCH", body: { role: "Joint Secretary" } },
+    );
+    assert.equal(leaderPatched.status, 200);
+    const leaderDeleted = await session.req(
+      `/api/v1/admin/leadership/${leaderCreated.body.data.id}`,
+      { method: "DELETE" },
+    );
+    assert.equal(leaderDeleted.status, 204);
+
+    for (const path of ["/api/v1/super-admin/admins", "/api/v1/super-admin/audit-log"]) {
+      const forbidden = await session.req(path);
+      assert.equal(forbidden.status, 403);
+      assert.equal(forbidden.body.error.code, "forbidden");
+    }
+
+    const audit = await admin.req("/api/v1/super-admin/audit-log?limit=30");
+    for (const action of ["achievement.deleted", "intel.deleted", "leadership.deleted"]) {
+      assert.ok(audit.body.data.some((entry: { action: string }) => entry.action === action), `${action} missing`);
     }
   });
 });
