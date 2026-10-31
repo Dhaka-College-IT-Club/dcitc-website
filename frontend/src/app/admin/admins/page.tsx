@@ -29,14 +29,15 @@ export default function AdminAdminsPage() {
   const router = useRouter();
   const toast = useToast();
   const [items, setItems] = useState<Admin[]>([]);
-  const [me, setMe] = useState<{ id: number; role: string } | null>(null);
+  const [me, setMe] = useState<{ id: string; role: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [query, setQuery] = useState("");
 
   const [createOpen, setCreateOpen] = useState(false);
   const [form, setForm] = useState({
-    username: "",
+    name: "",
+    email: "",
     password: "",
     role: "admin",
   });
@@ -82,12 +83,12 @@ export default function AdminAdminsPage() {
     const needle = query.trim().toLowerCase();
     if (!needle) return items;
     return items.filter((item) =>
-      `${item.username} ${item.role}`.toLowerCase().includes(needle)
+      `${item.name} ${item.email} ${item.role}`.toLowerCase().includes(needle)
     );
   }, [items, query]);
 
   function openCreate() {
-    setForm({ username: "", password: "", role: "admin" });
+    setForm({ name: "", email: "", password: "", role: "admin" });
     setFormErrors({});
     setCreateOpen(true);
   }
@@ -96,7 +97,10 @@ export default function AdminAdminsPage() {
     event.preventDefault();
     if (saving) return;
     const errors: Record<string, string> = {};
-    if (!form.username.trim()) errors.username = "Enter a username.";
+    if (!form.name.trim()) errors.name = "Enter a name.";
+    if (!/^\S+@\S+\.\S+$/.test(form.email.trim())) {
+      errors.email = "Enter a valid email address.";
+    }
     if (form.password.length < 8) {
       errors.password = "Use at least 8 characters.";
     }
@@ -108,12 +112,13 @@ export default function AdminAdminsPage() {
       await apiFetch("/super-admin/admins", {
         method: "POST",
         body: {
-          username: form.username.trim(),
+          name: form.name.trim(),
+          email: form.email.trim(),
           password: form.password,
           role: form.role,
         },
       });
-      toast.push(`${form.username.trim()} can now sign in.`);
+      toast.push(`${form.email.trim()} can now sign in.`);
       setCreateOpen(false);
       await load();
     } catch (err) {
@@ -138,8 +143,8 @@ export default function AdminAdminsPage() {
       });
       toast.push(
         toggling.active
-          ? `${toggling.username} deactivated.`
-          : `${toggling.username} reactivated.`
+          ? `${toggling.email} deactivated.`
+          : `${toggling.email} reactivated.`
       );
       setToggling(null);
       await load();
@@ -177,7 +182,7 @@ export default function AdminAdminsPage() {
         `/super-admin/admins/${rotating.id}/rotate-password`,
         { method: "POST", body: { password: rotatePassword } }
       );
-      toast.push(`Password rotated for ${rotating.username}.`);
+      toast.push(`Password rotated for ${rotating.email}.`);
       setRotating(null);
     } catch (err) {
       const apiError = err as { message?: string };
@@ -189,19 +194,24 @@ export default function AdminAdminsPage() {
 
   const columns: Column<Admin>[] = [
     {
-      key: "username",
+      key: "operator",
       header: "Operator",
       mobilePrimary: true,
       render: (item) => (
-        <span className="flex items-center gap-2">
-          <span className="font-rajdhani text-sm font-semibold text-white">
-            {item.username}
-          </span>
-          {item.id === me?.id ? (
-            <span className="border border-white/20 px-1 py-0.5 font-orbitron text-[8px] uppercase tracking-[0.12em] text-slate-400">
-              You
+        <span className="flex flex-col">
+          <span className="flex items-center gap-2">
+            <span className="font-rajdhani text-sm font-semibold text-white">
+              {item.name}
             </span>
-          ) : null}
+            {item.id === me?.id ? (
+              <span className="border border-white/20 px-1 py-0.5 font-orbitron text-[8px] uppercase tracking-[0.12em] text-slate-400">
+                You
+              </span>
+            ) : null}
+          </span>
+          <span className="font-rajdhani text-xs text-slate-500">
+            {item.email}
+          </span>
         </span>
       ),
     },
@@ -332,15 +342,24 @@ export default function AdminAdminsPage() {
       >
         <form onSubmit={create} className="space-y-5" noValidate>
           <TextField
-            label="Username"
-            name="username"
+            label="Name"
+            name="name"
             autoComplete="off"
-            value={form.username}
-            onChange={(event) =>
-              setForm({ ...form, username: event.target.value })
-            }
-            error={formErrors.username}
-            placeholder="e.g. content-lead"
+            value={form.name}
+            onChange={(event) => setForm({ ...form, name: event.target.value })}
+            error={formErrors.name}
+            placeholder="e.g. Content Lead"
+            required
+          />
+          <TextField
+            label="Email"
+            name="email"
+            type="email"
+            autoComplete="off"
+            value={form.email}
+            onChange={(event) => setForm({ ...form, email: event.target.value })}
+            error={formErrors.email}
+            placeholder="operator@example.com"
             required
           />
           <PasswordField
@@ -391,7 +410,7 @@ export default function AdminAdminsPage() {
         title="Rotate password"
         description={
           rotating
-            ? `Set a new password for ${rotating.username}. Existing sessions are invalidated.`
+            ? `Set a new password for ${rotating.email}. Existing sessions are invalidated.`
             : ""
         }
       >
@@ -439,8 +458,8 @@ export default function AdminAdminsPage() {
         description={
           toggling
             ? toggling.active
-              ? `${toggling.username} will be signed out and cannot sign in until reactivated.`
-              : `${toggling.username} will be able to sign in again.`
+              ? `${toggling.email} will be signed out and cannot sign in until reactivated.`
+              : `${toggling.email} will be able to sign in again.`
             : ""
         }
         confirmLabel={toggling?.active ? "Deactivate" : "Reactivate"}
