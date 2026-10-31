@@ -16,7 +16,7 @@
     "db:migrate": "tsx src/db/migrate.ts",
     "db:seed": "tsx scripts/seed.ts",
     "db:roles": "tsx scripts/setup-local-db.ts",
-    "db:reset": "drizzle-kit drop --force && npm run db:migrate && npm run db:roles && npm run db:seed",
+    "db:reset": "node scripts/reset-db.mjs && npm run db:migrate && npm run db:roles && npm run db:seed",
     "db:test": "node scripts/create-test-db.mjs",
     "db:start": "supabase start",
     "db:stop": "supabase stop",

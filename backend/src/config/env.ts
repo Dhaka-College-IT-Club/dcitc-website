@@ -88,7 +88,12 @@ const envSchema = z
 export type Env = z.infer<typeof envSchema>;
 
 function load(): Env {
-  const parsed = envSchema.safeParse(process.env);
+  // Empty values are treated as "not set" so the example file can leave optional
+  // entries blank; required entries then fail with a clear variable name.
+  const source = Object.fromEntries(
+    Object.entries(process.env).filter(([, value]) => typeof value === "string" && value !== ""),
+  );
+  const parsed = envSchema.safeParse(source);
   if (!parsed.success) {
     const names = parsed.error.issues.map((issue) => issue.path.join(".") || "(root)");
     // Only variable names are printed — never values.
