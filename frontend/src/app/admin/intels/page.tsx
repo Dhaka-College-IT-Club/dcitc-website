@@ -120,6 +120,7 @@ export default function AdminIntelsPage() {
     if (!form.content.trim()) errors.content = "Write the article body.";
     if (!form.tag.trim()) errors.tag = "Add a tag.";
     if (!form.date.trim()) errors.date = "Add a date label, e.g. Nov 2025.";
+    if (!form.image) errors.image = "Upload the cover image.";
     return errors;
   }
 
@@ -138,7 +139,7 @@ export default function AdminIntelsPage() {
       content: form.content.trim(),
       tag: form.tag.trim(),
       date: form.date.trim(),
-      image: form.image || null,
+      image: form.image,
     };
     try {
       if (editing) {
@@ -437,6 +438,7 @@ export default function AdminIntelsPage() {
               value={form.image}
               onChange={(url) => setForm({ ...form, image: url })}
               shape="wide"
+              error={fieldErrors.image}
             />
           </div>
 

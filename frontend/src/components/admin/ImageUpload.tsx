@@ -16,27 +16,29 @@ export default function ImageUpload({
   onChange,
   shape = "wide",
   hint = "PNG, JPG or WebP. Max 5 MB.",
+  error,
 }: {
   label: string;
   value: string;
   onChange: (url: string) => void;
   shape?: keyof typeof shapes;
   hint?: string;
+  error?: string;
 }) {
   const id = useId();
   const [uploading, setUploading] = useState(false);
-  const [error, setError] = useState("");
+  const [uploadError, setUploadErrorState] = useState("");
 
   async function handleFile(file: File | undefined) {
     if (!file) return;
     setUploading(true);
-    setError("");
+    setUploadErrorState("");
     try {
       const url = await uploadImage(file);
       onChange(url);
     } catch (err) {
       const apiError = err as { message?: string };
-      setError(apiError?.message || "Upload failed. Try a smaller image.");
+      setUploadErrorState(apiError?.message || "Upload failed. Try a smaller image.");
     } finally {
       setUploading(false);
     }
@@ -84,7 +86,7 @@ export default function ImageUpload({
                 type="button"
                 onClick={() => {
                   onChange("");
-                  setError("");
+                  setUploadErrorState("");
                 }}
                 className="inline-flex h-8 items-center gap-1.5 border border-white/10 px-2.5 font-orbitron text-[10px] uppercase tracking-[0.14em] text-slate-500 transition-colors hover:border-red-400/50 hover:text-red-300"
               >
@@ -101,12 +103,17 @@ export default function ImageUpload({
               {error}
             </p>
           ) : null}
+          {uploadError ? (
+            <p role="alert" className="font-rajdhani text-xs text-red-300">
+              {uploadError}
+            </p>
+          ) : null}
         </div>
       </div>
       <input
         id={id}
         type="file"
-        accept="image/png,image/jpeg,image/webp,image/gif"
+        accept="image/png,image/jpeg,image/webp"
         className="sr-only"
         disabled={uploading}
         onChange={(event) => {

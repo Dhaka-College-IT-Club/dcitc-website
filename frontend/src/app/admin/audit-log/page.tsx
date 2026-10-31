@@ -72,7 +72,7 @@ export default function AdminAuditLogPage() {
     const needle = query.trim().toLowerCase();
     if (!needle) return items;
     return items.filter((entry) =>
-      `${entry.action} ${entry.actorId ?? "system"} ${entry.targetType ?? ""} ${
+      `${entry.action} ${entry.actorAdminId ?? "system"} ${entry.targetType ?? ""} ${
         entry.targetId ?? ""
       }`
         .toLowerCase()
@@ -101,7 +101,7 @@ export default function AdminAuditLogPage() {
       header: "Actor",
       render: (entry) => (
         <span className="font-rajdhani text-sm text-slate-300">
-          {entry.actorId === null ? "System" : `Admin #${entry.actorId}`}
+          {entry.actorAdminId === null ? "System" : `Admin ${entry.actorAdminId.slice(0, 8)}`}
         </span>
       ),
     },

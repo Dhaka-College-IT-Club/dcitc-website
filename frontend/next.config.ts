@@ -9,7 +9,8 @@ const nextConfig: NextConfig = {
   reactCompiler: true,
   images: {
     remotePatterns: remoteHosts.map((hostname) => ({
-      protocol: "https",
+      // Local Supabase Storage is served over http; hosted projects are https.
+      protocol: hostname === "127.0.0.1" || hostname === "localhost" ? "http" : "https",
       hostname,
       pathname: "/storage/v1/object/public/**",
     })),

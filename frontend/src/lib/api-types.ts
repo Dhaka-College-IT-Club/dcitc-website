@@ -1,5 +1,5 @@
 export type User = {
-  id: number;
+  id: string;
   email: string;
   name: string;
   hscBatch: string;
@@ -12,6 +12,7 @@ export type Admin = {
   name: string;
   role: "admin" | "super_admin";
   active: boolean;
+  lastLoginAt: string | null;
   createdAt: string;
 };
 
@@ -20,7 +21,7 @@ export type Achievement = {
   title: string;
   detail: string;
   year: number;
-  image: string | null;
+  image: string;
   gallery: string[];
   featuredSlot: number | null;
 };
@@ -33,7 +34,7 @@ export type Intel = {
   content: string;
   tag: string;
   date: string;
-  image: string | null;
+  image: string;
   featuredSlot: number | null;
 };
 
@@ -43,21 +44,22 @@ export type Leader = {
   role: string;
   tier: "executive" | "chief" | "joint";
   batch: string;
-  image: string | null;
+  image: string;
   facebook: string | null;
   linkedin: string | null;
   github: string | null;
   portfolio: string | null;
+  sortOrder: number;
 };
 
 export type AuditEntry = {
   id: number;
+  actorAdminId: string | null;
   action: string;
-  actorId: number | null;
   targetType: string | null;
-  targetId: number | null;
+  targetId: string | null;
+  metadata: Record<string, unknown>;
   createdAt: string;
-  metadata?: Record<string, unknown>;
 };
 
 export type PublicSettings = {

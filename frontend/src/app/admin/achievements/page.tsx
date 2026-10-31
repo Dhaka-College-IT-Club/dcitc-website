@@ -86,7 +86,7 @@ export default function AdminAchievementsPage() {
       title: item.title,
       detail: item.detail,
       year: String(item.year),
-      image: item.image ?? "",
+      image: item.image,
       gallery: [...(item.gallery ?? []), "", "", "", ""].slice(0, 4),
     });
     setFieldErrors({});
@@ -97,6 +97,7 @@ export default function AdminAchievementsPage() {
     const errors: Record<string, string> = {};
     if (!form.title.trim()) errors.title = "Give the achievement a title.";
     if (!form.detail.trim()) errors.detail = "Describe what happened.";
+    if (!form.image) errors.image = "Upload the main image.";
     const year = Number(form.year);
     if (!Number.isInteger(year) || year < 1900 || year > 2100) {
       errors.year = "Enter a four-digit year.";
@@ -116,7 +117,7 @@ export default function AdminAchievementsPage() {
       title: form.title.trim(),
       detail: form.detail.trim(),
       year: Number(form.year),
-      image: form.image || null,
+      image: form.image,
       gallery: form.gallery.filter(Boolean),
     };
     try {
@@ -366,6 +367,7 @@ export default function AdminAchievementsPage() {
               value={form.image}
               onChange={(url) => setForm({ ...form, image: url })}
               shape="wide"
+              error={fieldErrors.image}
             />
           </div>
 
