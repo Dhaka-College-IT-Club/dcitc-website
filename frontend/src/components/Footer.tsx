@@ -107,6 +107,7 @@ const Footer: React.FC = () => {
         <div className="border-t border-white/5 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-[10px] md:text-xs font-rajdhani text-slate-600 uppercase tracking-widest text-center md:text-left">
           <p>
             &copy; {new Date().getFullYear()} Dhaka College Information & Technology Club. All rights reserved.
+            <span className="ml-2 text-slate-700">v{CLUB.VERSION}</span>
           </p>
           <p>
             Designed & Developed by <span className="text-orange-500">DCITC Team</span>

@@ -7,6 +7,7 @@ import Alert from "@/components/ui/Alert";
 import Button from "@/components/ui/Button";
 import TextField from "@/components/ui/TextField";
 import { useToast } from "@/components/ui/Toast";
+import { CLUB } from "@/constants";
 import { apiFetch } from "@/lib/api";
 import type { PublicSettings } from "@/lib/api-types";
 
@@ -192,6 +193,14 @@ export default function AdminSettingsPage() {
               Changing the price updates the dashboard headline. It does not
               edit any responses already collected in the form.
             </p>
+            <div className="mt-6 border-t border-white/10 pt-4">
+              <p className="font-orbitron text-[10px] uppercase tracking-[0.24em] text-slate-500">
+                Build
+              </p>
+              <p className="mt-2 font-rajdhani text-sm text-slate-400">
+                Version <span className="text-white">v{CLUB.VERSION}</span>
+              </p>
+            </div>
           </aside>
         </div>
       )}

@@ -2,6 +2,7 @@ import { Globe, Palette, PenLine, ShieldCheck, Bot, Braces } from "lucide-react"
 import { NavItem, DomainFeature, Achievement } from "./types";
 
 export const CLUB = {
+  VERSION: "2.0.0",
   NAME: "Dhaka College Information & Technology Club",
   SHORT: "DCITC",
   MOTTO: "Shaping Tomorrow Today",
