@@ -48,7 +48,8 @@ export async function apiFetch<T>(path: string, init?: Omit<RequestInit, "body">
 }
 
 export async function apiServer<T>(path: string, revalidate?: number): Promise<T> {
-  const origin = process.env.API_ORIGIN ?? "http://localhost:4000";
+  const origin = process.env.API_ORIGIN;
+  if (!origin) throw new Error("API_ORIGIN is not set");
   const res = await fetch(`${origin}/api/v1${path}`, {
     next: revalidate !== undefined ? { revalidate } : undefined,
   });

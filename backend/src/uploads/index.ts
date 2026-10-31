@@ -18,11 +18,12 @@ export type SignedUpload = {
 
 /** Test/dev adapter: no network, no credentials, still an unguessable path. */
 function fakeUpload(path: string): SignedUpload {
+  const base = env.SUPABASE_URL.replace(/\/$/, "");
   return {
-    uploadUrl: `http://local.test/uploads/${path}?token=fake`,
+    uploadUrl: `${base}/storage/v1/object/upload/${path}?token=fake`,
     token: "fake",
     path,
-    publicUrl: `http://local.test/storage/v1/object/public/${env.UPLOAD_BUCKET}/${path}`,
+    publicUrl: `${base}/storage/v1/object/public/${env.UPLOAD_BUCKET}/${path}`,
   };
 }
 

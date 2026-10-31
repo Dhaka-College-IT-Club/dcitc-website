@@ -72,7 +72,7 @@ export async function seedContent(): Promise<void> {
   if ((await count("intels")) === 0) await db.insert(intels).values(intelSeed);
 
   for (const [key, value] of [
-    ["membership_form_url", "https://forms.gle/your-membership-form"],
+    ["membership_form_url", null],
     ["membership_price_bdt", "100"],
   ] as const) {
     await db.insert(settings).values({ key, value }).onConflictDoNothing();
