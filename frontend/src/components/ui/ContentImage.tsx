@@ -2,7 +2,8 @@ import Image from "next/image";
 
 // Mirrors images.remotePatterns in next.config.ts. next/image throws during render
 // for a host it does not know, which takes the whole page down, so any URL that
-// would throw is rendered as a placeholder instead.
+// would throw is rendered as a placeholder instead. Server components only: the
+// allow-list is read from a server-side env var.
 const remoteHosts = new Set(
   (process.env.IMAGE_REMOTE_HOSTS ?? "")
     .split(",")
@@ -10,7 +11,7 @@ const remoteHosts = new Set(
     .filter(Boolean),
 );
 
-export function isRenderableImage(src: string | null | undefined): src is string {
+function isRenderableImage(src: string | null | undefined): src is string {
   if (!src) return false;
   if (src.startsWith("/")) return true;
   try {

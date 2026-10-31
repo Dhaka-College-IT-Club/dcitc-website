@@ -75,22 +75,9 @@ export default function Button({
   );
 
   if (href) {
-    // Internal routes must go through Link, otherwise every click is a full page load.
-    if (!/^([a-z]+:)?\/\//i.test(href)) {
-      return (
-        <Link
-          href={href}
-          target={target}
-          rel={rel}
-          className={classes}
-          {...(props as AnchorHTMLAttributes<HTMLAnchorElement>)}
-        >
-          {content}
-        </Link>
-      );
-    }
+    // Link keeps internal routes client-side and hands external URLs to the browser.
     return (
-      <a
+      <Link
         href={href}
         target={target}
         rel={rel}
@@ -98,7 +85,7 @@ export default function Button({
         {...(props as AnchorHTMLAttributes<HTMLAnchorElement>)}
       >
         {content}
-      </a>
+      </Link>
     );
   }
 
