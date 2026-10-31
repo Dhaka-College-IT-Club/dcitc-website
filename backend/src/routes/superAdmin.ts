@@ -31,7 +31,7 @@ const patchAdmin = createAdmin
 
 const rotatePassword = z.object({ password: z.string().min(8, "Use at least 8 characters.").max(200) });
 
-const uuidParam = z.object({ id: z.string().uuid() });
+const uuidParam = z.object({ id: z.string().uuid().transform((value) => value.toLowerCase()) });
 
 superAdminRouter.get("/admins", async (_req, res) => {
   const rows = await db.select().from(admins).orderBy(desc(admins.createdAt)).limit(200);

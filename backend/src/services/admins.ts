@@ -21,15 +21,17 @@ export async function writeAudit(entry: {
 }
 
 /**
- * Create the env-seeded super admin when its email is absent.
- * Never updates an existing row, so a restart cannot reset a password.
- * Other admins are created from the dashboard by a super admin.
+ * Create the env-seeded super admin on the first boot only.
+ * Never updates an existing row, so a restart cannot reset a password. It keys
+ * off "a super admin already exists" rather than the seeded email so renaming
+ * that account cannot resurrect it with the env password. Other admins are
+ * created from the dashboard by a super admin.
  */
 export async function seedAdmins(): Promise<void> {
   const existing = await db
     .select({ id: admins.id })
     .from(admins)
-    .where(eq(admins.email, env.SUPER_ADMIN_EMAIL))
+    .where(eq(admins.role, "super_admin"))
     .limit(1);
   if (existing.length > 0) return;
 

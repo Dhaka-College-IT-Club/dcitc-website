@@ -7,6 +7,7 @@ import { admins, users } from "../src/db/schema.js";
 import { signUserToken } from "../src/lib/jwt.js";
 import { hashPassword } from "../src/lib/password.js";
 import { testOutbox } from "../src/mail/index.js";
+import { seedAdmins } from "../src/services/admins.js";
 import { closePool, hasTestDb, prepareDatabase } from "./db.js";
 import { Client, startServer } from "./helpers.js";
 
@@ -63,8 +64,8 @@ after(async () => {
 describe("admin seeding", () => {
   dbIt("seeds only the super admin on boot", async () => {
     // prepareDatabase() truncates and re-seeds, so this runs before any test
-    // creates an operator. A legacy ADMIN_EMAIL/ADMIN_PASSWORD pair would leave
-    // a second row here.
+    // creates an operator. test/setup.ts keeps the legacy ADMIN_EMAIL pair set,
+    // so old two-account seeding would leave a second row here.
     const rows = await db.select().from(admins);
     assert.equal(rows.length, 1);
     assert.equal(rows[0]!.email, superEmail());
@@ -641,14 +642,28 @@ describe("super admin", () => {
     assert.equal(empty.status, 400);
     assert.equal(empty.body.error.code, "validation_failed");
 
+    const withNewAddress = await loginAdmin("edited@example.com", "Editable123!");
+    const me = await withNewAddress.req("/api/v1/admin/auth/me");
+    assert.equal(me.status, 200);
+
+    const oldAddress = await new Client(baseUrl).req("/api/v1/admin/auth/login", {
+      body: { email: "editable@example.com", password: "Editable123!" },
+    });
+    assert.equal(oldAddress.status, 401);
+
     const audit = await admin.req("/api/v1/super-admin/audit-log?limit=20");
     const entry = audit.body.data.find(
       (row: { action: string; targetId: string }) =>
         row.action === "admin.updated" && row.targetId === created.body.data.id,
     );
     assert.ok(entry, "admin.updated audit entry missing");
-    const me = await admin.req("/api/v1/admin/auth/me");
-    assert.equal(entry.actorAdminId, me.body.data.id);
+    assert.deepEqual(
+      [...entry.metadata.changes].sort(),
+      ["email", "name"],
+      "audit entry should record which fields changed",
+    );
+    const actor = await admin.req("/api/v1/admin/auth/me");
+    assert.equal(entry.actorAdminId, actor.body.data.id);
   });
 
   dbIt("creates, deactivates and rotates admins with a case-insensitive unique email", async () => {
@@ -724,7 +739,7 @@ describe("super admin", () => {
     assert.equal(me.body.data.lastLoginAt !== null, true);
   });
 
-  dbIt("refuses to deactivate the last active super admin", async () => {
+  dbIt("keeps at least one active super admin after deactivating another", async () => {
     const me = (await admin.req("/api/v1/admin/auth/me")).body.data;
     const other = await admin.req("/api/v1/super-admin/admins", {
       body: {
@@ -754,6 +769,31 @@ describe("super admin", () => {
     assert.equal(selfDeactivate.status, 400);
     assert.equal(selfDeactivate.body.error.code, "cannot_modify_self");
     assert.match(selfDeactivate.body.error.message, /own account/i);
+
+    // Postgres uuid equality ignores case, so the guard must too.
+    const uppercaseSelf = await admin.req(
+      `/api/v1/super-admin/admins/${String(me.id).toUpperCase()}`,
+      { method: "PATCH", body: { active: false } },
+    );
+    assert.equal(uppercaseSelf.status, 400);
+    assert.equal(uppercaseSelf.body.error.code, "cannot_modify_self");
+  });
+
+  dbIt("does not resurrect the seeded super admin after its email is renamed", async () => {
+    const [seeded] = await db.select().from(admins).where(eq(admins.email, superEmail()));
+    assert.ok(seeded, "seeded super admin missing");
+
+    await db
+      .update(admins)
+      .set({ email: "renamed-super@example.com" })
+      .where(eq(admins.id, seeded.id));
+    try {
+      await seedAdmins();
+      const recreated = await db.select().from(admins).where(eq(admins.email, superEmail()));
+      assert.equal(recreated.length, 0);
+    } finally {
+      await db.update(admins).set({ email: superEmail() }).where(eq(admins.id, seeded.id));
+    }
   });
 
   dbIt("returns audit entries newest first and caps the limit", async () => {

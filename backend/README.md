@@ -22,9 +22,10 @@ npm run storage:setup   # creates the public-read `uploads` bucket
 npm run dev             # http://localhost:4000
 ```
 
-`npm run dev` also runs pending migrations (`RUN_MIGRATIONS=true`) and seeds the env-defined
-super admin account on boot from `SUPER_ADMIN_EMAIL` / `SUPER_ADMIN_PASSWORD`. An existing
-account is never overwritten. Other admin accounts are created in the dashboard by a super admin.
+`npm run dev` also runs pending migrations (`RUN_MIGRATIONS=true`) and, while no super admin
+exists yet, seeds one from `SUPER_ADMIN_EMAIL` / `SUPER_ADMIN_PASSWORD`. An existing super
+admin is never overwritten or re-created. Other admin accounts are created in the dashboard by
+a super admin.
 
 Local mail uses `MAIL_TRANSPORT=log`: messages (including OTP codes) print to the console.
 `log` is refused when `NODE_ENV=production`.
