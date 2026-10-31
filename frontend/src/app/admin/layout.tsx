@@ -17,10 +17,7 @@ export default function AdminLayout({
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (pathname === "/admin/login") {
-      setLoading(false);
-      return;
-    }
+    if (pathname === "/admin/login") return;
     let cancelled = false;
     (async () => {
       try {

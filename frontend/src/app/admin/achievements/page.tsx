@@ -62,6 +62,9 @@ export default function AdminAchievementsPage() {
   }
 
   useEffect(() => {
+    // load() awaits the request before touching state; the rule only guards
+    // synchronous setState in an effect body.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void load();
   }, []);
 
