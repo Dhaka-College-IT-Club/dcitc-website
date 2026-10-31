@@ -91,28 +91,53 @@ async function deliver(message: MailMessage, operation: string): Promise<void> {
 const layout = (heading: string, body: string) =>
   `<div style="font-family:system-ui,sans-serif;line-height:1.5"><h2>${heading}</h2>${body}</div>`;
 
+const CLUB_NAME = "Dhaka College Information & Technology Club";
+
+/** Builds the transactional OTP mail without touching a transport, so it can be tested. */
+export function renderOtpEmail(
+  kind: "signup" | "password_reset",
+  code: string,
+): { subject: string; text: string; html: string } {
+  const isSignup = kind === "signup";
+  const subject = isSignup ? "DCITC signup code" : "DCITC password reset code";
+  const heading = isSignup ? "Confirm your DCITC account" : "Reset your DCITC password";
+  const intro = isSignup
+    ? "Use this code to verify your email address."
+    : "Use this code to choose a new password.";
+
+  const text = [
+    CLUB_NAME,
+    "",
+    intro,
+    "",
+    `Your verification code: ${code}`,
+    "",
+    "This code expires in 10 minutes.",
+    "If you didn't request this, you can ignore this email.",
+  ].join("\n");
+
+  const html =
+    `<div style="margin:0;padding:24px;background:#0b0b0b;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#e5e7eb">` +
+    `<div style="max-width:480px;margin:0 auto;padding:32px;background:#111111;border:1px solid #262626">` +
+    `<p style="margin:0 0 24px;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:#9ca3af">${CLUB_NAME}</p>` +
+    `<h1 style="margin:0 0 12px;font-size:22px;line-height:1.3;color:#ffffff">${heading}</h1>` +
+    `<p style="margin:0 0 24px;font-size:14px;line-height:1.6;color:#9ca3af">${intro}</p>` +
+    `<div style="margin:0 0 24px;padding:18px 12px;border:1px solid #333333;background:#000000;text-align:center;font-size:32px;font-weight:700;letter-spacing:8px;color:#ffffff">${escapeHtml(code)}</div>` +
+    `<p style="margin:0 0 8px;font-size:13px;line-height:1.6;color:#9ca3af">This code expires in <strong style="color:#e5e7eb">10 minutes</strong>.</p>` +
+    `<p style="margin:0;font-size:12px;line-height:1.6;color:#6b7280">If you didn&#39;t request this, you can ignore this email.</p>` +
+    `</div></div>`;
+
+  return { subject, text, html };
+}
+
 export async function sendSignupOtp(to: string, code: string): Promise<void> {
-  await deliver(
-    {
-      to,
-      subject: "DCITC signup code",
-      text: `Your DCITC signup code is ${code}. It expires in 10 minutes.`,
-      html: layout("Confirm your DCITC account", `<p>Your signup code is <strong>${escapeHtml(code)}</strong>.</p><p>It expires in 10 minutes.</p>`),
-    },
-    "signup_otp",
-  );
+  const { subject, text, html } = renderOtpEmail("signup", code);
+  await deliver({ to, subject, text, html }, "signup_otp");
 }
 
 export async function sendResetOtp(to: string, code: string): Promise<void> {
-  await deliver(
-    {
-      to,
-      subject: "DCITC password reset code",
-      text: `Your DCITC password reset code is ${code}. It expires in 10 minutes.`,
-      html: layout("Reset your DCITC password", `<p>Your reset code is <strong>${escapeHtml(code)}</strong>.</p><p>It expires in 10 minutes.</p>`),
-    },
-    "reset_otp",
-  );
+  const { subject, text, html } = renderOtpEmail("password_reset", code);
+  await deliver({ to, subject, text, html }, "reset_otp");
 }
 
 export async function sendEmailRecovery(to: string, name: string): Promise<void> {

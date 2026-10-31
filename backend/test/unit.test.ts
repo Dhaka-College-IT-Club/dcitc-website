@@ -7,6 +7,7 @@ import { describe, it } from "node:test";
 import { hashPassword, verifyPassword } from "../src/lib/password.js";
 import { signAdminToken, signUserToken, verifyAdminToken, verifyUserToken } from "../src/lib/jwt.js";
 import { verifyGoogleIdToken } from "../src/services/google.js";
+import { renderOtpEmail } from "../src/mail/index.js";
 import { SignJWT, createLocalJWKSet, exportJWK, generateKeyPair } from "jose";
 
 const run = promisify(execFile);
@@ -101,6 +102,22 @@ describe("google id token verification", () => {
     const profile = await verifyGoogleIdToken(await makeToken({ verified: false }), await jwks(), "test-client-id");
     assert.equal(profile?.emailVerified, false);
   });
+});
+
+describe("otp email template", () => {
+  for (const kind of ["signup", "password_reset"] as const) {
+    it(`renders the code and club name for ${kind}`, () => {
+      const mail = renderOtpEmail(kind, "123456");
+      for (const body of [mail.text, mail.html]) {
+        assert.ok(body.includes("123456"), "code missing from the message");
+        assert.ok(body.includes("Dhaka College Information & Technology Club"), "club name missing");
+        assert.match(body, /10 minutes/);
+        assert.match(body, /ignore this email/);
+      }
+      assert.ok(mail.subject.includes("DCITC"));
+      assert.equal(mail.html.includes("<img"), false, "template must not use external images");
+    });
+  }
 });
 
 describe("mail failure handling", () => {
