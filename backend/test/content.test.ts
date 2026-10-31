@@ -796,6 +796,41 @@ describe("super admin", () => {
     }
   });
 
+  dbIt("cannot leave zero active super admins under concurrent deactivation", async () => {
+    const created = await admin.req("/api/v1/super-admin/admins", {
+      body: {
+        email: "race-super@example.com",
+        name: "Race Super",
+        password: "RaceSuper123!",
+        role: "super_admin",
+      },
+    });
+    assert.equal(created.status, 201);
+    const other = await loginAdmin("race-super@example.com", "RaceSuper123!");
+    const me = (await admin.req("/api/v1/admin/auth/me")).body.data;
+
+    const [mine, theirs] = await Promise.all([
+      admin.req(`/api/v1/super-admin/admins/${created.body.data.id}`, {
+        method: "PATCH",
+        body: { active: false },
+      }),
+      other.req(`/api/v1/super-admin/admins/${me.id}`, {
+        method: "PATCH",
+        body: { active: false },
+      }),
+    ]);
+    assert.equal(mine.status < 500 && theirs.status < 500, true);
+
+    const activeSupers = (await db.select().from(admins)).filter(
+      (row) => row.role === "super_admin" && row.active,
+    );
+    assert.equal(activeSupers.length, 1, "exactly one active super admin must survive");
+
+    // Put the seeded account back so the rest of the suite keeps its session.
+    await db.update(admins).set({ active: true }).where(eq(admins.id, me.id));
+    admin = await loginAdmin(superEmail(), superPassword());
+  });
+
   dbIt("returns audit entries newest first and caps the limit", async () => {
     const response = await admin.req("/api/v1/super-admin/audit-log?limit=3");
     assert.equal(response.status, 200);

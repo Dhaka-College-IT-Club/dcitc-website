@@ -52,6 +52,9 @@ export const otpExhausted = () =>
 export const cannotModifySelf = () =>
   new AppError(400, "cannot_modify_self", "You cannot change your own account here.");
 
+export const lastSuperAdmin = () =>
+  new AppError(409, "last_super_admin", "At least one active super admin must remain.");
+
 export const deliveryFailed = () =>
   new AppError(502, "delivery_failed", "The message could not be delivered right now.");
 

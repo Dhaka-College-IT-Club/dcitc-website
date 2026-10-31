@@ -3,7 +3,7 @@ import { Router } from "express";
 import { z } from "zod";
 import { db } from "../db/pool.js";
 import { admins, auditLog } from "../db/schema.js";
-import { cannotModifySelf, emailTaken, isUniqueViolation, notFound } from "../lib/errors.js";
+import { cannotModifySelf, emailTaken, isUniqueViolation, lastSuperAdmin, notFound } from "../lib/errors.js";
 import { hashPassword } from "../lib/password.js";
 import { toAdmin, toAuditEntry } from "../lib/serialize.js";
 import { requireSuperAdmin } from "../middleware/auth.js";
@@ -70,21 +70,41 @@ superAdminRouter.patch(
   async (req, res, next) => {
     const { id } = req.params as unknown as z.infer<typeof uuidParam>;
     const body = req.body as z.infer<typeof patchAdmin>;
-    // Last-super-admin guard: an actor can never modify its own account, so at
-    // least one active super admin always remains.
+    // Last-super-admin guard: an actor can never modify its own account, and the
+    // deactivation path below refuses to remove the last active super admin.
     if (id === req.currentAdmin!.id) return next(cannotModifySelf());
 
     try {
-      const [row] = await db
-        .update(admins)
-        .set({
-          ...body,
-          // Deactivation and reactivation both invalidate outstanding sessions.
-          ...(body.active === undefined ? {} : { tokenVersion: sql`${admins.tokenVersion} + 1` }),
-          updatedAt: new Date(),
-        })
-        .where(eq(admins.id, id))
-        .returning();
+      const row = await db.transaction(async (tx) => {
+        // Serialise account mutations so two concurrent deactivations cannot
+        // both see another active super admin and leave nobody with access.
+        await tx.execute(sql`select pg_advisory_xact_lock(hashtext('admin_accounts'))`);
+
+        const [current] = await tx.select().from(admins).where(eq(admins.id, id)).limit(1);
+        if (!current) return null;
+
+        if (body.active === false && current.role === "super_admin" && current.active) {
+          const [rest] = await tx
+            .select({ remaining: sql<number>`count(*)::int` })
+            .from(admins)
+            .where(
+              sql`${admins.role} = 'super_admin' and ${admins.active} and ${admins.id} <> ${id}`,
+            );
+          if (rest!.remaining === 0) throw lastSuperAdmin();
+        }
+
+        const [updated] = await tx
+          .update(admins)
+          .set({
+            ...body,
+            // Deactivation and reactivation both invalidate outstanding sessions.
+            ...(body.active === undefined ? {} : { tokenVersion: sql`${admins.tokenVersion} + 1` }),
+            updatedAt: new Date(),
+          })
+          .where(eq(admins.id, id))
+          .returning();
+        return updated;
+      });
       if (!row) return next(notFound("Admin not found."));
 
       await writeAudit({
@@ -97,6 +117,7 @@ superAdminRouter.patch(
               : "admin.deactivated",
         targetType: "admin",
         targetId: id,
+        // `email` is the post-change address; `changes` names the fields touched.
         metadata: { email: row.email, changes: Object.keys(body) },
       });
       res.json({ data: toAdmin(row) });

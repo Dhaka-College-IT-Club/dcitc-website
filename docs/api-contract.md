@@ -19,8 +19,8 @@ Error (any status ≥ 400):
 
 Error codes: `validation_failed`, `unauthenticated`, `forbidden`, `not_found`,
 `invalid_credentials`, `email_taken`, `slug_taken`, `slot_taken`, `invalid_otp`, `otp_expired`,
-`otp_exhausted`, `rate_limited`, `delivery_failed`, `cannot_modify_self`, `internal_error`,
-`payload_too_large`.
+`otp_exhausted`, `rate_limited`, `delivery_failed`, `cannot_modify_self`, `last_super_admin`,
+`internal_error`, `payload_too_large`.
 
 Rate-limited responses are `429` and include `Retry-After`. Bodies are capped at 128 KB (`413`).
 
@@ -196,8 +196,9 @@ Duplicate admin emails are case-insensitive (`409 email_taken`). Editing writes 
 deactivating/reactivating writes `admin.deactivated`/`admin.activated`, each with the acting
 super admin as `actorAdminId`. Deactivating or rotating bumps `token_version`, so existing
 cookies fail immediately; a deactivated admin gets `401 invalid_credentials` at login. Editing,
-deactivating, and rotating your own account returns `400 cannot_modify_self` — which also
-guarantees at least one active super admin always remains.
+deactivating, and rotating your own account returns `400 cannot_modify_self`. Deactivating the
+last active super admin returns `409 last_super_admin` (checked under a lock, so two concurrent
+deactivations cannot leave zero).
 
 ## Status codes used
 
