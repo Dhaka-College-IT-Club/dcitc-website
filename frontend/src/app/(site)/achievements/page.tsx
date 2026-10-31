@@ -1,5 +1,5 @@
-import Image from "next/image";
 import Link from "next/link";
+import ContentImage from "@/components/ui/ContentImage";
 import { apiServer } from "@/lib/api";
 import type { Achievement } from "@/lib/api-types";
 
@@ -43,14 +43,12 @@ export default async function AchievementsPage() {
                 className="group bg-dc-panel border border-white/10 p-6 flex flex-col gap-3 hover:border-white/40 hover:-translate-y-2 transition-all duration-300"
               >
                 <div className="relative w-full h-40 mb-2 overflow-hidden border border-white/10 bg-black/40">
-                  {item.image ? (
-                    <Image
-                      src={item.image}
-                      alt={item.title}
-                      fill
-                      className="object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
-                  ) : null}
+                  <ContentImage
+                    src={item.image}
+                    alt={item.title}
+                    sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
                 </div>
                 <span className="text-xs font-orbitron tracking-[0.3em] text-slate-500 uppercase">
                   {item.year}

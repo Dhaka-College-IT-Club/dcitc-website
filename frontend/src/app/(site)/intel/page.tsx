@@ -1,5 +1,5 @@
-import Image from "next/image";
 import Link from "next/link";
+import ContentImage from "@/components/ui/ContentImage";
 import { apiServer } from "@/lib/api";
 import type { Intel } from "@/lib/api-types";
 
@@ -43,14 +43,12 @@ export default async function IntelsPage() {
                 className="group relative bg-dc-panel p-0 border border-white/5 hover:border-white/30 transition-all duration-300 overflow-hidden cursor-pointer flex flex-col"
               >
                 <div className="relative h-48 overflow-hidden">
-                  {intel.image ? (
-                    <Image
-                      src={intel.image}
-                      alt={intel.title}
-                      fill
-                      className="object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
-                  ) : null}
+                  <ContentImage
+                    src={intel.image}
+                    alt={intel.title}
+                    sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
                   <span className="absolute top-3 left-3 px-3 py-1 text-xs font-orbitron tracking-widest uppercase rounded bg-black/70 text-white">
                     {intel.tag}
                   </span>

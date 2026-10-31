@@ -1,6 +1,6 @@
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import ContentImage from "@/components/ui/ContentImage";
 import { apiServer } from "@/lib/api";
 import type { Intel } from "@/lib/api-types";
 import type { Metadata } from "next";
@@ -55,16 +55,15 @@ export default async function IntelDetailPage({
             ← Back to Intel
           </Link>
 
-          {intel.image ? (
-            <div className="relative h-64 md:h-96 w-full mb-8 overflow-hidden border border-white/10 rounded-lg">
-              <Image
-                src={intel.image}
-                alt={intel.title}
-                fill
-                className="object-cover"
-              />
-            </div>
-          ) : null}
+          <div className="relative h-64 md:h-96 w-full mb-8 overflow-hidden border border-white/10 rounded-lg">
+            <ContentImage
+              src={intel.image}
+              alt={intel.title}
+              sizes="(min-width: 896px) 896px, 100vw"
+              priority
+              className="object-cover"
+            />
+          </div>
 
           <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-4">
             <span className="w-fit px-3 py-1 text-xs font-orbitron tracking-widest uppercase rounded bg-white/10 text-white border border-white/20">

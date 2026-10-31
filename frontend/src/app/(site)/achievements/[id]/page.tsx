@@ -1,6 +1,6 @@
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import ContentImage from "@/components/ui/ContentImage";
 import { apiServer } from "@/lib/api";
 import type { Achievement } from "@/lib/api-types";
 import type { Metadata } from "next";
@@ -54,16 +54,15 @@ export default async function AchievementDetailPage({
             ← Back to Achievements
           </Link>
 
-          {achievement.image ? (
-            <div className="relative h-64 md:h-96 w-full mb-8 overflow-hidden border border-white/10 rounded-lg">
-              <Image
-                src={achievement.image}
-                alt={achievement.title}
-                fill
-                className="object-cover"
-              />
-            </div>
-          ) : null}
+          <div className="relative h-64 md:h-96 w-full mb-8 overflow-hidden border border-white/10 rounded-lg">
+            <ContentImage
+              src={achievement.image}
+              alt={achievement.title}
+              sizes="(min-width: 896px) 896px, 100vw"
+              priority
+              className="object-cover"
+            />
+          </div>
 
           <div className="flex items-center gap-4 mb-4">
             <span className="px-3 py-1 text-xs font-orbitron tracking-widest uppercase rounded bg-white/10 text-white border border-white/20">
@@ -88,10 +87,10 @@ export default async function AchievementDetailPage({
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {achievement.gallery.map((img, index) => (
                 <div key={index} className="relative aspect-square overflow-hidden border border-white/10 rounded-lg group">
-                  <Image
+                  <ContentImage
                     src={img}
                     alt={`Gallery image ${index + 1}`}
-                    fill
+                    sizes="(min-width: 768px) 25vw, 50vw"
                     className="object-cover transition-transform duration-500 group-hover:scale-110"
                   />
                 </div>
