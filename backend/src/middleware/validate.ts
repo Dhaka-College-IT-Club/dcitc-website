@@ -1,18 +1,18 @@
 import type { NextFunction, Request, RequestHandler, Response } from "express";
-import { ZodError, type ZodTypeAny } from "zod";
+import { ZodError, type ZodType } from "zod";
 import { validationFailed } from "../lib/errors.js";
 
 type Schemas = {
-  body?: ZodTypeAny;
-  query?: ZodTypeAny;
-  params?: ZodTypeAny;
+  body?: ZodType;
+  query?: ZodType;
+  params?: ZodType;
 };
 
 export function validate(schemas: Schemas): RequestHandler {
   return (req: Request, _res: Response, next: NextFunction) => {
     try {
       if (schemas.body) req.body = schemas.body.parse(req.body);
-      if (schemas.params) req.params = schemas.params.parse(req.params);
+      if (schemas.params) req.params = schemas.params.parse(req.params) as Request["params"];
       if (schemas.query) {
         // Express 5 exposes req.query as a prototype getter, so shadow it with the parsed value.
         const parsed = schemas.query.parse(req.query);
