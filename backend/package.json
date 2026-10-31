@@ -1,0 +1,55 @@
+{
+  "name": "dcitc-api",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc -p tsconfig.build.json",
+    "start": "node dist/server.js",
+    "lint": "tsc -p tsconfig.json",
+    "test": "tsx --test --test-concurrency=1 \"test/**/*.test.ts\"",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "tsx src/db/migrate.ts",
+    "db:seed": "tsx scripts/seed.ts",
+    "db:roles": "tsx scripts/setup-local-db.ts",
+    "db:reset": "drizzle-kit drop --force && npm run db:migrate && npm run db:roles && npm run db:seed",
+    "db:test": "node scripts/create-test-db.mjs",
+    "db:start": "supabase start",
+    "db:stop": "supabase stop",
+    "db:status": "supabase status",
+    "storage:setup": "tsx scripts/setup-storage.ts",
+    "migrate": "tsx src/db/migrate.ts"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.58.0",
+    "compression": "^1.8.0",
+    "cookie-parser": "^1.4.7",
+    "dotenv": "^17.2.0",
+    "drizzle-orm": "^0.44.0",
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.0.0",
+    "helmet": "^8.1.0",
+    "jose": "^6.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "nodemailer": "^7.0.0",
+    "pg": "^8.16.0",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@types/compression": "^1.8.0",
+    "@types/cookie-parser": "^1.4.9",
+    "@types/express": "^5.0.0",
+    "@types/jsonwebtoken": "^9.0.9",
+    "@types/node": "^24.0.0",
+    "@types/nodemailer": "^7.0.0",
+    "@types/pg": "^8.15.0",
+    "drizzle-kit": "^0.31.0",
+    "supabase": "^2.45.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.0"
+  }
+}
