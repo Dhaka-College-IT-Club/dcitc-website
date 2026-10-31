@@ -7,8 +7,9 @@ export type User = {
 };
 
 export type Admin = {
-  id: number;
-  username: string;
+  id: string;
+  email: string;
+  name: string;
   role: "admin" | "super_admin";
   active: boolean;
   createdAt: string;

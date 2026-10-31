@@ -125,11 +125,11 @@ export default function AdminShell({
           <div className="border-t border-white/10 p-3">
             <div className="flex items-center gap-2.5 px-2 py-2">
               <span className="flex h-9 w-9 shrink-0 items-center justify-center border border-white/15 bg-white/[0.05] font-orbitron text-[11px] text-white">
-                {initials(admin.username)}
+                {initials(admin.name)}
               </span>
               <div className="min-w-0">
                 <p className="truncate font-rajdhani text-sm font-semibold text-white">
-                  {admin.username}
+                  {admin.name}
                 </p>
                 <span className="mt-0.5 inline-flex items-center gap-1 border border-white/15 px-1.5 py-0.5 font-orbitron text-[8px] uppercase tracking-[0.14em] text-slate-400">
                   <Shield className="h-2.5 w-2.5" aria-hidden="true" />
@@ -165,7 +165,7 @@ export default function AdminShell({
             </span>
           </div>
           <span className="flex h-8 w-8 items-center justify-center border border-white/15 bg-white/[0.05] font-orbitron text-[10px] text-white">
-            {initials(admin.username)}
+            {initials(admin.name)}
           </span>
         </header>
 
@@ -190,11 +190,11 @@ export default function AdminShell({
             <div className="mt-auto border-t border-white/10 p-3">
               <div className="flex items-center gap-2.5 px-2 py-2">
                 <span className="flex h-9 w-9 items-center justify-center border border-white/15 bg-white/[0.05] font-orbitron text-[11px] text-white">
-                  {initials(admin.username)}
+                  {initials(admin.name)}
                 </span>
                 <div className="min-w-0">
                   <p className="truncate font-rajdhani text-sm font-semibold text-white">
-                    {admin.username}
+                    {admin.name}
                   </p>
                   <p className="font-orbitron text-[8px] uppercase tracking-[0.14em] text-slate-500">
                     {isSuper ? "Super admin" : "Admin"}

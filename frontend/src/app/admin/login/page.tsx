@@ -14,7 +14,7 @@ import { apiFetch } from "@/lib/api";
 
 export default function AdminLoginPage() {
   const router = useRouter();
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
@@ -27,7 +27,7 @@ export default function AdminLoginPage() {
     try {
       await apiFetch("/admin/auth/login", {
         method: "POST",
-        body: { username, password },
+        body: { email, password },
       });
       router.replace("/admin");
     } catch {
@@ -59,12 +59,13 @@ export default function AdminLoginPage() {
           {error ? <Alert variant="error">{error}</Alert> : null}
 
           <TextField
-            label="Username"
-            name="username"
+            label="Email"
+            name="email"
+            type="email"
             autoComplete="username"
-            placeholder="Operator username"
-            value={username}
-            onChange={(event) => setUsername(event.target.value)}
+            placeholder="you@example.com"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
             autoFocus
             required
           />
