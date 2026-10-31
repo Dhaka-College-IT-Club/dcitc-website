@@ -1,14 +1,17 @@
 import { asc, desc, eq, isNotNull, sql } from "drizzle-orm";
 import { Router } from "express";
+import { z } from "zod";
 import { db } from "../db/pool.js";
 import { achievements, intels, leadership } from "../db/schema.js";
 import { notFound } from "../lib/errors.js";
 import { toAchievement, toIntel, toLeader } from "../lib/serialize.js";
+import { validate } from "../middleware/validate.js";
 import { readPublicSettings } from "../services/settings.js";
 
 export const publicRouter = Router();
 
 const CAP = 200;
+const batchQuery = z.object({ batch: z.string().trim().max(40).optional() });
 
 publicRouter.get("/achievements", async (req, res) => {
   const featured = req.query.featured === "true";
@@ -56,7 +59,7 @@ publicRouter.get("/intels/:slug", async (req, res, next) => {
   res.json({ data: toIntel(row) });
 });
 
-publicRouter.get("/leadership", async (req, res) => {
+publicRouter.get("/leadership", validate({ query: batchQuery }), async (req, res) => {
   const batch = typeof req.query.batch === "string" ? req.query.batch : undefined;
   const tierOrder = sql`case ${leadership.tier} when 'executive' then 1 when 'chief' then 2 else 3 end`;
 

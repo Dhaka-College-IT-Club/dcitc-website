@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { asc, desc, eq } from "drizzle-orm";
 import { Router } from "express";
 import { z } from "zod";
@@ -12,7 +13,7 @@ import {
   slugTaken,
 } from "../lib/errors.js";
 import { signAdminToken } from "../lib/jwt.js";
-import { verifyPassword } from "../lib/password.js";
+import { hashPassword, verifyPassword } from "../lib/password.js";
 import { toAchievement, toAdmin, toIntel, toLeader } from "../lib/serialize.js";
 import { adminLoginLimiter, uploadLimiter } from "../middleware/rateLimit.js";
 import { requireAdmin } from "../middleware/auth.js";
@@ -39,11 +40,21 @@ const optionalLink = z
 
 const adminLogin = z.object({ email: z.string().trim().min(1), password: z.string().min(1) });
 
+let dummyHash: Promise<string> | null = null;
+function getDummyHash(): Promise<string> {
+  dummyHash ??= hashPassword(randomUUID());
+  return dummyHash;
+}
+
 adminRouter.post("/auth/login", adminLoginLimiter, validate({ body: adminLogin }), async (req, res, next) => {
   const { email, password } = req.body as z.infer<typeof adminLogin>;
   // `admins.email` is citext, so equality is already case-insensitive.
   const [row] = await db.select().from(admins).where(eq(admins.email, email)).limit(1);
-  if (!row || !row.active) return next(invalidCredentials());
+  if (!row || !row.active) {
+    // Comparable scrypt work keeps response time from revealing valid emails.
+    await verifyPassword(password, await getDummyHash());
+    return next(invalidCredentials());
+  }
   if (!(await verifyPassword(password, row.passwordHash))) return next(invalidCredentials());
 
   const [updated] = await db
@@ -91,6 +102,13 @@ adminRouter.get("/achievements", async (_req, res) => {
 adminRouter.post("/achievements", validate({ body: achievementBody }), async (req, res) => {
   const body = req.body as z.infer<typeof achievementBody>;
   const [row] = await db.insert(achievements).values(body).returning();
+  await writeAudit({
+    actorAdminId: req.currentAdmin!.id,
+    action: "achievement.created",
+    targetType: "achievement",
+    targetId: String(row!.id),
+    metadata: { title: row!.title },
+  });
   res.status(201).json({ data: toAchievement(row!) });
 });
 
@@ -104,6 +122,13 @@ adminRouter.patch("/achievements/:id", validate({ body: achievementPatch }), asy
     .where(eq(achievements.id, id))
     .returning();
   if (!row) return next(notFound("Achievement not found."));
+  await writeAudit({
+    actorAdminId: req.currentAdmin!.id,
+    action: "achievement.updated",
+    targetType: "achievement",
+    targetId: String(id),
+    metadata: { title: row.title },
+  });
   res.json({ data: toAchievement(row) });
 });
 
@@ -135,6 +160,13 @@ adminRouter.put("/achievements/:id/featured", validate({ body: achievementSlot }
       .where(eq(achievements.id, id))
       .returning();
     if (!row) return next(notFound("Achievement not found."));
+    await writeAudit({
+      actorAdminId: req.currentAdmin!.id,
+      action: "achievement.featured",
+      targetType: "achievement",
+      targetId: String(id),
+      metadata: { slot },
+    });
     res.json({ data: toAchievement(row) });
   } catch (error) {
     if (isUniqueViolation(error)) return next(slotTaken());
@@ -171,6 +203,13 @@ adminRouter.post("/intels", validate({ body: intelBody }), async (req, res, next
   const body = req.body as z.infer<typeof intelBody>;
   try {
     const [row] = await db.insert(intels).values(body).returning();
+    await writeAudit({
+      actorAdminId: req.currentAdmin!.id,
+      action: "intel.created",
+      targetType: "intel",
+      targetId: String(row!.id),
+      metadata: { slug: row!.slug },
+    });
     res.status(201).json({ data: toIntel(row!) });
   } catch (error) {
     if (isUniqueViolation(error)) return next(slugTaken());
@@ -188,6 +227,13 @@ adminRouter.patch("/intels/:id", validate({ body: intelPatch }), async (req, res
     .where(eq(intels.id, id))
     .returning();
   if (!row) return next(notFound("Intel not found."));
+  await writeAudit({
+    actorAdminId: req.currentAdmin!.id,
+    action: "intel.updated",
+    targetType: "intel",
+    targetId: String(id),
+    metadata: { slug: row.slug },
+  });
   res.json({ data: toIntel(row) });
 });
 
@@ -219,6 +265,13 @@ adminRouter.put("/intels/:id/featured", validate({ body: intelSlot }), async (re
       .where(eq(intels.id, id))
       .returning();
     if (!row) return next(notFound("Intel not found."));
+    await writeAudit({
+      actorAdminId: req.currentAdmin!.id,
+      action: "intel.featured",
+      targetType: "intel",
+      targetId: String(id),
+      metadata: { slot },
+    });
     res.json({ data: toIntel(row) });
   } catch (error) {
     if (isUniqueViolation(error)) return next(slotTaken());
@@ -243,7 +296,9 @@ const leaderBody = z.object({
 
 const leaderPatch = leaderBody.partial();
 
-adminRouter.get("/leadership", async (req, res) => {
+const batchQuery = z.object({ batch: z.string().trim().max(40).optional() });
+
+adminRouter.get("/leadership", validate({ query: batchQuery }), async (req, res) => {
   const batch = typeof req.query.batch === "string" ? req.query.batch : undefined;
   const rows = batch
     ? await db.select().from(leadership).where(eq(leadership.batch, batch)).orderBy(desc(leadership.batch), asc(leadership.sortOrder)).limit(200)
@@ -254,6 +309,13 @@ adminRouter.get("/leadership", async (req, res) => {
 adminRouter.post("/leadership", validate({ body: leaderBody }), async (req, res) => {
   const body = req.body as z.infer<typeof leaderBody>;
   const [row] = await db.insert(leadership).values(body).returning();
+  await writeAudit({
+    actorAdminId: req.currentAdmin!.id,
+    action: "leadership.created",
+    targetType: "leadership",
+    targetId: String(row!.id),
+    metadata: { name: row!.name },
+  });
   res.status(201).json({ data: toLeader(row!) });
 });
 
@@ -267,6 +329,13 @@ adminRouter.patch("/leadership/:id", validate({ body: leaderPatch }), async (req
     .where(eq(leadership.id, id))
     .returning();
   if (!row) return next(notFound("Member not found."));
+  await writeAudit({
+    actorAdminId: req.currentAdmin!.id,
+    action: "leadership.updated",
+    targetType: "leadership",
+    targetId: String(id),
+    metadata: { name: row.name },
+  });
   res.json({ data: toLeader(row) });
 });
 
@@ -296,7 +365,15 @@ const settingsBody = z.object({
 
 adminRouter.put("/settings", validate({ body: settingsBody }), async (req, res) => {
   const body = req.body as z.infer<typeof settingsBody>;
-  res.json({ data: await updateSettings(body) });
+  const updated = await updateSettings(body);
+  await writeAudit({
+    actorAdminId: req.currentAdmin!.id,
+    action: "settings.updated",
+    targetType: "settings",
+    targetId: null,
+    metadata: { keys: Object.keys(body) },
+  });
+  res.json({ data: updated });
 });
 
 const uploadBody = z.object({

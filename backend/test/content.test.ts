@@ -251,6 +251,33 @@ describe("achievement administration", () => {
     assert.equal(empty.body.data.length, 0);
   });
 
+  dbIt("records creation, edits and featured-slot changes", async () => {
+    const created = await admin.req("/api/v1/admin/achievements", { body: achievement({ title: "Audited create" }) });
+    assert.equal(created.status, 201);
+    const id = created.body.data.id;
+
+    const featured = await admin.req(`/api/v1/admin/achievements/${id}/featured`, {
+      method: "PUT",
+      body: { slot: 4 },
+    });
+    assert.equal(featured.status, 200);
+
+    const patched = await admin.req(`/api/v1/admin/achievements/${id}`, {
+      method: "PATCH",
+      body: { title: "Audited edit" },
+    });
+    assert.equal(patched.status, 200);
+
+    const audit = await admin.req("/api/v1/super-admin/audit-log?limit=20");
+    const actions = audit.body.data.map((entry: { action: string }) => entry.action);
+    for (const action of ["achievement.created", "achievement.featured", "achievement.updated"]) {
+      assert.ok(actions.includes(action), `${action} missing from the audit log`);
+    }
+
+    await admin.req(`/api/v1/admin/achievements/${id}/featured`, { method: "PUT", body: { slot: null } });
+    await admin.req(`/api/v1/admin/achievements/${id}`, { method: "DELETE" });
+  });
+
   dbIt("records a deletion audit entry", async () => {
     const created = await admin.req("/api/v1/admin/achievements", { body: achievement({ title: "Delete me" }) });
     const deleted = await admin.req(`/api/v1/admin/achievements/${created.body.data.id}`, { method: "DELETE" });
