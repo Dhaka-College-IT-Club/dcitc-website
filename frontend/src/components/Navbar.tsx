@@ -1,11 +1,19 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Menu, X } from "lucide-react";
+import { useRouter, usePathname } from "next/navigation";
+import { LayoutDashboard, LogOut, Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { usePathname } from "next/navigation";
 import { NAV_ITEMS, CLUB } from "../constants";
+import { apiFetch } from "@/lib/api";
+import type { User } from "@/lib/api-types";
+import { initials } from "@/lib/initials";
+
+type AuthState =
+  | { status: "loading" }
+  | { status: "out" }
+  | { status: "in"; user: User };
 
 const Logo: React.FC = () => (
   <Link href="/" className="flex items-center gap-3 group relative z-10">
@@ -22,11 +30,134 @@ const Logo: React.FC = () => (
   </Link>
 );
 
-interface DesktopNavProps {
-  pathname: string;
+const ApplyButton: React.FC = () => (
+  <a
+    href="/signup"
+    className="px-6 py-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-orbitron text-sm tracking-wider rounded-none backdrop-blur-sm transition-all hover:shadow-[0_0_15px_rgba(255,255,255,0.3)] -skew-x-10"
+  >
+    <span className="skew-x-10 inline-block cursor-pointer">JOIN DCITC</span>
+  </a>
+);
+
+const LoginButton: React.FC = () => (
+  <a
+    href="/login"
+    className="px-6 py-2 border border-white/20 text-slate-300 hover:text-white hover:border-white/40 font-orbitron text-sm tracking-wider rounded-none transition-all -skew-x-10"
+  >
+    <span className="skew-x-10 inline-block cursor-pointer">LOGIN</span>
+  </a>
+);
+
+interface AccountMenuProps {
+  user: User;
+  signingOut: boolean;
+  onLogout: () => void;
 }
 
-const DesktopNav: React.FC<DesktopNavProps> = ({ pathname }) => (
+const AccountMenu: React.FC<AccountMenuProps> = ({ user, signingOut, onLogout }) => {
+  const [open, setOpen] = useState(false);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function onPointerDown(event: MouseEvent) {
+      if (!wrapperRef.current?.contains(event.target as Node)) setOpen(false);
+    }
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setOpen(false);
+        buttonRef.current?.focus();
+      }
+    }
+    document.addEventListener("mousedown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [open]);
+
+  return (
+    <div ref={wrapperRef} className="relative">
+      <button
+        ref={buttonRef}
+        type="button"
+        onClick={() => setOpen((value) => !value)}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        aria-label={`Account menu for ${user.name}`}
+        title={user.name}
+        className="flex h-9 w-9 items-center justify-center rounded-full border border-white/30 bg-white/10 font-orbitron text-[11px] tracking-wide text-white transition-colors hover:bg-white/20 hover:border-white/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+      >
+        {initials(user.name)}
+      </button>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            role="menu"
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.15 }}
+            className="absolute right-0 top-full z-50 mt-3 w-44 border border-white/15 bg-black shadow-xl"
+          >
+            <Link
+              href="/dashboard"
+              role="menuitem"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-2.5 px-4 py-3 font-rajdhani font-semibold text-base tracking-wide text-slate-200 transition-colors hover:bg-white/10 hover:text-white"
+            >
+              <LayoutDashboard className="h-4 w-4" aria-hidden="true" />
+              Dashboard
+            </Link>
+            <button
+              type="button"
+              role="menuitem"
+              onClick={onLogout}
+              disabled={signingOut}
+              className="flex w-full items-center gap-2.5 border-t border-white/10 px-4 py-3 text-left font-rajdhani font-semibold text-base tracking-wide text-slate-200 transition-colors hover:bg-white/10 hover:text-white disabled:opacity-50"
+            >
+              <LogOut className="h-4 w-4" aria-hidden="true" />
+              {signingOut ? "Logging out…" : "Log out"}
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
+interface AuthControlsProps {
+  auth: AuthState;
+  signingOut: boolean;
+  onLogout: () => void;
+}
+
+const AuthControls: React.FC<AuthControlsProps> = ({ auth, signingOut, onLogout }) => {
+  if (auth.status === "loading") {
+    return <span className="block h-9 w-[250px] animate-pulse bg-white/10" aria-hidden="true" />;
+  }
+  if (auth.status === "in") {
+    return <AccountMenu user={auth.user} signingOut={signingOut} onLogout={onLogout} />;
+  }
+  return (
+    <>
+      <LoginButton />
+      <ApplyButton />
+    </>
+  );
+};
+
+interface DesktopNavProps {
+  pathname: string;
+  auth: AuthState;
+  signingOut: boolean;
+  onLogout: () => void;
+}
+
+const DesktopNav: React.FC<DesktopNavProps> = ({ pathname, auth, signingOut, onLogout }) => (
   <div className="hidden md:flex items-center gap-8">
     {NAV_ITEMS.map((item) => {
       const isActive = item.href === "/"
@@ -45,8 +176,7 @@ const DesktopNav: React.FC<DesktopNavProps> = ({ pathname }) => (
       );
     })}
 
-    <LoginButton />
-    <ApplyButton />
+    <AuthControls auth={auth} signingOut={signingOut} onLogout={onLogout} />
   </div>
 );
 
@@ -68,34 +198,22 @@ const MobileMenuButton: React.FC<MobileMenuButtonProps> = ({
   </button>
 );
 
-const ApplyButton: React.FC = () => (
-  <a
-    href="/signup"
-    className="px-6 py-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-orbitron text-sm tracking-wider rounded-none backdrop-blur-sm transition-all hover:shadow-[0_0_15px_rgba(255,255,255,0.3)] -skew-x-10"
-  >
-    <span className="skew-x-10 inline-block cursor-pointer">JOIN DCITC</span>
-  </a>
-);
-
-const LoginButton: React.FC = () => (
-  <a
-    href="/login"
-    className="px-6 py-2 border border-white/20 text-slate-300 hover:text-white hover:border-white/40 font-orbitron text-sm tracking-wider rounded-none transition-all -skew-x-10"
-  >
-    <span className="skew-x-10 inline-block cursor-pointer">LOGIN</span>
-  </a>
-);
-
 interface MobileNavMenuProps {
   top: string;
   onClose: () => void;
   pathname: string;
+  auth: AuthState;
+  signingOut: boolean;
+  onLogout: () => void;
 }
 
 const MobileNavMenu: React.FC<MobileNavMenuProps> = ({
   top,
   onClose,
   pathname,
+  auth,
+  signingOut,
+  onLogout,
 }) => (
   <motion.div
     initial={{ opacity: 0, y: -20 }}
@@ -122,15 +240,58 @@ const MobileNavMenu: React.FC<MobileNavMenuProps> = ({
           </a>
         );
       })}
-      <LoginButton />
-    <ApplyButton />
+
+      {auth.status === "loading" ? (
+        <span className="block h-9 w-full animate-pulse bg-white/10" aria-hidden="true" />
+      ) : auth.status === "in" ? (
+        <div className="flex flex-col gap-6">
+          <Link
+            href="/dashboard"
+            onClick={onClose}
+            className="font-rajdhani font-bold text-2xl tracking-wider text-slate-200 transition-colors hover:text-white"
+          >
+            Dashboard
+          </Link>
+          <button
+            type="button"
+            onClick={onLogout}
+            disabled={signingOut}
+            className="text-left font-rajdhani font-bold text-2xl tracking-wider text-slate-200 transition-colors hover:text-white disabled:opacity-50"
+          >
+            {signingOut ? "Logging out…" : "Log out"}
+          </button>
+        </div>
+      ) : (
+        <>
+          <LoginButton />
+          <ApplyButton />
+        </>
+      )}
     </div>
   </motion.div>
 );
 
 const Navbar: React.FC = () => {
+  const router = useRouter();
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
+  const [auth, setAuth] = useState<AuthState>({ status: "loading" });
+  const [signingOut, setSigningOut] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const user = await apiFetch<User>("/auth/me");
+        if (!cancelled) setAuth({ status: "in", user });
+      } catch {
+        if (!cancelled) setAuth({ status: "out" });
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     if (isOpen) {
@@ -144,6 +305,20 @@ const Navbar: React.FC = () => {
     }
   }, [isOpen]);
 
+  async function logout() {
+    if (signingOut) return;
+    setSigningOut(true);
+    try {
+      await apiFetch("/auth/logout", { method: "POST" });
+    } catch {
+      /* ignore — the session is dropped client-side either way */
+    }
+    setAuth({ status: "out" });
+    setSigningOut(false);
+    setIsOpen(false);
+    router.replace("/");
+  }
+
   const mobileMenuTop = `3.5rem`;
 
   return (
@@ -153,7 +328,12 @@ const Navbar: React.FC = () => {
       <div className="max-w-7xl mx-auto px-6 py-1 sm:py-0 flex justify-between items-center">
         <Logo />
 
-        <DesktopNav pathname={pathname} />
+        <DesktopNav
+          pathname={pathname}
+          auth={auth}
+          signingOut={signingOut}
+          onLogout={logout}
+        />
 
         <MobileMenuButton isOpen={isOpen} setIsOpen={setIsOpen} />
       </div>
@@ -164,6 +344,9 @@ const Navbar: React.FC = () => {
             top={mobileMenuTop}
             onClose={() => setIsOpen(false)}
             pathname={pathname}
+            auth={auth}
+            signingOut={signingOut}
+            onLogout={logout}
           />
         )}
       </AnimatePresence>
