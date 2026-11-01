@@ -14,6 +14,17 @@ export const CLUB = {
   },
 };
 
+/**
+ * Both legal pages read the review date from here so /privacy and /terms cannot
+ * drift apart. Bump LAST_UPDATED and LAST_UPDATED_ISO together when either
+ * document's copy changes.
+ */
+export const LEGAL = {
+  LAST_UPDATED: "1 November 2026",
+  LAST_UPDATED_ISO: "2026-11-01",
+  CONTACT_EMAIL: "dhakacollegeitclubofficial@gmail.com",
+} as const;
+
 export const NAV_ITEMS: NavItem[] = [
   { label: "Departments", href: "/#departments" },
   { label: "Leadership", href: "/#leadership" },

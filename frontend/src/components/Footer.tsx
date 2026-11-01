@@ -109,6 +109,20 @@ const Footer: React.FC = () => {
             &copy; {new Date().getFullYear()} Dhaka College Information & Technology Club. All rights reserved.
             <span className="ml-2 text-slate-700">v{CLUB.VERSION}</span>
           </p>
+          <nav aria-label="Legal" className="flex flex-wrap items-center gap-4">
+            <Link
+              href="/privacy"
+              className="font-rajdhani text-[10px] md:text-xs uppercase tracking-widest text-slate-600 hover:text-white transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/60"
+            >
+              Privacy Policy
+            </Link>
+            <Link
+              href="/terms"
+              className="font-rajdhani text-[10px] md:text-xs uppercase tracking-widest text-slate-600 hover:text-white transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/60"
+            >
+              Terms of Service
+            </Link>
+          </nav>
           <p>
             Designed & Developed by <span className="text-orange-500">DCITC Team</span>
           </p>
