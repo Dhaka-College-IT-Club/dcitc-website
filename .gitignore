@@ -2,6 +2,9 @@
 
 # dependencies
 /node_modules
+/frontend/node_modules
+/backend/node_modules
+/backend/dist
 /.pnp
 .pnp.*
 .yarn/*
@@ -15,6 +18,7 @@
 
 # next.js
 /.next/
+/frontend/.next/
 /out/
 
 # production
@@ -31,7 +35,7 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # env files (can opt-in for committing if needed)
-.env*
+.env
 
 # vercel
 .vercel
@@ -43,3 +47,10 @@ next-env.d.ts
 
 # Local Netlify folder
 .netlify
+.opencode
+openspec
+opencode.json
+AGENTS.md
+supabase/.temp
+dbhub.toml
+.playwright-mcp
