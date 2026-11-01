@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 import { describe, it } from "node:test";
 import { hashPassword, verifyPassword } from "../src/lib/password.js";
 import { signAdminToken, signUserToken, verifyAdminToken, verifyUserToken } from "../src/lib/jwt.js";
-import { verifyGoogleIdToken } from "../src/services/google.js";
+import { GoogleExchangeError, googleClient, verifyGoogleIdToken } from "../src/services/google.js";
 import { sslConfig } from "../src/db/ssl.js";
 import { renderOtpEmail } from "../src/mail/index.js";
 import { SignJWT, createLocalJWKSet, exportJWK, generateKeyPair } from "jose";
@@ -102,6 +102,96 @@ describe("google id token verification", () => {
   it("reports an unverified email so the callback can refuse it", async () => {
     const profile = await verifyGoogleIdToken(await makeToken({ verified: false }), await jwks(), "test-client-id");
     assert.equal(profile?.emailVerified, false);
+  });
+
+  it("logs the verification failure without the token", async () => {
+    const original = console.error;
+    const lines: string[] = [];
+    console.error = (...args: unknown[]) => {
+      lines.push(args.map(String).join(" "));
+    };
+    try {
+      assert.equal(await verifyGoogleIdToken("not-a-jwt", await jwks(), "test-client-id"), null);
+    } finally {
+      console.error = original;
+    }
+
+    const entry = lines.map((line) => JSON.parse(line)).find((line) => line.message === "google_id_token_verify_failed");
+    assert.ok(entry, "expected a structured verification log line");
+    assert.equal(entry.level, "warn");
+    assert.ok(entry.name);
+    assert.ok(entry.detail);
+    assert.ok(!JSON.stringify(entry).includes("not-a-jwt"));
+  });
+});
+
+describe("google token exchange", () => {
+  const originalFetch = globalThis.fetch;
+
+  const withFetch = async (impl: () => Promise<Response>, run: () => Promise<void>) => {
+    globalThis.fetch = impl as typeof fetch;
+    try {
+      await run();
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  };
+
+  it("captures Google's error fields on a rejected exchange", async () => {
+    await withFetch(
+      async () =>
+        new Response(JSON.stringify({ error: "invalid_grant", error_description: "Bad Request" }), {
+          status: 400,
+          headers: { "content-type": "application/json" },
+        }),
+      async () => {
+        await assert.rejects(googleClient.exchangeCode("secret-auth-code"), (error: unknown) => {
+          assert.ok(error instanceof GoogleExchangeError);
+          assert.equal(error.code, "invalid_grant");
+          assert.equal(error.description, "Bad Request");
+          assert.ok(!error.message.includes("secret-auth-code"));
+          return true;
+        });
+      },
+    );
+  });
+
+  it("bounds the provider description and never includes the code", async () => {
+    const long = "x".repeat(300);
+    await withFetch(
+      async () => new Response(JSON.stringify({ error: "invalid_request", error_description: long }), { status: 400 }),
+      async () => {
+        await assert.rejects(googleClient.exchangeCode("another-secret"), (error: unknown) => {
+          assert.ok(error instanceof GoogleExchangeError);
+          assert.equal(error.description.length, 200);
+          assert.ok(!JSON.stringify(error).includes("another-secret"));
+          return true;
+        });
+      },
+    );
+  });
+
+  it("falls back when Google's error body is unreadable", async () => {
+    await withFetch(
+      async () => new Response("not json", { status: 502 }),
+      async () => {
+        await assert.rejects(googleClient.exchangeCode("secret"), (error: unknown) => {
+          assert.ok(error instanceof GoogleExchangeError);
+          assert.equal(error.code, "token_exchange_rejected");
+          assert.equal(error.description, "");
+          return true;
+        });
+      },
+    );
+  });
+
+  it("returns the id token on success", async () => {
+    await withFetch(
+      async () => new Response(JSON.stringify({ id_token: "stub-id-token" }), { status: 200 }),
+      async () => {
+        assert.equal(await googleClient.exchangeCode("secret"), "stub-id-token");
+      },
+    );
   });
 });
 

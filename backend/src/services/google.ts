@@ -18,6 +18,19 @@ export interface GoogleClient {
 
 const JWKS = createRemoteJWKSet(new URL("https://www.googleapis.com/oauth2/v3/certs"));
 
+/** Google's token-endpoint rejection, with the provider's own error fields. */
+export class GoogleExchangeError extends Error {
+  readonly code: string;
+  readonly description: string;
+
+  constructor(code: string, description: string) {
+    super("google_token_exchange_failed");
+    this.name = "GoogleExchangeError";
+    this.code = code;
+    this.description = description;
+  }
+}
+
 export async function verifyGoogleIdToken(
   idToken: string,
   jwks: Parameters<typeof jwtVerify>[1] = JWKS,
@@ -36,7 +49,16 @@ export async function verifyGoogleIdToken(
       emailVerified: payload.email_verified === true,
       name: typeof payload.name === "string" && payload.name.trim() ? payload.name : payload.email.split("@")[0]!,
     };
-  } catch {
+  } catch (error) {
+    const failure = error instanceof Error ? error : new Error(String(error));
+    console.error(
+      JSON.stringify({
+        level: "warn",
+        message: "google_id_token_verify_failed",
+        name: failure.name,
+        detail: failure.message,
+      }),
+    );
     return null;
   }
 }
@@ -55,7 +77,20 @@ export const googleClient: GoogleClient = {
       headers: { "content-type": "application/x-www-form-urlencoded" },
       body,
     });
-    if (!response.ok) throw new Error("google_token_exchange_failed");
+    if (!response.ok) {
+      // Google's error body has no secrets; keep only its two string fields.
+      type GoogleErrorBody = { error?: unknown; error_description?: unknown };
+      let payload: GoogleErrorBody | null = null;
+      try {
+        payload = (await response.json()) as GoogleErrorBody;
+      } catch {
+        payload = null;
+      }
+      const code = typeof payload?.error === "string" && payload.error ? payload.error : "token_exchange_rejected";
+      const description =
+        typeof payload?.error_description === "string" ? payload.error_description.slice(0, 200) : "";
+      throw new GoogleExchangeError(code, description);
+    }
     const json = (await response.json()) as { id_token?: string };
     if (!json.id_token) throw new Error("google_id_token_missing");
     return json.id_token;

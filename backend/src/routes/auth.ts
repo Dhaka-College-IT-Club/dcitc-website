@@ -12,15 +12,15 @@ import {
   setOAuthStateCookie,
   setUserCookie,
 } from "../lib/cookies.js";
-import { AppError, emailTaken, invalidCredentials, invalidOtp, isUniqueViolation, unauthenticated } from "../lib/errors.js";
+import { AppError, deliveryFailed, emailTaken, invalidCredentials, invalidOtp, isUniqueViolation, unauthenticated } from "../lib/errors.js";
 import { signSignupToken, signOAuthState, signUserToken, verifyOAuthState, verifySignupToken } from "../lib/jwt.js";
 import { hashPassword, verifyPassword } from "../lib/password.js";
 import { toUser } from "../lib/serialize.js";
-import { sendEmailRecovery, sendResetOtp, sendSignupOtp } from "../mail/index.js";
+import { MailDeliveryError, otpSenders, sendEmailRecovery } from "../mail/index.js";
 import { requireUser } from "../middleware/auth.js";
 import { authLimiter, loginLimiter, otpLimiter, passwordResetLimiter } from "../middleware/rateLimit.js";
 import { validate } from "../middleware/validate.js";
-import { buildAuthorizeUrl, currentGoogleClient, resolveGoogleUser } from "../services/google.js";
+import { buildAuthorizeUrl, currentGoogleClient, GoogleExchangeError, resolveGoogleUser } from "../services/google.js";
 import { issueOtp, verifyOtp } from "../services/otp.js";
 
 export const authRouter = Router();
@@ -73,19 +73,22 @@ authRouter.post(
   "/signup/request-otp",
   otpLimiter,
   validate({ body: emailOnly }),
-  async (req, res) => {
+  async (req, res, next) => {
     const email = req.body.email as string;
     if (!(await isEmailTaken(email))) {
       try {
-        const code = await issueOtp(email, "signup");
-        await sendSignupOtp(email, code);
+        await issueOtp(email, "signup", (code) => otpSenders.signup(email, code));
       } catch (error) {
-        // Includes the per-address cooldown. Answering 429 only for addresses
-        // that are not registered would turn this endpoint into an account
-        // existence oracle, so every outcome answers "sent".
-        if (!(error instanceof AppError)) {
-          console.error(JSON.stringify({ level: "error", message: "signup_otp_send_failed" }));
+        // Cooldown/throttle outcomes still answer "sent": a 429 only for
+        // addresses that are not registered would be an existence oracle.
+        if (error instanceof AppError) {
+          return res.json({ data: { sent: true } });
         }
+        if (error instanceof MailDeliveryError) {
+          console.error(JSON.stringify({ level: "error", message: "signup_otp_send_failed" }));
+          return next(deliveryFailed());
+        }
+        return next(error);
       }
     }
     res.json({ data: { sent: true } });
@@ -191,18 +194,22 @@ authRouter.post(
   "/password/forgot",
   passwordResetLimiter,
   validate({ body: emailOnly }),
-  async (req, res) => {
+  async (req, res, next) => {
     const email = req.body.email as string;
     if (await isEmailTaken(email)) {
       try {
-        const code = await issueOtp(email, "password_reset");
-        await sendResetOtp(email, code);
+        await issueOtp(email, "password_reset", (code) => otpSenders.reset(email, code));
       } catch (error) {
-        // Same reasoning as signup: a cooldown-only 429 would reveal that the
+        // Same reasoning as signup: cooldown-only 429s would reveal that the
         // address has an account.
-        if (!(error instanceof AppError)) {
-          console.error(JSON.stringify({ level: "error", message: "reset_otp_send_failed" }));
+        if (error instanceof AppError) {
+          return res.json({ data: { sent: true } });
         }
+        if (error instanceof MailDeliveryError) {
+          console.error(JSON.stringify({ level: "error", message: "reset_otp_send_failed" }));
+          return next(deliveryFailed());
+        }
+        return next(error);
       }
     }
     res.json({ data: { sent: true } });
@@ -277,22 +284,49 @@ authRouter.get("/google/callback", async (req, res) => {
   const state = typeof req.query.state === "string" ? req.query.state : "";
   const cookieState = req.cookies?.[OAUTH_STATE_COOKIE] as string | undefined;
 
+  const googleError = typeof req.query.error === "string" ? req.query.error.slice(0, 100) : "";
+  if (googleError) {
+    const description =
+      typeof req.query.error_description === "string" ? req.query.error_description.slice(0, 200) : "";
+    console.error(
+      JSON.stringify({ level: "warn", message: "google_oauth_denied", error: googleError, description }),
+    );
+    return fail("oauth_denied");
+  }
+
   if (!code || !state || !cookieState) return fail("oauth_state");
   const nonce = verifyOAuthState(state);
   const cookieNonce = verifyOAuthState(cookieState);
   if (!nonce || !cookieNonce || nonce !== cookieNonce) return fail("oauth_state");
 
+  let step: "exchange" | "verify" | "user" = "exchange";
   try {
     const client = currentGoogleClient();
     const idToken = await client.exchangeCode(code);
+    step = "verify";
     const profile = await client.verifyIdToken(idToken);
     if (!profile || !profile.emailVerified) return fail("oauth_email");
 
+    step = "user";
     const user = await resolveGoogleUser(profile);
     setUserCookie(res, signUserToken(user.id, user.tokenVersion));
     clearOAuthStateCookie(res);
     redirect("/dashboard");
-  } catch {
+  } catch (error) {
+    const failure = error instanceof Error ? error : new Error(String(error));
+    const detail =
+      error instanceof GoogleExchangeError
+        ? error.description || error.code
+        : failure.message;
+    console.error(
+      JSON.stringify({
+        level: "error",
+        message: "google_oauth_failed",
+        step,
+        name: failure.name,
+        detail: detail.slice(0, 300),
+      }),
+    );
     return fail("oauth_failed");
   }
 });

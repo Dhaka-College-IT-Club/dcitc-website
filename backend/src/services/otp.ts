@@ -1,5 +1,5 @@
 import { createHmac, randomInt, timingSafeEqual } from "node:crypto";
-import { and, desc, eq, gt, isNull, sql } from "drizzle-orm";
+import { and, desc, eq, gt, isNull, lt, sql } from "drizzle-orm";
 import { env } from "../config/env.js";
 import { db } from "../db/pool.js";
 import { otpCodes } from "../db/schema.js";
@@ -32,8 +32,12 @@ function cooldownError(seconds: number): AppError {
   });
 }
 
-/** Create and store a fresh OTP. Returns the plain code so the caller can mail it. */
-export async function issueOtp(email: string, purpose: OtpPurpose): Promise<string> {
+/** Create and store a fresh OTP after `deliver` succeeds, returning nothing. */
+export async function issueOtp(
+  email: string,
+  purpose: OtpPurpose,
+  deliver: (code: string) => Promise<void>,
+): Promise<void> {
   const address = normalize(email);
   const now = new Date();
 
@@ -61,20 +65,26 @@ export async function issueOtp(email: string, purpose: OtpPurpose): Promise<stri
     );
   if (count >= MAX_PER_HOUR) throw cooldownError(60 * 60 - 60);
 
-  // Only the newest code may be used.
-  await db
-    .update(otpCodes)
-    .set({ consumedAt: now })
-    .where(and(eq(otpCodes.email, address), eq(otpCodes.purpose, purpose), isNull(otpCodes.consumedAt)));
-
   const code = String(randomInt(0, 1_000_000)).padStart(6, "0");
-  await db.insert(otpCodes).values({
-    email: address,
-    purpose,
-    codeHash: hashCode(code),
-    expiresAt: new Date(now.getTime() + TTL_MS),
+
+  // Send before invalidating anything: a delivery failure must leave the
+  // previous code usable and must not start a cooldown.
+  await deliver(code);
+
+  const storedAt = new Date();
+  await db.transaction(async (tx) => {
+    // Only the newest code may be used.
+    await tx
+      .update(otpCodes)
+      .set({ consumedAt: storedAt })
+      .where(and(eq(otpCodes.email, address), eq(otpCodes.purpose, purpose), isNull(otpCodes.consumedAt)));
+    await tx.insert(otpCodes).values({
+      email: address,
+      purpose,
+      codeHash: hashCode(code),
+      expiresAt: new Date(storedAt.getTime() + TTL_MS),
+    });
   });
-  return code;
 }
 
 /** Verify a code, consuming it on success. Attempts are counted before comparison. */
@@ -92,18 +102,32 @@ export async function verifyOtp(email: string, purpose: OtpPurpose, code: string
     await db.update(otpCodes).set({ consumedAt: new Date() }).where(eq(otpCodes.id, row.id));
     throw otpExpired();
   }
-  if (row.attempts >= MAX_ATTEMPTS) throw otpExhausted();
 
-  const [updated] = await db
+  // One conditional statement, so concurrent guesses cannot share a stale count.
+  const [counted] = await db
     .update(otpCodes)
-    .set({ attempts: row.attempts + 1 })
-    .where(eq(otpCodes.id, row.id))
+    .set({ attempts: sql`${otpCodes.attempts} + 1` })
+    .where(and(eq(otpCodes.id, row.id), isNull(otpCodes.consumedAt), lt(otpCodes.attempts, MAX_ATTEMPTS)))
     .returning({ attempts: otpCodes.attempts });
-  const attempts = updated?.attempts ?? MAX_ATTEMPTS;
 
-  if (!codeMatches(code, row.codeHash)) {
-    throw attempts >= MAX_ATTEMPTS ? otpExhausted() : invalidOtp();
+  if (!counted) {
+    const [current] = await db
+      .select({ consumedAt: otpCodes.consumedAt })
+      .from(otpCodes)
+      .where(eq(otpCodes.id, row.id))
+      .limit(1);
+    throw current?.consumedAt ? invalidOtp() : otpExhausted();
   }
 
-  await db.update(otpCodes).set({ consumedAt: new Date() }).where(eq(otpCodes.id, row.id));
+  if (!codeMatches(code, row.codeHash)) {
+    throw counted.attempts >= MAX_ATTEMPTS ? otpExhausted() : invalidOtp();
+  }
+
+  // Consume conditionally so two concurrent correct submissions cannot both succeed.
+  const [consumed] = await db
+    .update(otpCodes)
+    .set({ consumedAt: new Date() })
+    .where(and(eq(otpCodes.id, row.id), isNull(otpCodes.consumedAt)))
+    .returning({ id: otpCodes.id });
+  if (!consumed) throw invalidOtp();
 }
