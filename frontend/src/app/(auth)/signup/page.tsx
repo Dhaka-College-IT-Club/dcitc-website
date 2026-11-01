@@ -14,7 +14,6 @@ import TextField from "@/components/ui/TextField";
 import { apiFetch } from "@/lib/api";
 
 const STEPS = ["Details", "Verify", "Password"];
-const BATCHES = ["DC-27", "DC-26", "DC-25"];
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 type FieldErrors = Record<string, string>;
@@ -43,6 +42,7 @@ export default function SignupPage() {
   const [confirm, setConfirm] = useState("");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
+  const [errorCode, setErrorCode] = useState("");
   const [notice, setNotice] = useState("");
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [resendIn, setResendIn] = useState(0);
@@ -80,10 +80,10 @@ export default function SignupPage() {
     if (!name.trim()) nextErrors.name = "Tell us your full name.";
     if (!EMAIL_PATTERN.test(email.trim()))
       nextErrors.email = "Enter a valid email address.";
-    if (!hscBatch.trim()) nextErrors.hscBatch = "Add your HSC batch.";
 
     setFieldErrors(nextErrors);
     setError("");
+    setErrorCode("");
     if (Object.keys(nextErrors).length > 0) return;
 
     setPending(true);
@@ -96,10 +96,28 @@ export default function SignupPage() {
       setStep(2);
       setResendIn(60);
     } catch (err) {
-      const apiError = err as { message?: string };
-      setError(
-        apiError?.message || "We could not send a code. Please try again."
-      );
+      const apiError = err as {
+        code?: string;
+        message?: string;
+        retryAfter?: number;
+      };
+      setErrorCode(apiError?.code ?? "");
+      if (apiError?.code === "email_taken") {
+        setError("That email is already registered.");
+      } else if (apiError?.code === "rate_limited") {
+        const wait = apiError.retryAfter ?? 60;
+        setError(
+          `Too many code requests. Try again in ${wait} second${wait === 1 ? "" : "s"}.`
+        );
+      } else if (apiError?.code === "delivery_failed") {
+        setError(
+          "We could not send the code right now. Please try again in a moment."
+        );
+      } else {
+        setError(
+          apiError?.message || "We could not send a code. Please try again."
+        );
+      }
     } finally {
       setPending(false);
     }
@@ -251,7 +269,23 @@ export default function SignupPage() {
           </div>
 
           <form onSubmit={requestOtp} className="space-y-4" noValidate>
-            {error ? <Alert variant="error">{error}</Alert> : null}
+            {error ? (
+              <Alert variant="error">
+                {error}
+                {errorCode === "email_taken" ? (
+                  <>
+                    {" "}
+                    <Link
+                      href="/login"
+                      className="font-semibold text-white underline underline-offset-4"
+                    >
+                      Sign in instead
+                    </Link>
+                    .
+                  </>
+                ) : null}
+              </Alert>
+            ) : null}
 
             <TextField
               label="Full name"
@@ -278,25 +312,16 @@ export default function SignupPage() {
               required
             />
 
-            <div>
-              <TextField
-                label="HSC batch"
-                name="hscBatch"
-                list="hsc-batches"
-                placeholder="e.g. DC-27"
-                autoComplete="off"
-                value={hscBatch}
-                onChange={(event) => setHscBatch(event.target.value)}
-                error={fieldErrors.hscBatch}
-                hint="Type any batch. The list is just a shortcut."
-                required
-              />
-              <datalist id="hsc-batches">
-                {BATCHES.map((batch) => (
-                  <option key={batch} value={batch} />
-                ))}
-              </datalist>
-            </div>
+            <TextField
+              label="HSC batch (optional)"
+              name="hscBatch"
+              placeholder="e.g. 2027"
+              autoComplete="off"
+              value={hscBatch}
+              onChange={(event) => setHscBatch(event.target.value)}
+              error={fieldErrors.hscBatch}
+              hint="Optional. Used to find your account if you forget your email."
+            />
 
             <Button type="submit" fullWidth loading={pending} className="mt-2">
               {pending ? "Sending code" : "Continue"}
@@ -353,6 +378,7 @@ export default function SignupPage() {
                 setCode("");
                 setNotice("");
                 setError("");
+                setErrorCode("");
                 setFieldErrors({});
               }}
               className="font-rajdhani text-sm text-slate-500 underline-offset-4 transition-colors hover:text-white hover:underline"

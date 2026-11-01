@@ -9,8 +9,6 @@ import Button from "@/components/ui/Button";
 import TextField from "@/components/ui/TextField";
 import { apiFetch } from "@/lib/api";
 
-const BATCHES = ["DC-27", "DC-26", "DC-25"];
-
 export default function ForgotEmailPage() {
   const [name, setName] = useState("");
   const [hscBatch, setHscBatch] = useState("");
@@ -105,25 +103,17 @@ export default function ForgotEmailPage() {
             required
           />
 
-          <div>
-            <TextField
-              label="HSC batch"
-              name="hscBatch"
-              list="recover-batches"
-              autoComplete="off"
-              placeholder="e.g. DC-26"
-              value={hscBatch}
-              onChange={(event) => setHscBatch(event.target.value)}
-              error={fieldErrors.hscBatch}
-              hint="Type it exactly as you signed up."
-              required
-            />
-            <datalist id="recover-batches">
-              {BATCHES.map((batch) => (
-                <option key={batch} value={batch} />
-              ))}
-            </datalist>
-          </div>
+          <TextField
+            label="HSC batch"
+            name="hscBatch"
+            autoComplete="off"
+            placeholder="e.g. 2027"
+            value={hscBatch}
+            onChange={(event) => setHscBatch(event.target.value)}
+            error={fieldErrors.hscBatch}
+            hint="Type it exactly as you signed up."
+            required
+          />
 
           <Button type="submit" fullWidth loading={pending}>
             {pending ? "Checking" : "Recover my email"}
