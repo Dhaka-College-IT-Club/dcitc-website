@@ -1,0 +1,129 @@
+/* Long-form typography for /privacy and /terms.
+
+   Deliberately a separate module from IntelMarkdown: it borrows the same
+   reading metrics (Inter at 17-18px, 1.75 line-height, Orbitron section
+   headings) but keeps a neutral palette. Legal copy should read calmly, so
+   there is no accent colour anywhere in here. */
+
+.text {
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  font-size: 17px;
+  line-height: 1.75;
+  color: #dbe3ec;
+  overflow-wrap: break-word;
+}
+
+@media (min-width: 641px) {
+  .text {
+    font-size: 18px;
+  }
+}
+
+/* Section rhythm: 36px either side of a white/10 rule. */
+.text > section {
+  padding-bottom: 2.25rem;
+}
+
+.text > section + section {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 2.25rem;
+}
+
+.text > section:last-child {
+  padding-bottom: 0;
+}
+
+.text p {
+  margin: 0 0 1.25em;
+  text-wrap: pretty;
+}
+
+.text p:last-child,
+.text ul:last-child,
+.text ol:last-child {
+  margin-bottom: 0;
+}
+
+.text h2 {
+  margin: 0 0 0.9em;
+  font-family: var(--font-orbitron), sans-serif;
+  font-size: 1.2rem;
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: 0.01em;
+  color: #ffffff;
+  text-wrap: balance;
+}
+
+@media (min-width: 641px) {
+  .text h2 {
+    font-size: 1.35rem;
+  }
+}
+
+.text strong {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.text a {
+  color: #ffffff;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-decoration-color: rgba(255, 255, 255, 0.35);
+  text-underline-offset: 3px;
+  transition: text-decoration-color 150ms ease;
+}
+
+.text a:hover {
+  text-decoration-color: #ffffff;
+}
+
+.text a:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.7);
+  outline-offset: 3px;
+}
+
+.text ul,
+.text ol {
+  margin: 0 0 1.25em;
+  padding-left: 1.2em;
+}
+
+.text ul {
+  list-style: disc;
+}
+
+.text ol {
+  list-style: decimal;
+}
+
+.text li {
+  margin: 0.55em 0;
+  padding-left: 0.3em;
+}
+
+.text li::marker {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.text li:last-child {
+  margin-bottom: 0;
+}
+
+.text li > ul,
+.text li > ol {
+  margin: 0.5em 0 0.25em;
+}
+
+/* Summary block for the "in short" lead. Neutral rule instead of an accent. */
+.lede {
+  margin: 0 0 1.5em;
+  border-left: 2px solid rgba(255, 255, 255, 0.22);
+  padding-left: 1.25rem;
+  color: #e8eef5;
+}
+
+.lede > p:last-child {
+  margin-bottom: 0;
+}
