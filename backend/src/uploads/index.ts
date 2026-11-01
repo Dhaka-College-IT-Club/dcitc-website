@@ -22,7 +22,7 @@ export type SignedUpload = {
 
 /** Test/dev adapter: no network, no credentials, still an unguessable path. */
 function fakeUpload(path: string): SignedUpload {
-  const base = env.SUPABASE_URL.replace(/\/$/, "");
+  const base = storageBase();
   return {
     uploadUrl: `${base}/storage/v1/object/upload/${path}?token=fake`,
     token: "fake",
@@ -31,10 +31,18 @@ function fakeUpload(path: string): SignedUpload {
   };
 }
 
+/**
+ * The SDK appends `/storage/v1/...` itself, so a URL pasted with the REST path
+ * (`https://<ref>.supabase.co/rest/v1/`) must be reduced to its origin first.
+ */
+function storageBase(): string {
+  return new URL(env.SUPABASE_URL).origin;
+}
+
 let client: ReturnType<typeof createClient> | null = null;
 
 function supabase() {
-  client ??= createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, {
+  client ??= createClient(storageBase(), env.SUPABASE_SERVICE_ROLE_KEY, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
   return client;
