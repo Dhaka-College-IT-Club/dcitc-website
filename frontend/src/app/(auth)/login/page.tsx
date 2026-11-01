@@ -20,6 +20,18 @@ function safeNext(value: string | null) {
   return value;
 }
 
+const OAUTH_ERRORS: Record<string, string> = {
+  oauth_denied: "Google sign-in was cancelled. Try again or sign in with your email.",
+  oauth_state: "Your sign-in link expired. Start the Google sign-in again.",
+  oauth_email:
+    "That Google account has no verified email. Try another account or sign in with your email.",
+  oauth_failed:
+    "Google sign-in failed on our side. Try again in a moment or sign in with your email.",
+};
+
+const OAUTH_ERROR_FALLBACK =
+  "Google sign-in did not complete. Please try again or use your email.";
+
 function LoginForm() {
   const router = useRouter();
   const params = useSearchParams();
@@ -31,9 +43,7 @@ function LoginForm() {
   const [password, setPassword] = useState("");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState(
-    oauthError
-      ? "Google sign-in did not complete. Please try again or use your email."
-      : ""
+    oauthError ? OAUTH_ERRORS[oauthError] ?? OAUTH_ERROR_FALLBACK : ""
   );
 
   useEffect(() => {

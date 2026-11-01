@@ -9,6 +9,8 @@ const envSchema = z
   .object({
     NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
     PORT: z.coerce.number().int().positive().default(4000),
+    // Temporary: include the resolved client address and forwarded chain in request logs.
+    TRUST_PROXY_DIAGNOSTIC: boolish.optional(),
 
     DATABASE_URL: z.string().min(1),
     TEST_DATABASE_URL: z.string().min(1).optional(),
