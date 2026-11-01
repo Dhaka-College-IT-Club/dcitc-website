@@ -104,23 +104,25 @@ returns `502 delivery_failed`.
 
 | Method | Path | Auth | Body | Success |
 |---|---|---|---|---|
-| POST | `/auth/signup/request-otp` | â€” | `{ email }` | `200 { data: { sent: true } }` |
+| POST | `/auth/signup/request-otp` | â€” | `{ email }` | `200 { data: { sent: true } }`, or `409 email_taken`, `429 rate_limited`, `502 delivery_failed` |
 | POST | `/auth/signup/verify-otp` | â€” | `{ email, code }` | `200 { data: { signupToken } }` |
 | POST | `/auth/signup/complete` | â€” | `{ signupToken, name, hscBatch, password }` | `201 User` + `dcitc_at` |
 | POST | `/auth/login` | â€” | `{ email, password }` | `200 User` + `dcitc_at` |
 | POST | `/auth/logout` | â€” | â€” | `204`, clears `dcitc_at` |
 | GET | `/auth/me` | user | â€” | `200 User` or `401 unauthenticated` |
 | PATCH | `/auth/password` | user | `{ currentPassword, newPassword }` | `200 { data: { updated: true } }` |
-| POST | `/auth/password/forgot` | â€” | `{ email }` | `200 { data: { sent: true } }` always |
+| POST | `/auth/password/forgot` | â€” | `{ email }` | `200 { data: { sent: true } }`, or `409 email_not_found`, `429 rate_limited`, `502 delivery_failed` |
 | POST | `/auth/password/reset` | â€” | `{ email, code, password }` | `200 { data: { reset: true } }` |
 | POST | `/auth/email/recover` | â€” | `{ name, hscBatch }` | `200 { data: { sent: true } }` always |
 | GET | `/auth/google/start` | â€” | â€” | `302` to Google |
 | GET | `/auth/google/callback` | â€” | `?code&state` | `302` to `/dashboard` + `dcitc_at`, or `/login?error=â€¦` |
 
 Rules: passwords â‰¥ 8 characters; OTPs are 6 digits, expire in 10 minutes, allow 5 attempts, have a
-60-second resend cooldown and a 3-per-hour cap per email. `request-otp`, `verify-otp`, `forgot` and
-`email/recover` never reveal whether an address exists; signup/forgot always answer `200`
-`{ sent: true }`, even during the cooldown â€” the cooldown blocks the send, not the response.
+60-second resend cooldown and a 3-per-hour cap per email. `request-otp` and `forgot` report their outcome: `409` for the account mismatch
+(`email_taken` on signup, `email_not_found` on reset), `429 rate_limited` for the cooldown or
+hourly cap, and `502 delivery_failed` when the provider fails. They answer `200 { sent: true }`
+only after a confirmed delivery. `verify-otp` and `email/recover` stay outcome-neutral.
+`hscBatch` is optional and free-form on signup (stored as `""` when blank).
 Changing or resetting a password bumps `token_version`, so older cookies return `401`. Google
 sign-in requires a verified email and links `google_sub` onto an existing password account.
 
