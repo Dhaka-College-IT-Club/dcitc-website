@@ -16,7 +16,9 @@ export function createApp(): express.Express {
   const app = express();
 
   app.disable("x-powered-by");
-  app.set("trust proxy", 1);
+  // Production path: browser -> Vercel rewrite -> Render edge -> this service.
+  // Trusting both hops makes req.ip the browser, not Vercel's shared egress.
+  app.set("trust proxy", 2);
   app.use(helmet());
   app.use(compression());
   app.use(express.json({ limit: "128kb" }));

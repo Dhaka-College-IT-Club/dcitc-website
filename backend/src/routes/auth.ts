@@ -16,11 +16,11 @@ import { AppError, deliveryFailed, emailNotFound, emailTaken, invalidCredentials
 import { signSignupToken, signOAuthState, signUserToken, verifyOAuthState, verifySignupToken } from "../lib/jwt.js";
 import { hashPassword, verifyPassword } from "../lib/password.js";
 import { toUser } from "../lib/serialize.js";
-import { MailDeliveryError, sendEmailRecovery, sendResetOtp, sendSignupOtp } from "../mail/index.js";
+import { MailDeliveryError, otpSenders, sendEmailRecovery } from "../mail/index.js";
 import { requireUser } from "../middleware/auth.js";
 import { authLimiter, loginLimiter, otpLimiter, passwordResetLimiter } from "../middleware/rateLimit.js";
 import { validate } from "../middleware/validate.js";
-import { buildAuthorizeUrl, currentGoogleClient, resolveGoogleUser } from "../services/google.js";
+import { buildAuthorizeUrl, currentGoogleClient, GoogleExchangeError, resolveGoogleUser } from "../services/google.js";
 import { issueOtp, verifyOtp } from "../services/otp.js";
 
 export const authRouter = Router();
@@ -78,7 +78,7 @@ authRouter.post(
     if (await isEmailTaken(email)) return next(emailTaken());
 
     try {
-      await issueOtp(email, "signup", (code) => sendSignupOtp(email, code));
+      await issueOtp(email, "signup", (code) => otpSenders.signup(email, code));
     } catch (error) {
       if (error instanceof MailDeliveryError) return next(deliveryFailed());
       return next(error);
@@ -192,7 +192,7 @@ authRouter.post(
     if (!(await isEmailTaken(email))) return next(emailNotFound());
 
     try {
-      await issueOtp(email, "password_reset", (code) => sendResetOtp(email, code));
+      await issueOtp(email, "password_reset", (code) => otpSenders.reset(email, code));
     } catch (error) {
       if (error instanceof MailDeliveryError) return next(deliveryFailed());
       return next(error);
@@ -270,22 +270,49 @@ authRouter.get("/google/callback", async (req, res) => {
   const state = typeof req.query.state === "string" ? req.query.state : "";
   const cookieState = req.cookies?.[OAUTH_STATE_COOKIE] as string | undefined;
 
+  const googleError = typeof req.query.error === "string" ? req.query.error.slice(0, 100) : "";
+  if (googleError) {
+    const description =
+      typeof req.query.error_description === "string" ? req.query.error_description.slice(0, 200) : "";
+    console.error(
+      JSON.stringify({ level: "warn", message: "google_oauth_denied", error: googleError, description }),
+    );
+    return fail("oauth_denied");
+  }
+
   if (!code || !state || !cookieState) return fail("oauth_state");
   const nonce = verifyOAuthState(state);
   const cookieNonce = verifyOAuthState(cookieState);
   if (!nonce || !cookieNonce || nonce !== cookieNonce) return fail("oauth_state");
 
+  let step: "exchange" | "verify" | "user" = "exchange";
   try {
     const client = currentGoogleClient();
     const idToken = await client.exchangeCode(code);
+    step = "verify";
     const profile = await client.verifyIdToken(idToken);
     if (!profile || !profile.emailVerified) return fail("oauth_email");
 
+    step = "user";
     const user = await resolveGoogleUser(profile);
     setUserCookie(res, signUserToken(user.id, user.tokenVersion));
     clearOAuthStateCookie(res);
     redirect("/dashboard");
-  } catch {
+  } catch (error) {
+    const failure = error instanceof Error ? error : new Error(String(error));
+    const detail =
+      error instanceof GoogleExchangeError
+        ? error.description || error.code
+        : failure.message;
+    console.error(
+      JSON.stringify({
+        level: "error",
+        message: "google_oauth_failed",
+        step,
+        name: failure.name,
+        detail: detail.slice(0, 300),
+      }),
+    );
     return fail("oauth_failed");
   }
 });

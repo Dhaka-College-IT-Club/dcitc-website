@@ -1,10 +1,16 @@
 import "dotenv/config";
 import { z } from "zod";
 
+const boolish = z
+  .enum(["true", "false", "1", "0"])
+  .transform((v) => v === "true" || v === "1");
+
 const envSchema = z
   .object({
     NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
     PORT: z.coerce.number().int().positive().default(4000),
+    // Temporary: include the resolved client address and forwarded chain in request logs.
+    TRUST_PROXY_DIAGNOSTIC: boolish.optional(),
 
     DATABASE_URL: z.string().min(1),
     TEST_DATABASE_URL: z.string().min(1).optional(),

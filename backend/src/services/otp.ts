@@ -1,5 +1,5 @@
 import { createHmac, randomInt, timingSafeEqual } from "node:crypto";
-import { and, desc, eq, gt, isNull, ne, sql } from "drizzle-orm";
+import { and, desc, eq, gt, isNull, lt, ne, sql } from "drizzle-orm";
 import { env } from "../config/env.js";
 import { db } from "../db/pool.js";
 import { otpCodes } from "../db/schema.js";
@@ -118,18 +118,32 @@ export async function verifyOtp(email: string, purpose: OtpPurpose, code: string
     await db.update(otpCodes).set({ consumedAt: new Date() }).where(eq(otpCodes.id, row.id));
     throw otpExpired();
   }
-  if (row.attempts >= MAX_ATTEMPTS) throw otpExhausted();
 
-  const [updated] = await db
+  // One conditional statement, so concurrent guesses cannot share a stale count.
+  const [counted] = await db
     .update(otpCodes)
-    .set({ attempts: row.attempts + 1 })
-    .where(eq(otpCodes.id, row.id))
+    .set({ attempts: sql`${otpCodes.attempts} + 1` })
+    .where(and(eq(otpCodes.id, row.id), isNull(otpCodes.consumedAt), lt(otpCodes.attempts, MAX_ATTEMPTS)))
     .returning({ attempts: otpCodes.attempts });
-  const attempts = updated?.attempts ?? MAX_ATTEMPTS;
 
-  if (!codeMatches(code, row.codeHash)) {
-    throw attempts >= MAX_ATTEMPTS ? otpExhausted() : invalidOtp();
+  if (!counted) {
+    const [current] = await db
+      .select({ consumedAt: otpCodes.consumedAt })
+      .from(otpCodes)
+      .where(eq(otpCodes.id, row.id))
+      .limit(1);
+    throw current?.consumedAt ? invalidOtp() : otpExhausted();
   }
 
-  await db.update(otpCodes).set({ consumedAt: new Date() }).where(eq(otpCodes.id, row.id));
+  if (!codeMatches(code, row.codeHash)) {
+    throw counted.attempts >= MAX_ATTEMPTS ? otpExhausted() : invalidOtp();
+  }
+
+  // Consume conditionally so two concurrent correct submissions cannot both succeed.
+  const [consumed] = await db
+    .update(otpCodes)
+    .set({ consumedAt: new Date() })
+    .where(and(eq(otpCodes.id, row.id), isNull(otpCodes.consumedAt)))
+    .returning({ id: otpCodes.id });
+  if (!consumed) throw invalidOtp();
 }

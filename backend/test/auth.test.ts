@@ -7,7 +7,7 @@ import { db } from "../src/db/pool.js";
 import { otpCodes, users } from "../src/db/schema.js";
 import { testOutbox } from "../src/mail/index.js";
 import { issueOtp, verifyOtp } from "../src/services/otp.js";
-import { setGoogleClient } from "../src/services/google.js";
+import { GoogleExchangeError, setGoogleClient } from "../src/services/google.js";
 import { ageRecentOtp, closePool, hasTestDb, prepareDatabase } from "./db.js";
 import { Client, startServer } from "./helpers.js";
 
@@ -443,6 +443,98 @@ describe("google oauth", () => {
     assert.equal(response.status, 302);
     assert.match(response.headers.get("location")!, /\/login\?error=oauth_state$/);
     assert.equal(response.setCookies.some((cookie) => cookie.startsWith("dcitc_at=")), false);
+  });
+
+  dbIt("reports a denied consent instead of a state failure", async () => {
+    const fresh = new Client(baseUrl);
+    const original = console.error;
+    const lines: string[] = [];
+    console.error = (...args: unknown[]) => {
+      lines.push(args.map(String).join(" "));
+    };
+    try {
+      const response = await fresh.req(
+        "/api/v2/auth/google/callback?error=access_denied&error_description=Denied&state=whatever",
+        { method: "GET" },
+      );
+      assert.equal(response.status, 302);
+      assert.match(response.headers.get("location")!, /\/login\?error=oauth_denied$/);
+    } finally {
+      console.error = original;
+    }
+    const entry = lines.map((line) => JSON.parse(line)).find((line) => line.message === "google_oauth_denied");
+    assert.ok(entry);
+    assert.equal(entry.error, "access_denied");
+  });
+
+  dbIt("logs the exchange step without the authorization code", async () => {
+    const fresh = new Client(baseUrl);
+    const { state } = await start(fresh);
+    setGoogleClient({
+      exchangeCode: async () => {
+        throw new GoogleExchangeError("invalid_grant", "Bad Request");
+      },
+      verifyIdToken: async () => null,
+    });
+
+    const original = console.error;
+    const lines: string[] = [];
+    console.error = (...args: unknown[]) => {
+      lines.push(args.map(String).join(" "));
+    };
+    let location = "";
+    try {
+      const callback = await fresh.req(
+        `/api/v2/auth/google/callback?code=secret-auth-code&state=${state}`,
+        { method: "GET" },
+      );
+      location = callback.headers.get("location")!;
+    } finally {
+      console.error = original;
+    }
+
+    assert.match(location, /\/login\?error=oauth_failed$/);
+    const entry = lines.map((line) => JSON.parse(line)).find((line) => line.message === "google_oauth_failed");
+    assert.ok(entry);
+    assert.equal(entry.step, "exchange");
+    assert.equal(entry.name, "GoogleExchangeError");
+    assert.equal(entry.detail, "Bad Request");
+    assert.ok(!lines.join("\n").includes("secret-auth-code"));
+  });
+
+  dbIt("logs the verify step without the id token", async () => {
+    const fresh = new Client(baseUrl);
+    const { state } = await start(fresh);
+    setGoogleClient({
+      exchangeCode: async () => "secret-id-token",
+      verifyIdToken: async () => {
+        throw new Error("bad signature");
+      },
+    });
+
+    const original = console.error;
+    const lines: string[] = [];
+    console.error = (...args: unknown[]) => {
+      lines.push(args.map(String).join(" "));
+    };
+    let location = "";
+    try {
+      const callback = await fresh.req(
+        `/api/v2/auth/google/callback?code=abc&state=${state}`,
+        { method: "GET" },
+      );
+      location = callback.headers.get("location")!;
+    } finally {
+      console.error = original;
+    }
+
+    assert.match(location, /\/login\?error=oauth_failed$/);
+    const entry = lines.map((line) => JSON.parse(line)).find((line) => line.message === "google_oauth_failed");
+    assert.ok(entry);
+    assert.equal(entry.step, "verify");
+    assert.equal(entry.name, "Error");
+    assert.equal(entry.detail, "bad signature");
+    assert.ok(!lines.join("\n").includes("secret-id-token"));
   });
 
   dbIt("creates a new user for a verified Google profile", async () => {

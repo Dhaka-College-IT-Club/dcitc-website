@@ -97,8 +97,8 @@ curl -s http://localhost:4000/api/v2/settings/public
 ```
 
 `202` `{ "data": { "accepted": true } }`. `website` is a honeypot: a non-empty value returns the same
-`202` and sends nothing. Limits: name 1â€“100, message 1â€“5000, 5 requests/hour/IP. Delivery failure
-returns `502 delivery_failed`.
+`202` and sends nothing. Limits: name 1â€“100, message 1â€“5000, 5 requests/hour per resolved client
+IP. Delivery failure returns `502 delivery_failed`.
 
 ## Member auth
 
@@ -118,13 +118,17 @@ returns `502 delivery_failed`.
 | GET | `/auth/google/callback` | â€” | `?code&state` | `302` to `/dashboard` + `dcitc_at`, or `/login?error=â€¦` |
 
 Rules: passwords â‰¥ 8 characters; OTPs are 6 digits, expire in 10 minutes, allow 5 attempts, have a
-60-second resend cooldown and a 3-per-hour cap per email. `request-otp` and `forgot` report their outcome: `409` for the account mismatch
-(`email_taken` on signup, `email_not_found` on reset), `429 rate_limited` for the cooldown or
-hourly cap, and `502 delivery_failed` when the provider fails. They answer `200 { sent: true }`
-only after a confirmed delivery. `verify-otp` and `email/recover` stay outcome-neutral.
-`hscBatch` is optional and free-form on signup (stored as `""` when blank).
-Changing or resetting a password bumps `token_version`, so older cookies return `401`. Google
-sign-in requires a verified email and links `google_sub` onto an existing password account.
+60-second resend cooldown and a 3-per-hour cap per email. `request-otp` and `forgot` report their
+outcome: `409` for the account mismatch (`email_taken` on signup, `email_not_found` on reset),
+`429 rate_limited` for the cooldown or hourly cap, and `502 delivery_failed` when the provider
+fails. They answer `200 { sent: true }` only after a confirmed delivery; a failed send leaves the
+previously issued code valid. `verify-otp` and `email/recover` stay outcome-neutral. `hscBatch` is
+optional and free-form on signup (stored as `""` when blank). Changing or resetting a password
+bumps `token_version`, so older cookies return `401`. Google sign-in requires a verified email and
+links `google_sub` onto an existing password account. Callback errors are `oauth_denied` (consent
+denied), `oauth_state` (missing, expired, or mismatched state), `oauth_email` (unverified Google
+email), and `oauth_failed` (exchange or provider failure). OTP and password-reset rate limits key on
+the resolved client address plus the submitted email; contact limits key on the client address.
 
 ```bash
 curl -s -c jar.txt -H "content-type: application/json" \
