@@ -1,9 +1,11 @@
 "use client";
 
-import { ArrowUpRight, CalendarDays, ShieldCheck } from "lucide-react";
+import { ArrowUpRight, CalendarDays, GraduationCap } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import DashboardShell from "@/components/dashboard/DashboardShell";
+import Alert from "@/components/ui/Alert";
 import Button from "@/components/ui/Button";
 import { apiFetch } from "@/lib/api";
 import type { PublicSettings, User } from "@/lib/api-types";
@@ -20,6 +22,8 @@ export default function DashboardPage() {
   const [user, setUser] = useState<User | null>(null);
   const [settings, setSettings] = useState<PublicSettings | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [attempt, setAttempt] = useState(0);
   const [signingOut, setSigningOut] = useState(false);
 
   useEffect(() => {
@@ -42,6 +46,10 @@ export default function DashboardPage() {
             /* ignore */
           }
           if (!cancelled) router.replace("/login?next=/dashboard");
+        } else if (!cancelled) {
+          setError(
+            "We couldn't load your dashboard. Check your connection and try again."
+          );
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -50,7 +58,7 @@ export default function DashboardPage() {
     return () => {
       cancelled = true;
     };
-  }, [router]);
+  }, [router, attempt]);
 
   async function signOut() {
     if (signingOut) return;
@@ -75,9 +83,34 @@ export default function DashboardPage() {
         <div className="mx-auto max-w-5xl space-y-6 px-4 py-10 sm:px-6">
           <span className="block h-3 w-28 animate-pulse bg-white/10" />
           <span className="block h-9 w-2/3 max-w-md animate-pulse bg-white/10" />
-          <div className="grid gap-4 lg:grid-cols-5">
-            <span className="h-64 animate-pulse bg-white/[0.05] lg:col-span-3" />
-            <span className="h-64 animate-pulse bg-white/[0.04] lg:col-span-2" />
+          <span className="block h-20 animate-pulse bg-white/[0.05]" />
+          <span className="block h-64 animate-pulse bg-white/[0.04]" />
+        </div>
+      </div>
+    );
+  }
+
+  if (error && !user) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-black px-4 text-slate-200">
+        <div className="w-full max-w-lg border border-white/10 bg-white/[0.02] p-6">
+          <p className="font-orbitron text-[10px] uppercase tracking-[0.28em] text-slate-500">
+            Member portal
+          </p>
+          <div className="mt-4">
+            <Alert variant="error">{error}</Alert>
+          </div>
+          <div className="mt-5">
+            <Button
+              type="button"
+              onClick={() => {
+                setError("");
+                setLoading(true);
+                setAttempt((value) => value + 1);
+              }}
+            >
+              Retry
+            </Button>
           </div>
         </div>
       </div>
@@ -87,149 +120,107 @@ export default function DashboardPage() {
   if (!user) return null;
 
   const since = memberSince(user.createdAt);
-  const price = settings?.membershipPriceBdt ?? 100;
+  const price =
+    settings && typeof settings.membershipPriceBdt === "number" && settings.membershipPriceBdt > 0
+      ? settings.membershipPriceBdt
+      : 100;
   const formUrl = settings?.membershipFormUrl ?? null;
 
   return (
     <DashboardShell user={user} onLogout={signOut} signingOut={signingOut}>
       <header className="mb-7">
         <p className="font-orbitron text-[10px] uppercase tracking-[0.28em] text-slate-500">
-          Member / dashboard
+          Member portal
         </p>
-        <h1 className="mt-2 font-orbitron text-2xl font-bold leading-tight tracking-tight text-white sm:text-3xl md:text-4xl">
-          Welcome,{" "}
-          <span className="break-words text-transparent bg-clip-text bg-linear-to-r from-white via-slate-300 to-slate-500">
-            {user.name}
-          </span>
+        <h1 className="mt-2 font-orbitron text-3xl font-bold leading-tight tracking-tight text-white sm:text-4xl md:text-5xl">
+          Welcome, <span className="break-words text-white">{user.name}</span>
         </h1>
         <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 font-rajdhani text-sm text-slate-400">
-          <span className="inline-flex items-center gap-1.5 border border-white/15 px-2 py-0.5 font-orbitron text-[9px] uppercase tracking-[0.16em] text-slate-300">
-            <ShieldCheck className="h-3 w-3" aria-hidden="true" />
-            {user.hscBatch}
-          </span>
+          {user.hscBatch ? (
+            <span className="inline-flex items-center gap-1.5 border border-white/15 px-2 py-0.5 font-orbitron text-[9px] uppercase tracking-[0.16em] text-slate-300">
+              <GraduationCap className="h-3 w-3" aria-hidden="true" />
+              {user.hscBatch}
+            </span>
+          ) : null}
           {since ? (
             <span className="inline-flex items-center gap-1.5">
               <CalendarDays className="h-3.5 w-3.5 text-slate-500" aria-hidden="true" />
-              Member since {since}
+              Account created {since}
             </span>
           ) : null}
         </div>
       </header>
 
-      <div className="grid items-start gap-4 lg:grid-cols-5">
-        <section
-          aria-labelledby="membership-title"
-          className="clip-notch relative overflow-hidden border border-white/30 bg-white/[0.05] p-5 sm:p-7 lg:col-span-3"
-        >
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-white/[0.07] blur-[70px]"
-          />
-          <div
-            aria-hidden="true"
-            className="tech-grid pointer-events-none absolute inset-0 opacity-20"
-          />
-          <div className="relative">
-            <div className="flex items-center gap-2">
-              <span className="h-1.5 w-1.5 bg-white" aria-hidden="true" />
-              <p className="font-orbitron text-[10px] uppercase tracking-[0.26em] text-slate-400">
-                Membership
-              </p>
-            </div>
-            <h2
-              id="membership-title"
-              className="mt-3 font-orbitron text-xl font-bold tracking-tight text-white sm:text-2xl"
+      <section
+        aria-label="Account"
+        className="mb-4 border border-white/10 bg-white/[0.02] px-5 py-4"
+      >
+        <p className="font-orbitron text-[9px] uppercase tracking-[0.2em] text-slate-500">
+          Account
+        </p>
+        <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6">
+          <p className="min-w-0 break-all font-rajdhani text-base text-slate-200">
+            {user.email}
+          </p>
+          <p className="font-rajdhani text-sm text-slate-500">
+            Need a detail changed?{" "}
+            <Link
+              href="/#contact"
+              className="text-white underline-offset-4 transition-colors hover:underline"
             >
-              Be a Member
-            </h2>
-            <p className="mt-4 font-orbitron text-4xl font-bold leading-none text-white sm:text-5xl">
-              {price}
-              <span className="ml-2 font-orbitron text-base font-medium tracking-[0.16em] text-slate-400">
-                BDT
-              </span>
-            </p>
-            <p className="mt-3 max-w-sm font-rajdhani text-base leading-snug tracking-wide text-slate-300">
-              Only {price} BDT for the full year — workshops, events, and the
-              member network.
-            </p>
+              Contact a club executive
+            </Link>
+            .
+          </p>
+        </div>
+      </section>
 
-            <div className="mt-6">
-              {formUrl ? (
-                <Button
-                  href={formUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  size="lg"
-                >
-                  Become a Member
-                  <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
-                </Button>
-              ) : (
-                <>
-                  <Button type="button" size="lg" disabled>
-                    Membership closed
-                  </Button>
-                  <p className="mt-3 max-w-sm font-rajdhani text-sm text-slate-400">
-                    Membership is not open yet. The club will publish the form
-                    here as soon as enrolment starts.
-                  </p>
-                </>
-              )}
-            </div>
-
-            {formUrl ? (
-              <p className="mt-3 font-rajdhani text-xs text-slate-500">
-                Opens the official membership form in a new tab.
-              </p>
-            ) : null}
-          </div>
-        </section>
-
-        <section
-          aria-labelledby="account-title"
-          className="border border-white/10 bg-white/[0.02] p-5 sm:p-6 lg:col-span-2"
+      <section
+        aria-labelledby="membership-title"
+        className="clip-notch relative overflow-hidden border border-white/30 bg-white/[0.05] p-5 sm:p-7"
+      >
+        <h2
+          id="membership-title"
+          className="font-orbitron text-xl font-bold tracking-tight text-white sm:text-2xl"
         >
-          <p className="font-orbitron text-[10px] uppercase tracking-[0.26em] text-slate-500">
-            Account
+          Membership
+        </h2>
+        <p className="mt-4 font-orbitron text-3xl font-bold leading-none text-white sm:text-4xl">
+          {price}
+          <span className="ml-2 font-orbitron text-base font-medium tracking-[0.16em] text-slate-400">
+            BDT
+          </span>
+        </p>
+        <p className="mt-3 max-w-xl font-rajdhani text-base leading-snug tracking-wide text-slate-300">
+          One-time registration fee. Membership lasts through your HSC years.
+          Some workshops and events may carry a separate fee.
+        </p>
+
+        <div className="mt-6">
+          {formUrl ? (
+            <Button href={formUrl} target="_blank" rel="noopener noreferrer" size="lg">
+              Become a Member
+              <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
+            </Button>
+          ) : (
+            <>
+              <Button type="button" size="lg" disabled>
+                Membership closed
+              </Button>
+              <p className="mt-3 max-w-xl font-rajdhani text-sm text-slate-400">
+                Membership is closed right now. The club will publish the form
+                here when enrolment opens.
+              </p>
+            </>
+          )}
+        </div>
+
+        {formUrl ? (
+          <p className="mt-3 font-rajdhani text-xs text-slate-500">
+            Takes about two minutes.
           </p>
-          <h2
-            id="account-title"
-            className="mt-2 font-orbitron text-base font-bold text-white"
-          >
-            Your details
-          </h2>
-          <dl className="mt-5 divide-y divide-white/5 border-t border-white/5">
-            <div className="py-3">
-              <dt className="font-orbitron text-[9px] uppercase tracking-[0.16em] text-slate-500">
-                Name
-              </dt>
-              <dd className="mt-1 break-words font-rajdhani text-base text-slate-200">
-                {user.name}
-              </dd>
-            </div>
-            <div className="py-3">
-              <dt className="font-orbitron text-[9px] uppercase tracking-[0.16em] text-slate-500">
-                Email
-              </dt>
-              <dd className="mt-1 break-all font-rajdhani text-base text-slate-200">
-                {user.email}
-              </dd>
-            </div>
-            <div className="py-3">
-              <dt className="font-orbitron text-[9px] uppercase tracking-[0.16em] text-slate-500">
-                HSC batch
-              </dt>
-              <dd className="mt-1 font-rajdhani text-base text-slate-200">
-                {user.hscBatch}
-              </dd>
-            </div>
-          </dl>
-          <p className="mt-4 border-t border-white/5 pt-4 font-rajdhani text-xs leading-snug text-slate-500">
-            Need a detail changed? Contact a club executive from the public
-            site.
-          </p>
-        </section>
-      </div>
+        ) : null}
+      </section>
     </DashboardShell>
   );
 }

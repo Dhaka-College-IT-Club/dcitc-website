@@ -18,6 +18,7 @@ import { useState } from "react";
 import type { Admin } from "@/lib/api-types";
 import Logo from "../ui/Logo";
 import Drawer from "../ui/Drawer";
+import ConfirmDialog from "../ui/ConfirmDialog";
 import { ToastProvider } from "../ui/Toast";
 
 const contentLinks = [
@@ -112,7 +113,14 @@ export default function AdminShell({
   children: React.ReactNode;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const isSuper = admin.role === "super_admin";
+
+  /** Close the drawer first; the dialog lives on the shell so it survives it. */
+  function requestLogout() {
+    setMenuOpen(false);
+    setConfirmOpen(true);
+  }
 
   return (
     <ToastProvider>
@@ -139,11 +147,11 @@ export default function AdminShell({
             </div>
             <button
               type="button"
-              onClick={onLogout}
+              onClick={requestLogout}
               className="mt-1 flex w-full items-center gap-2.5 px-3 py-2 font-rajdhani text-sm text-slate-500 transition-colors hover:bg-white/[0.04] hover:text-white"
             >
               <LogOut className="h-4 w-4" aria-hidden="true" />
-              Sign out
+              Log out
             </button>
           </div>
         </aside>
@@ -203,15 +211,29 @@ export default function AdminShell({
               </div>
               <button
                 type="button"
-                onClick={onLogout}
+                onClick={requestLogout}
                 className="mt-1 flex w-full items-center gap-2.5 px-3 py-2 font-rajdhani text-sm text-slate-500 transition-colors hover:text-white"
               >
                 <LogOut className="h-4 w-4" aria-hidden="true" />
-                Sign out
+                Log out
               </button>
             </div>
           </div>
         </Drawer>
+
+        <ConfirmDialog
+          open={confirmOpen}
+          title="Log out?"
+          description="You'll need to sign in again to manage the console."
+          confirmLabel="Log out"
+          cancelLabel="Cancel"
+          destructive={false}
+          onConfirm={() => {
+            setConfirmOpen(false);
+            onLogout();
+          }}
+          onCancel={() => setConfirmOpen(false)}
+        />
       </div>
     </ToastProvider>
   );

@@ -1,7 +1,9 @@
 "use client";
-import React, { useState } from "react";
-import { MapPin, Mail, Send } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { MapPin, Mail, Send, X } from "lucide-react";
 import SectionTitle from "./ui/SectionTitle";
+
+const CONFIRMATION_MS = 6000;
 
 const GetInTouch: React.FC = () => {
   const [name, setName] = useState("");
@@ -15,6 +17,13 @@ const GetInTouch: React.FC = () => {
   const [pending, setPending] = useState(false);
   const [success, setSuccess] = useState(false);
   const [formError, setFormError] = useState("");
+
+  // The confirmation clears itself so it cannot sit over the page forever.
+  useEffect(() => {
+    if (!success) return;
+    const timer = window.setTimeout(() => setSuccess(false), CONFIRMATION_MS);
+    return () => window.clearTimeout(timer);
+  }, [success]);
 
   const validateEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 
@@ -65,10 +74,18 @@ const GetInTouch: React.FC = () => {
   return (
     <section id="contact" className="py-24 bg-black relative overflow-hidden border-t border-white/10">
       {success && (
-        <div className="fixed top-6 left-6 z-[100] max-w-sm border border-white/20 bg-black/90 backdrop-blur-sm px-5 py-4 shadow-[0_0_20px_rgba(255,255,255,0.1)]">
+        <div className="fixed top-6 left-6 z-[100] flex max-w-sm items-start gap-3 border border-white/20 bg-black/90 px-5 py-4 backdrop-blur-sm shadow-[0_0_20px_rgba(255,255,255,0.1)]">
           <p className="font-rajdhani text-white text-base tracking-wide">
             Your message is sent to the DCITC team
           </p>
+          <button
+            type="button"
+            onClick={() => setSuccess(false)}
+            aria-label="Dismiss confirmation"
+            className="-mr-1 -mt-1 inline-flex h-6 w-6 shrink-0 items-center justify-center text-slate-400 transition-colors hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+          >
+            <X className="h-4 w-4" aria-hidden="true" />
+          </button>
         </div>
       )}
 

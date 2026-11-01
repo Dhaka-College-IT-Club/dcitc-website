@@ -9,8 +9,13 @@ export type PublicSettings = {
 
 const PUBLIC_KEYS = ["membership_form_url", "membership_price_bdt"] as const;
 
-export async function readPublicSettings(): Promise<PublicSettings> {
-  const rows = await db
+/** Seeded price, and the value published when the stored one is unusable. */
+export const DEFAULT_MEMBERSHIP_PRICE_BDT = 100;
+
+type SettingsExecutor = Pick<typeof db, "insert" | "select">;
+
+async function readWith(executor: SettingsExecutor): Promise<PublicSettings> {
+  const rows = await executor
     .select()
     .from(settings)
     .where(sql`${settings.key} in ('membership_form_url', 'membership_price_bdt')`);
@@ -18,14 +23,24 @@ export async function readPublicSettings(): Promise<PublicSettings> {
   const parsed = Number.parseInt(map.get("membership_price_bdt") ?? "", 10);
   return {
     membershipFormUrl: map.get("membership_form_url") ?? null,
-    membershipPriceBdt: Number.isFinite(parsed) ? parsed : 0,
+    // Never publish zero or a corrupt value: the fallback is deterministic and
+    // the stored row is left untouched.
+    membershipPriceBdt:
+      Number.isInteger(parsed) && parsed > 0 ? parsed : DEFAULT_MEMBERSHIP_PRICE_BDT,
   };
 }
 
-export async function updateSettings(input: {
-  membershipFormUrl?: string | null;
-  membershipPriceBdt?: number;
-}): Promise<PublicSettings> {
+export function readPublicSettings(): Promise<PublicSettings> {
+  return readWith(db);
+}
+
+export async function updateSettings(
+  input: {
+    membershipFormUrl?: string | null;
+    membershipPriceBdt?: number;
+  },
+  executor: SettingsExecutor = db,
+): Promise<PublicSettings> {
   const now = new Date();
   const writes: Array<{ key: string; value: string | null }> = [];
   if (input.membershipFormUrl !== undefined) {
@@ -36,7 +51,7 @@ export async function updateSettings(input: {
   }
 
   for (const entry of writes) {
-    await db
+    await executor
       .insert(settings)
       .values({ key: entry.key, value: entry.value, updatedAt: now })
       .onConflictDoUpdate({
@@ -45,7 +60,8 @@ export async function updateSettings(input: {
       });
   }
 
-  return readPublicSettings();
+  // Read through the same executor so an in-transaction caller sees its own write.
+  return readWith(executor);
 }
 
 export { PUBLIC_KEYS };

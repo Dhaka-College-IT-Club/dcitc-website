@@ -38,6 +38,9 @@ const envSchema = z
 
     SUPER_ADMIN_EMAIL: z.string().email(),
     SUPER_ADMIN_PASSWORD: z.string().min(8),
+    // Optional operator account. Both must be set to seed it.
+    ADMIN_EMAIL: z.string().email().optional(),
+    ADMIN_PASSWORD: z.string().min(8).optional(),
 
     RUN_MIGRATIONS: z
       .enum(["true", "false", "1", "0"])
@@ -87,7 +90,7 @@ function load(): Env {
   const parsed = envSchema.safeParse(source);
   if (!parsed.success) {
     const names = parsed.error.issues.map((issue) => issue.path.join(".") || "(root)");
-    // Only variable names are printed â€” never values.
+    // Only variable names are printed never values.
     console.error(`Invalid environment configuration: ${[...new Set(names)].join(", ")}`);
     process.exit(1);
   }

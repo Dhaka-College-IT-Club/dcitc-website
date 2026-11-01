@@ -9,6 +9,7 @@ import { NAV_ITEMS, CLUB } from "../constants";
 import { apiFetch } from "@/lib/api";
 import type { User } from "@/lib/api-types";
 import { initials } from "@/lib/initials";
+import ConfirmDialog from "./ui/ConfirmDialog";
 
 type AuthState =
   | { status: "loading" }
@@ -115,7 +116,10 @@ const AccountMenu: React.FC<AccountMenuProps> = ({ user, signingOut, onLogout })
             <button
               type="button"
               role="menuitem"
-              onClick={onLogout}
+              onClick={() => {
+                setOpen(false);
+                onLogout();
+              }}
               disabled={signingOut}
               className="flex w-full items-center gap-2.5 border-t border-white/10 px-4 py-3 text-left font-rajdhani font-semibold text-base tracking-wide text-slate-200 transition-colors hover:bg-white/10 hover:text-white disabled:opacity-50"
             >
@@ -275,6 +279,7 @@ const Navbar: React.FC = () => {
   const router = useRouter();
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const [auth, setAuth] = useState<AuthState>({ status: "loading" });
   const [signingOut, setSigningOut] = useState(false);
 
@@ -319,38 +324,61 @@ const Navbar: React.FC = () => {
     router.replace("/");
   }
 
+  /** Close whichever menu held the trigger, then ask before ending the session. */
+  function requestLogout() {
+    setIsOpen(false);
+    setConfirmOpen(true);
+  }
+
   const mobileMenuTop = `3.5rem`;
 
   return (
-    <nav
-      className={`bg-black fixed w-full z-50 transition-all duration-300 glass-panel border-b border-white/10`}
-    >
-      <div className="max-w-7xl mx-auto px-6 py-1 sm:py-0 flex justify-between items-center">
-        <Logo />
+    <>
+      <nav
+        className={`bg-black fixed w-full z-50 transition-all duration-300 glass-panel border-b border-white/10`}
+      >
+        <div className="max-w-7xl mx-auto px-6 py-1 sm:py-0 flex justify-between items-center">
+          <Logo />
 
-        <DesktopNav
-          pathname={pathname}
-          auth={auth}
-          signingOut={signingOut}
-          onLogout={logout}
-        />
-
-        <MobileMenuButton isOpen={isOpen} setIsOpen={setIsOpen} />
-      </div>
-
-      <AnimatePresence>
-        {isOpen && (
-          <MobileNavMenu
-            top={mobileMenuTop}
-            onClose={() => setIsOpen(false)}
+          <DesktopNav
             pathname={pathname}
             auth={auth}
             signingOut={signingOut}
-            onLogout={logout}
+            onLogout={requestLogout}
           />
-        )}
-      </AnimatePresence>
-    </nav>
+
+          <MobileMenuButton isOpen={isOpen} setIsOpen={setIsOpen} />
+        </div>
+
+        <AnimatePresence>
+          {isOpen && (
+            <MobileNavMenu
+              top={mobileMenuTop}
+              onClose={() => setIsOpen(false)}
+              pathname={pathname}
+              auth={auth}
+              signingOut={signingOut}
+              onLogout={requestLogout}
+            />
+          )}
+        </AnimatePresence>
+      </nav>
+
+      <ConfirmDialog
+        open={confirmOpen}
+        title="Log out?"
+        description="You'll need to sign in again to reach your dashboard."
+        confirmLabel="Log out"
+        cancelLabel="Cancel"
+        destructive={false}
+        pending={signingOut}
+        onConfirm={() => {
+          setConfirmOpen(false);
+          void logout();
+        }}
+        onCancel={() => setConfirmOpen(false)}
+      />
+    </>
   );
 };
 

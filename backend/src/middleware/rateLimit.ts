@@ -63,6 +63,25 @@ export const otpLimiter = rateLimit({
   keyGenerator: byIpAndEmail,
 });
 
+/**
+ * Source-wide ceiling above the per-account buckets. Rotating the email field
+ * cannot buy an unlimited number of sends or existence probes from one address.
+ * Deliberately generous: a campus or hostel can share one public address.
+ */
+export const otpIpLimiter = rateLimit({
+  ...shared,
+  windowMs: 60 * 60 * 1000,
+  limit: 100,
+  keyGenerator: byIp,
+});
+
+export const loginIpLimiter = rateLimit({
+  ...shared,
+  windowMs: 60 * 60 * 1000,
+  limit: 200,
+  keyGenerator: byIp,
+});
+
 export const passwordResetLimiter = rateLimit({
   ...shared,
   windowMs: 60 * 60 * 1000,

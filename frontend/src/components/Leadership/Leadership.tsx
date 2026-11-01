@@ -6,10 +6,43 @@ import { Facebook, Linkedin, Github, Globe } from "lucide-react";
 import SectionTitle from "../ui/SectionTitle";
 import { LEADERSHIP } from "../../constants";
 import type { Leader } from "../../lib/api-types";
+import { isOptimizableImage, resolveImageUrl } from "../../lib/images";
 
 function initials(name: string) {
   const parts = name.trim().split(/\s+/);
   return `${parts[0]?.[0] ?? ""}${parts[1]?.[0] ?? ""}`.toUpperCase() || "DC";
+}
+
+function LeaderImage({ member }: { member: Leader }) {
+  const resolved = resolveImageUrl(member.image);
+  const [failed, setFailed] = useState(false);
+
+  if (!resolved || failed) {
+    return (
+      <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-white/10 to-black">
+        <span
+          role="img"
+          aria-label={member.name}
+          className="font-orbitron text-xl font-bold tracking-[0.2em] text-slate-400 md:text-2xl"
+        >
+          {initials(member.name)}
+        </span>
+      </div>
+    );
+  }
+
+  return (
+    <Image
+      src={resolved}
+      alt={`${member.name} - ${member.role}`}
+      fill
+      sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
+      // A host outside next.config's allow-list must render, not throw.
+      unoptimized={!isOptimizableImage(resolved)}
+      className="object-cover transition-all duration-500 group-hover:scale-110"
+      onError={() => setFailed(true)}
+    />
+  );
 }
 
 const LEADERSHIP_SUBTITLE: string = LEADERSHIP.SUBTITLE;
@@ -83,12 +116,7 @@ const Leadership: React.FC<{ members?: Leader[] }> = ({ members = [] }) => {
             }}
           >
             {member.image ? (
-              <Image
-                src={member.image}
-                alt={`${member.name} - ${member.role}`}
-                fill
-                className="object-cover transition-all duration-500 group-hover:scale-110"
-              />
+              <LeaderImage member={member} />
             ) : (
               <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-white/10 to-black">
                 <span className="font-orbitron text-xl font-bold tracking-[0.2em] text-slate-400 md:text-2xl">

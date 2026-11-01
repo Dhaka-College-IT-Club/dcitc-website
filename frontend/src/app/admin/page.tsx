@@ -14,15 +14,25 @@ import Button from "@/components/ui/Button";
 import { apiFetch } from "@/lib/api";
 import type { Achievement, Admin, Intel, Leader } from "@/lib/api-types";
 
-type Counts = { leadership: number | null; achievements: number | null; intel: number | null };
+type CountState =
+  | { status: "loading" }
+  | { status: "ok"; value: number }
+  | { status: "error" };
+
+type Counts = {
+  leadership: CountState;
+  achievements: CountState;
+  intel: CountState;
+};
 
 export default function AdminHome() {
   const [admin, setAdmin] = useState<Admin | null>(null);
   const [counts, setCounts] = useState<Counts>({
-    leadership: null,
-    achievements: null,
-    intel: null,
+    leadership: { status: "loading" },
+    achievements: { status: "loading" },
+    intel: { status: "loading" },
   });
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -36,15 +46,23 @@ export default function AdminHome() {
       if (cancelled) return;
       if (me) setAdmin(me);
       setCounts({
-        leadership: leaders?.length ?? null,
-        achievements: achievements?.length ?? null,
-        intel: intels?.length ?? null,
+        leadership: leaders
+          ? { status: "ok", value: leaders.length }
+          : { status: "error" },
+        achievements: achievements
+          ? { status: "ok", value: achievements.length }
+          : { status: "error" },
+        intel: intels ? { status: "ok", value: intels.length } : { status: "error" },
       });
     })();
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [attempt]);
+
+  const hasCountError = Object.values(counts).some(
+    (count) => count.status === "error"
+  );
 
   const cards = [
     {
@@ -104,10 +122,14 @@ export default function AdminHome() {
               </div>
               <div className="mt-8">
                 <p className="font-orbitron text-3xl font-bold text-white">
-                  {card.value === null ? (
+                  {card.value.status === "loading" ? (
                     <span className="inline-block h-8 w-12 animate-pulse bg-white/10 align-middle" />
+                  ) : card.value.status === "error" ? (
+                    <span className="font-rajdhani text-base font-semibold uppercase tracking-[0.12em] text-slate-500">
+                      Unavailable
+                    </span>
                   ) : (
-                    card.value
+                    card.value.value
                   )}
                 </p>
                 <p className="mt-1 font-orbitron text-[10px] uppercase tracking-[0.18em] text-slate-400">
@@ -121,6 +143,29 @@ export default function AdminHome() {
           );
         })}
       </div>
+
+      {hasCountError ? (
+        <div className="flex flex-wrap items-center gap-3">
+          <p className="font-rajdhani text-sm text-slate-500">
+            Some counts could not be loaded.
+          </p>
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            onClick={() => {
+              setCounts({
+                leadership: { status: "loading" },
+                achievements: { status: "loading" },
+                intel: { status: "loading" },
+              });
+              setAttempt((value) => value + 1);
+            }}
+          >
+            Retry
+          </Button>
+        </div>
+      ) : null}
 
       <div className="grid gap-4 lg:grid-cols-5">
         <section className="border border-white/10 bg-white/[0.02] p-5 sm:p-6 lg:col-span-3">

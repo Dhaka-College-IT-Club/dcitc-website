@@ -30,8 +30,21 @@ export default function AdminLoginPage() {
         body: { email, password },
       });
       router.replace("/admin");
-    } catch {
-      setError("Those credentials were not accepted.");
+    } catch (err) {
+      const apiError = err as {
+        status?: number;
+        retryAfter?: number;
+      };
+      if (apiError?.status === 429) {
+        const wait = apiError.retryAfter;
+        setError(
+          wait
+            ? `Too many sign-in attempts. Try again in ${wait} second${wait === 1 ? "" : "s"}.`
+            : "Too many sign-in attempts. Try again in a moment."
+        );
+      } else {
+        setError("Those credentials were not accepted.");
+      }
     } finally {
       setPending(false);
     }

@@ -74,7 +74,7 @@ export default function AdminSettingsPage() {
       await apiFetch("/admin/settings", {
         method: "PUT",
         body: {
-          membershipFormUrl: formUrl.trim(),
+          membershipFormUrl: formUrl.trim() === "" ? null : formUrl.trim(),
           membershipPriceBdt: numericPrice,
         },
       });
@@ -155,7 +155,7 @@ export default function AdminSettingsPage() {
                 value={price}
                 onChange={(event) => setPrice(event.target.value)}
                 error={fieldErrors.membershipPriceBdt}
-                hint="Whole taka. The dashboard displays this beside “Only”."
+                hint="One-time registration fee in whole taka. Shown on the member dashboard."
               />
             </div>
 
@@ -175,7 +175,7 @@ export default function AdminSettingsPage() {
                 Membership
               </p>
               <p className="mt-2 font-orbitron text-lg font-bold text-white">
-                Be a Member
+                Membership
               </p>
               <p className="mt-3 font-orbitron text-3xl font-bold text-white">
                 {Number(price) > 0 ? price : "—"}
@@ -184,14 +184,17 @@ export default function AdminSettingsPage() {
                 </span>
               </p>
               <p className="mt-3 font-rajdhani text-sm text-slate-400">
+                One-time fee, valid through the member&apos;s HSC years.
+              </p>
+              <p className="mt-2 font-rajdhani text-xs text-slate-500">
                 {canTest
-                  ? "The button opens your form in a new tab."
+                  ? "Members see the join button on their dashboard."
                   : "No live form link yet, so members see the closed state."}
               </p>
             </div>
             <p className="mt-4 font-rajdhani text-xs leading-snug text-slate-500">
-              Changing the price updates the dashboard headline. It does not
-              edit any responses already collected in the form.
+              Changing the price updates the dashboard membership card. It does
+              not edit any responses already collected in the form.
             </p>
             <div className="mt-6 border-t border-white/10 pt-4">
               <p className="font-orbitron text-[10px] uppercase tracking-[0.24em] text-slate-500">

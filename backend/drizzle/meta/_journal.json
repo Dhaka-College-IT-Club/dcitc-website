@@ -43,6 +43,13 @@
       "when": 1793462455077,
       "tag": "0005_sleepy_millenium_guard",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1793559127703,
+      "tag": "0006_nervous_kat_farrell",
+      "breakpoints": true
     }
   ]
 }

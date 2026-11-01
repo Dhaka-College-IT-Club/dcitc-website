@@ -73,12 +73,23 @@ function LoginForm() {
       });
       router.replace(next);
     } catch (err) {
-      const apiError = err as { status?: number; message?: string };
-      setError(
-        apiError?.status === 401 || !apiError?.message
-          ? "Invalid email or password."
-          : apiError.message
-      );
+      const apiError = err as {
+        status?: number;
+        message?: string;
+        retryAfter?: number;
+      };
+      if (apiError?.status === 429) {
+        const wait = apiError.retryAfter;
+        setError(
+          wait
+            ? `Too many sign-in attempts. Try again in ${wait} second${wait === 1 ? "" : "s"}.`
+            : "Too many sign-in attempts. Try again in a moment."
+        );
+      } else if (apiError?.status === 401 || !apiError?.message) {
+        setError("Invalid email or password.");
+      } else {
+        setError(apiError.message);
+      }
     } finally {
       setPending(false);
     }
