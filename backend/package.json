@@ -35,7 +35,6 @@
     "helmet": "^8.1.0",
     "jose": "^6.1.0",
     "jsonwebtoken": "^9.0.2",
-    "nodemailer": "^10.3.1",
     "pg": "^8.16.0",
     "zod": "^4.6.7"
   },
@@ -45,7 +44,6 @@
     "@types/express": "^5.0.0",
     "@types/jsonwebtoken": "^9.0.9",
     "@types/node": "^24.0.0",
-    "@types/nodemailer": "^7.0.0",
     "@types/pg": "^8.15.0",
     "drizzle-kit": "^0.31.0",
     "supabase": "^2.45.0",

@@ -3,12 +3,13 @@ import assert from "node:assert/strict";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { fileURLToPath } from "node:url";
-import { describe, it } from "node:test";
+import { afterEach, describe, it } from "node:test";
 import { hashPassword, verifyPassword } from "../src/lib/password.js";
 import { signAdminToken, signUserToken, verifyAdminToken, verifyUserToken } from "../src/lib/jwt.js";
 import { GoogleExchangeError, googleClient, verifyGoogleIdToken } from "../src/services/google.js";
 import { sslConfig } from "../src/db/ssl.js";
-import { renderOtpEmail } from "../src/mail/index.js";
+import { MailDeliveryError, renderOtpEmail, sendSignupOtp, testOutbox } from "../src/mail/index.js";
+import { env } from "../src/config/env.js";
 import { SignJWT, createLocalJWKSet, exportJWK, generateKeyPair } from "jose";
 
 const run = promisify(execFile);
@@ -212,41 +213,80 @@ describe("otp email template", () => {
 });
 
 describe("mail failure handling", () => {
-  it("retries once, throws a generic error, and logs neither the code nor the recipient", async () => {
-    const env: NodeJS.ProcessEnv = {
-      ...process.env,
-      MAIL_TRANSPORT: "smtp",
-      SMTP_HOST: "127.0.0.1",
-      SMTP_PORT: "1",
-      SMTP_FROM: "DCITC <no-reply@dcitc.local>",
-      SMTP_SECURE: "false",
-    };
+  const originalFetch = globalThis.fetch;
+  const originalTransport = env.MAIL_TRANSPORT;
+  const originalKey = env.RESEND_API_KEY;
+  const originalFrom = env.EMAIL_FROM;
+  const API_KEY = "re_test_key_never_log";
+  const CODE = "123456";
 
-    const script = `
-      import('./src/mail/index.js').then(async (mail) => {
-        try {
-          await mail.sendSignupOtp('secret-recipient@example.com', '123456');
-          process.exit(2);
-        } catch (error) {
-          process.exit(error && error.name === 'MailDeliveryError' ? 0 : 3);
-        }
-      });
-    `;
+  const useResend = () => {
+    env.MAIL_TRANSPORT = "resend";
+    env.RESEND_API_KEY = API_KEY;
+    env.EMAIL_FROM = "no-reply@example.com";
+  };
 
-    const result = await run(process.execPath, ["--import", "tsx", "-e", script], {
-      cwd: backendDir,
-      env,
-    }).then(
-      (value) => ({ code: 0, output: `${value.stdout}${value.stderr}` }),
-      (error: { code?: number; stdout?: string; stderr?: string }) => ({
-        code: error.code ?? 1,
-        output: `${error.stdout ?? ""}${error.stderr ?? ""}`,
-      }),
-    );
+  const stubFetch = (impl: typeof fetch) => {
+    const calls: { url: string; init?: RequestInit }[] = [];
+    globalThis.fetch = (async (input: string | URL | Request, init?: RequestInit) => {
+      calls.push({ url: String(input), init });
+      return impl(input, init);
+    }) as typeof fetch;
+    return calls;
+  };
 
-    assert.equal(result.code, 0, `expected MailDeliveryError, got exit ${result.code}`);
-    assert.ok(!result.output.includes("123456"));
-    assert.ok(!result.output.includes("secret-recipient@example.com"));
+  afterEach(() => {
+    globalThis.fetch = originalFetch;
+    env.MAIL_TRANSPORT = originalTransport;
+    env.RESEND_API_KEY = originalKey;
+    env.EMAIL_FROM = originalFrom;
+    testOutbox.length = 0;
+  });
+
+  it("resolves when the provider accepts the message", async () => {
+    useResend();
+    stubFetch(async () => new Response(JSON.stringify({ id: "ok" }), { status: 200 }));
+    await sendSignupOtp("recipient@example.com", CODE);
+  });
+
+  it("raises MailDeliveryError on a non-2xx response, logs no secrets, and does not retry", async () => {
+    useResend();
+    const calls = stubFetch(async () => new Response("nope", { status: 422 }));
+    const logs: string[] = [];
+    const originalError = console.error;
+    console.error = (...args: unknown[]) => logs.push(args.join(" "));
+    try {
+      await assert.rejects(sendSignupOtp("secret-recipient@example.com", CODE), MailDeliveryError);
+    } finally {
+      console.error = originalError;
+    }
+
+    assert.equal(calls.length, 1, "a failed send must not be retried");
+    assert.equal(logs.length, 1);
+    assert.ok(!logs[0]!.includes(API_KEY));
+    assert.ok(!logs[0]!.includes(CODE));
+    assert.ok(!logs[0]!.includes("secret-recipient@example.com"));
+    assert.ok(logs[0]!.includes("422"));
+  });
+
+  it("raises MailDeliveryError when the request rejects", async () => {
+    useResend();
+    stubFetch(async () => {
+      throw new TypeError("network down");
+    });
+    await assert.rejects(sendSignupOtp("recipient@example.com", CODE), MailDeliveryError);
+  });
+
+  it("keeps the idempotency key stable per message and changes it with the code", async () => {
+    useResend();
+    const calls = stubFetch(async () => new Response(null, { status: 200 }));
+    await sendSignupOtp("same@example.com", CODE);
+    await sendSignupOtp("same@example.com", CODE);
+    await sendSignupOtp("same@example.com", "654321");
+
+    const keys = calls.map((call) => new Headers(call.init?.headers).get("Idempotency-Key"));
+    assert.equal(keys[0], keys[1]);
+    assert.notEqual(keys[0], keys[2]);
   });
 });
 
@@ -277,6 +317,10 @@ describe("database TLS", () => {
 });
 
 describe("environment validation", () => {
+  it("pins the mail transport to the log-only path", () => {
+    assert.equal(env.MAIL_TRANSPORT, "log");
+  });
+
   it("exits non-zero and names the missing variable", async () => {
     const env: NodeJS.ProcessEnv = { ...process.env, DOTENV_CONFIG_PATH: "does-not-exist.env" };
     delete env.DATABASE_URL;

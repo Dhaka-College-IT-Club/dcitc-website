@@ -28,7 +28,7 @@ Public pages are rendered on the server and pull content from the API; the landi
 
 ### Member features
 
-- Signup in three steps: request a 6-digit email OTP, verify it, then set name, HSC batch, and password.
+- Signup in three steps: request a 6-digit email OTP, verify it, then set name, an optional HSC batch, and password.
 - Email/password login and logout using an httpOnly JWT cookie (7 days).
 - Google sign-in for accounts with a verified Google email; existing password accounts are linked by email.
 - Password reset with an emailed OTP; account email recovery by name and HSC batch.
@@ -58,7 +58,7 @@ Public pages are rendered on the server and pull content from the API; the landi
 | TypeScript | TypeScript | |
 | Tailwind CSS | Zod | |
 | Framer Motion | JWT (jose) | |
-| Lucide React | Nodemailer | |
+| Lucide React | Resend (HTTP API) | |
 | ESLint | Supabase client | |
 | | Helmet / express-rate-limit | |
 
@@ -127,7 +127,7 @@ npm run dev                 # http://localhost:4000
 
 `npm run dev` also applies pending migrations (`RUN_MIGRATIONS=true`) and seeds a super admin from `SUPER_ADMIN_EMAIL` / `SUPER_ADMIN_PASSWORD` while no super admin exists. Other admin accounts are created from the dashboard.
 
-Local mail uses `MAIL_TRANSPORT=log`, so OTP codes and contact notifications print to the console instead of being sent.
+Local mail uses `MAIL_TRANSPORT=log`, so OTP codes and contact notifications print to the console instead of being sent. To send real mail, set `MAIL_TRANSPORT=resend`, `RESEND_API_KEY`, and `EMAIL_FROM` (an address on a domain verified in Resend); `EMAIL_FROM_NAME` defaults to `DCITC`. Mail is delivered through Resend's HTTPS API rather than a mailbox connection, so there is no mail host, port, or TLS configuration.
 
 Useful database scripts:
 
@@ -169,7 +169,7 @@ The complete HTTP API — envelopes, cookies, routes, rate limits, and status co
 Each app documents its variables in its own `.env.example`:
 
 - `frontend/.env.example` — API origin and allowed image hosts.
-- `backend/.env.example` — database URLs, JWT and OTP secrets, seeded super admin credentials, SMTP settings, Google OAuth credentials, and Supabase Storage settings.
+- `backend/.env.example` — database URLs, JWT and OTP secrets, seeded super admin credentials, Resend mail settings (`RESEND_API_KEY`, `EMAIL_FROM`, `EMAIL_FROM_NAME`), Google OAuth credentials, and Supabase Storage settings.
 
 Copy the example file and fill in the values. Never commit real secrets.
 
@@ -182,7 +182,7 @@ The intended topology is a Vercel frontend, a Render or Railway API service, and
 - The frontend reaches the API through the `/api/v2/*` rewrite, so `API_ORIGIN` must point at the deployed API.
 - The API sits behind two proxy layers (Vercel, then the Render edge), so it trusts two forwarded hops to resolve the browser address for rate limiting. If that topology changes, update `trust proxy` in `backend/src/app.ts`; requests sent directly to the Render hostname bypass Vercel and can forge the forwarded chain.
 
-Hosted database and storage access, the Google OAuth redirect URI, and SMTP deliverability must be configured per environment before launch.
+Hosted database and storage access, the Google OAuth redirect URI, and Resend sender-domain verification must be configured per environment before launch. `dcitc.org` must be verified in Resend and `EMAIL_FROM` must use that domain.
 
 ## Contributing
 

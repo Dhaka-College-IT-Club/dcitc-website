@@ -2,11 +2,13 @@ import "./setup.js";
 import assert from "node:assert/strict";
 import { after, before, describe, it } from "node:test";
 import { eq, sql } from "drizzle-orm";
+import { env } from "../src/config/env.js";
 import { db } from "../src/db/pool.js";
-import { users } from "../src/db/schema.js";
+import { otpCodes, users } from "../src/db/schema.js";
 import { testOutbox } from "../src/mail/index.js";
+import { issueOtp, verifyOtp } from "../src/services/otp.js";
 import { GoogleExchangeError, setGoogleClient } from "../src/services/google.js";
-import { closePool, hasTestDb, prepareDatabase } from "./db.js";
+import { ageRecentOtp, closePool, hasTestDb, prepareDatabase } from "./db.js";
 import { Client, startServer } from "./helpers.js";
 
 let client: Client;
@@ -99,45 +101,72 @@ describe("signup", () => {
     assert.equal(me.body.data.passwordHash, undefined);
   });
 
-  dbIt("returns a generic response and sends no mail for an existing account", async () => {
+  dbIt("reports an existing account as email_taken and sends no mail", async () => {
     await signup("existing@example.com");
     testOutbox.length = 0;
     const response = await client.req("/api/v2/auth/signup/request-otp", {
       body: { email: "existing@example.com" },
     });
-    assert.equal(response.status, 200);
-    assert.deepEqual(response.body, { data: { sent: true } });
+    assert.equal(response.status, 409);
+    assert.deepEqual(response.body, {
+      error: { code: "email_taken", message: "That email is already registered." },
+    });
     assert.equal(testOutbox.length, 0);
+    assert.equal(response.setCookies.length, 0);
   });
 
-  dbIt("enforces the 60 second resend cooldown without revealing the account state", async () => {
+  dbIt("answers a request inside the 60 second cooldown with 429 and Retry-After", async () => {
     const email = "cooldown@example.com";
     const first = await requestSignupOtp(email);
     assert.equal(first.status, 200);
+
     const second = await client.req("/api/v2/auth/signup/request-otp", { body: { email } });
-    assert.equal(second.status, 200);
-    assert.deepEqual(second.body, { data: { sent: true } });
-    assert.equal(testOutbox.length, 1, "the cooldown must still block a second send");
+    assert.equal(second.status, 429);
+    assert.equal(second.body.error.code, "rate_limited");
+    assert.ok(Number(second.headers.get("retry-after")) > 0);
+    assert.equal(second.setCookies.length, 0);
+    assert.equal(testOutbox.length, 1, "the cooldown must block a second send");
   });
 
-  dbIt("answers identically during cooldown for known and unknown addresses", async () => {
-    const known = "cooldown-known@example.com";
-    const unknown = "cooldown-unknown@example.com";
-    await signup(known);
+  dbIt("reports a provider failure as 502 and starts no cooldown", async () => {
+    const email = "delivery-failure@example.com";
+    const originalTransport = env.MAIL_TRANSPORT;
+    const originalFetch = globalThis.fetch;
+    env.MAIL_TRANSPORT = "resend";
+    env.RESEND_API_KEY = "re_test_key";
+    env.EMAIL_FROM = "no-reply@example.com";
+    globalThis.fetch = (async (input: string | URL | Request, init?: RequestInit) => {
+      if (String(input).startsWith("https://api.resend.com")) throw new TypeError("offline");
+      return originalFetch(input, init);
+    }) as typeof fetch;
 
+    try {
+      testOutbox.length = 0;
+      const failed = await client.req("/api/v2/auth/signup/request-otp", { body: { email } });
+      assert.equal(failed.status, 502);
+      assert.equal(failed.body.error.code, "delivery_failed");
+      assert.equal(failed.setCookies.length, 0);
+      assert.equal(testOutbox.length, 0);
+    } finally {
+      globalThis.fetch = originalFetch;
+      env.MAIL_TRANSPORT = originalTransport;
+    }
+
+    const retried = await client.req("/api/v2/auth/signup/request-otp", { body: { email } });
+    assert.equal(retried.status, 200, "the failed send must not start a cooldown");
+    assert.equal(testOutbox.length, 1);
+  });
+
+  dbIt("creates an account with an empty batch when the field is omitted", async () => {
     testOutbox.length = 0;
-    const knownFirst = await client.req("/api/v2/auth/signup/request-otp", { body: { email: known } });
-    const knownSecond = await client.req("/api/v2/auth/signup/request-otp", { body: { email: known } });
-    assert.equal(knownFirst.status, 200);
-    assert.equal(knownSecond.status, 200);
-    assert.equal(testOutbox.length, 0);
-
-    const unknownFirst = await client.req("/api/v2/auth/signup/request-otp", { body: { email: unknown } });
-    const unknownSecond = await client.req("/api/v2/auth/signup/request-otp", { body: { email: unknown } });
-    assert.equal(unknownFirst.status, 200);
-    assert.equal(unknownSecond.status, 200);
-    assert.equal(testOutbox.length, 1, "the cooldown blocks the second mail");
-    assert.deepEqual(knownSecond.body, unknownSecond.body);
+    const email = "no-batch@example.com";
+    const first = await requestSignupOtp(email);
+    const verified = await client.req("/api/v2/auth/signup/verify-otp", { body: { email, code: first.code } });
+    const completed = await client.req("/api/v2/auth/signup/complete", {
+      body: { signupToken: verified.body.data.signupToken, name: "No Batch", password: "Password123!" },
+    });
+    assert.equal(completed.status, 201);
+    assert.equal(completed.body.data.hscBatch, "");
   });
 
   dbIt("rejects an expired code", async () => {
@@ -175,6 +204,62 @@ describe("signup", () => {
     });
     assert.equal(completed.status, 400);
     assert.ok(completed.body.error.fields.password);
+  });
+});
+
+describe("otp issuance", () => {
+  dbIt("keeps the previous code and starts no cooldown when delivery throws", async () => {
+    const email = "otp-send-failure@example.com";
+    const issued: string[] = [];
+    await issueOtp(email, "signup", async (code) => {
+      issued.push(code);
+    });
+    await ageRecentOtp(email);
+
+    await assert.rejects(
+      issueOtp(email, "signup", async () => {
+        throw new Error("provider down");
+      }),
+      /provider down/,
+    );
+
+    const rows = await db.select().from(otpCodes).where(eq(otpCodes.email, email));
+    assert.equal(rows.length, 1, "the failed row must be removed");
+    assert.equal(rows[0]!.consumedAt, null);
+    assert.ok(rows[0]!.createdAt.getTime() < Date.now() - 60_000, "the failed row must not start a cooldown");
+
+    await verifyOtp(email, "signup", issued[0]!);
+    await issueOtp(email, "signup", async (code) => {
+      issued.push(code);
+    });
+    assert.equal(issued.length, 2, "a fresh code can be issued immediately after a failure");
+  });
+
+  dbIt("consumes the previous code only after a successful send", async () => {
+    const email = "otp-success@example.com";
+    const issued: string[] = [];
+    await issueOtp(email, "signup", async (code) => {
+      issued.push(code);
+    });
+    await ageRecentOtp(email);
+    await issueOtp(email, "signup", async (code) => {
+      issued.push(code);
+    });
+
+    await assert.rejects(
+      verifyOtp(email, "signup", issued[0]!),
+      (error: unknown) => (error as { code?: string }).code === "invalid_otp",
+    );
+    await verifyOtp(email, "signup", issued[1]!);
+  });
+
+  dbIt("still enforces the cooldown after a successful send", async () => {
+    const email = "otp-cooldown@example.com";
+    await issueOtp(email, "signup", async () => {});
+    await assert.rejects(
+      issueOtp(email, "signup", async () => {}),
+      (error: unknown) => (error as { status?: number }).status === 429,
+    );
   });
 });
 
@@ -256,12 +341,62 @@ describe("password reset", () => {
     assert.equal(login.status, 200);
   });
 
-  dbIt("returns the same generic response for an unknown email", async () => {
+  dbIt("reports an unknown address as email_not_found with no mail", async () => {
     testOutbox.length = 0;
     const response = await client.req("/api/v2/auth/password/forgot", { body: { email: "nobody@example.com" } });
-    assert.equal(response.status, 200);
-    assert.deepEqual(response.body, { data: { sent: true } });
+    assert.equal(response.status, 409);
+    assert.deepEqual(response.body, {
+      error: { code: "email_not_found", message: "That email is not registered." },
+    });
+    assert.equal(response.setCookies.length, 0);
     assert.equal(testOutbox.length, 0);
+  });
+
+  dbIt("answers a reset request inside the cooldown with 429 and Retry-After", async () => {
+    const email = "reset-cooldown@example.com";
+    await signup(email, "Reset Cooldown");
+
+    testOutbox.length = 0;
+    const first = await client.req("/api/v2/auth/password/forgot", { body: { email } });
+    assert.equal(first.status, 200);
+
+    const second = await client.req("/api/v2/auth/password/forgot", { body: { email } });
+    assert.equal(second.status, 429);
+    assert.equal(second.body.error.code, "rate_limited");
+    assert.ok(Number(second.headers.get("retry-after")) > 0);
+    assert.equal(second.setCookies.length, 0);
+    assert.equal(testOutbox.length, 1, "the cooldown must block a second send");
+  });
+
+  dbIt("reports a provider failure as 502 and starts no cooldown", async () => {
+    const email = "reset-failure@example.com";
+    await signup(email, "Reset Failure");
+
+    const originalTransport = env.MAIL_TRANSPORT;
+    const originalFetch = globalThis.fetch;
+    env.MAIL_TRANSPORT = "resend";
+    env.RESEND_API_KEY = "re_test_key";
+    env.EMAIL_FROM = "no-reply@example.com";
+    globalThis.fetch = (async (input: string | URL | Request, init?: RequestInit) => {
+      if (String(input).startsWith("https://api.resend.com")) return new Response("nope", { status: 500 });
+      return originalFetch(input, init);
+    }) as typeof fetch;
+
+    try {
+      testOutbox.length = 0;
+      const failed = await client.req("/api/v2/auth/password/forgot", { body: { email } });
+      assert.equal(failed.status, 502);
+      assert.equal(failed.body.error.code, "delivery_failed");
+      assert.equal(failed.setCookies.length, 0);
+      assert.equal(testOutbox.length, 0);
+    } finally {
+      globalThis.fetch = originalFetch;
+      env.MAIL_TRANSPORT = originalTransport;
+    }
+
+    const retried = await client.req("/api/v2/auth/password/forgot", { body: { email } });
+    assert.equal(retried.status, 200, "the failed send must not start a cooldown");
+    assert.equal(testOutbox.length, 1);
   });
 });
 

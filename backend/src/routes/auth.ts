@@ -12,7 +12,7 @@ import {
   setOAuthStateCookie,
   setUserCookie,
 } from "../lib/cookies.js";
-import { AppError, deliveryFailed, emailTaken, invalidCredentials, invalidOtp, isUniqueViolation, unauthenticated } from "../lib/errors.js";
+import { AppError, deliveryFailed, emailNotFound, emailTaken, invalidCredentials, invalidOtp, isUniqueViolation, unauthenticated } from "../lib/errors.js";
 import { signSignupToken, signOAuthState, signUserToken, verifyOAuthState, verifySignupToken } from "../lib/jwt.js";
 import { hashPassword, verifyPassword } from "../lib/password.js";
 import { toUser } from "../lib/serialize.js";
@@ -75,22 +75,15 @@ authRouter.post(
   validate({ body: emailOnly }),
   async (req, res, next) => {
     const email = req.body.email as string;
-    if (!(await isEmailTaken(email))) {
-      try {
-        await issueOtp(email, "signup", (code) => otpSenders.signup(email, code));
-      } catch (error) {
-        // Cooldown/throttle outcomes still answer "sent": a 429 only for
-        // addresses that are not registered would be an existence oracle.
-        if (error instanceof AppError) {
-          return res.json({ data: { sent: true } });
-        }
-        if (error instanceof MailDeliveryError) {
-          console.error(JSON.stringify({ level: "error", message: "signup_otp_send_failed" }));
-          return next(deliveryFailed());
-        }
-        return next(error);
-      }
+    if (await isEmailTaken(email)) return next(emailTaken());
+
+    try {
+      await issueOtp(email, "signup", (code) => otpSenders.signup(email, code));
+    } catch (error) {
+      if (error instanceof MailDeliveryError) return next(deliveryFailed());
+      return next(error);
     }
+
     res.json({ data: { sent: true } });
   },
 );
@@ -196,22 +189,15 @@ authRouter.post(
   validate({ body: emailOnly }),
   async (req, res, next) => {
     const email = req.body.email as string;
-    if (await isEmailTaken(email)) {
-      try {
-        await issueOtp(email, "password_reset", (code) => otpSenders.reset(email, code));
-      } catch (error) {
-        // Same reasoning as signup: cooldown-only 429s would reveal that the
-        // address has an account.
-        if (error instanceof AppError) {
-          return res.json({ data: { sent: true } });
-        }
-        if (error instanceof MailDeliveryError) {
-          console.error(JSON.stringify({ level: "error", message: "reset_otp_send_failed" }));
-          return next(deliveryFailed());
-        }
-        return next(error);
-      }
+    if (!(await isEmailTaken(email))) return next(emailNotFound());
+
+    try {
+      await issueOtp(email, "password_reset", (code) => otpSenders.reset(email, code));
+    } catch (error) {
+      if (error instanceof MailDeliveryError) return next(deliveryFailed());
+      return next(error);
     }
+
     res.json({ data: { sent: true } });
   },
 );

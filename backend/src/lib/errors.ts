@@ -37,6 +37,9 @@ export const invalidCredentials = () =>
 
 export const emailTaken = () => new AppError(409, "email_taken", "That email is already registered.");
 
+export const emailNotFound = () =>
+  new AppError(409, "email_not_found", "That email is not registered.");
+
 export const slugTaken = () => new AppError(409, "slug_taken", "That slug is already in use.");
 
 export const slotTaken = () =>

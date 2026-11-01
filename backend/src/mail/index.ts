@@ -1,4 +1,4 @@
-import nodemailer, { type Transporter } from "nodemailer";
+import { createHash } from "node:crypto";
 import { env } from "../config/env.js";
 
 export type MailMessage = {
@@ -19,18 +19,23 @@ export class MailDeliveryError extends Error {
 /** Test-only outbox. Never exported over HTTP and never populated in production. */
 export const testOutbox: MailMessage[] = [];
 
-let transporter: Transporter | null = null;
+const RESEND_ENDPOINT = "https://api.resend.com/emails";
+const REQUEST_TIMEOUT_MS = 10_000;
 
-function getTransporter(): Transporter {
-  if (!transporter) {
-    transporter = nodemailer.createTransport({
-      host: env.SMTP_HOST,
-      port: env.SMTP_PORT ?? 587,
-      secure: env.SMTP_SECURE ?? false,
-      auth: env.SMTP_USER ? { user: env.SMTP_USER, pass: env.SMTP_PASS } : undefined,
-    });
-  }
-  return transporter;
+function fromAddress(): string {
+  const address = env.EMAIL_FROM ?? "";
+  return env.EMAIL_FROM_NAME ? `${env.EMAIL_FROM_NAME} <${address}>` : address;
+}
+
+function idempotencyKey(operation: string, message: MailMessage): string {
+  return createHash("sha256")
+    .update([operation, message.to, message.subject, message.text].join("|"))
+    .digest("hex");
+}
+
+function logFailure(operation: string, detail: Record<string, unknown>): void {
+  // Only the operation and failure class: never the key, recipient, or message body.
+  console.error(JSON.stringify({ level: "error", message: "mail_delivery_failed", operation, ...detail }));
 }
 
 function escapeHtml(value: string): string {
@@ -54,35 +59,43 @@ async function deliver(message: MailMessage, operation: string): Promise<void> {
     ...(message.replyTo ? { replyTo: headerSafe(message.replyTo) } : {}),
   };
 
-  const send = async () => {
-    if (env.MAIL_TRANSPORT === "log") {
-      // Dev/test transport: prints the message instead of sending it, so the OTP is visible locally.
-      console.log(
-        JSON.stringify({ level: "info", message: "mail_log_transport", operation, to: safe.to, subject: safe.subject }),
-      );
-      console.log(`--- ${safe.subject} ---\n${safe.text}\n---`);
-      return;
-    }
-    await getTransporter().sendMail({
-      from: env.SMTP_FROM,
-      to: safe.to,
-      subject: safe.subject,
-      text: safe.text,
-      html: safe.html,
-      ...(safe.replyTo ? { replyTo: safe.replyTo } : {}),
-    });
-  };
+  if (env.MAIL_TRANSPORT === "log") {
+    // Dev/test transport: prints the message instead of sending it, so the OTP is visible locally.
+    console.log(
+      JSON.stringify({ level: "info", message: "mail_log_transport", operation, to: safe.to, subject: safe.subject }),
+    );
+    console.log(`--- ${safe.subject} ---\n${safe.text}\n---`);
+    if (env.NODE_ENV === "test") testOutbox.push(safe);
+    return;
+  }
 
   try {
-    await send();
-  } catch {
-    // One retry, then a generic failure that never leaks SMTP text.
-    try {
-      await send();
-    } catch {
-      console.error(JSON.stringify({ level: "error", message: "mail_delivery_failed", operation }));
+    const response = await fetch(RESEND_ENDPOINT, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${env.RESEND_API_KEY}`,
+        "Content-Type": "application/json",
+        "Idempotency-Key": idempotencyKey(operation, safe),
+      },
+      body: JSON.stringify({
+        from: fromAddress(),
+        to: safe.to,
+        subject: safe.subject,
+        text: safe.text,
+        html: safe.html,
+        ...(safe.replyTo ? { reply_to: safe.replyTo } : {}),
+      }),
+      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+    });
+
+    if (!response.ok) {
+      logFailure(operation, { status: response.status });
       throw new MailDeliveryError();
     }
+  } catch (error) {
+    if (error instanceof MailDeliveryError) throw error;
+    logFailure(operation, { name: error instanceof Error ? error.name : "unknown" });
+    throw new MailDeliveryError();
   }
 
   if (env.NODE_ENV === "test") testOutbox.push(safe);
