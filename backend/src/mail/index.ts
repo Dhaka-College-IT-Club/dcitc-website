@@ -140,6 +140,12 @@ export async function sendResetOtp(to: string, code: string): Promise<void> {
   await deliver({ to, subject, text, html }, "reset_otp");
 }
 
+/** Routes pass these into `issueOtp`; tests replace them to simulate delivery failure. */
+export const otpSenders = {
+  signup: sendSignupOtp,
+  reset: sendResetOtp,
+};
+
 export async function sendEmailRecovery(to: string, name: string): Promise<void> {
   await deliver(
     {

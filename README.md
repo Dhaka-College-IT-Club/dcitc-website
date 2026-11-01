@@ -204,6 +204,7 @@ The intended topology is a Vercel frontend, a Render or Railway API service, and
 - `frontend/vercel.json` sets the Next.js framework, with the Vercel project root directory set to `frontend/`.
 - The frontend reaches the API through the `/api/v2/*` rewrite, so `API_ORIGIN` must point at the deployed API.
 - [`DEPLOY_CHECKLIST.md`](DEPLOY_CHECKLIST.md) covers the production-specific checks: storage bucket limits, proxy hop count, database TLS, admin seeding, and secret rotation.
+- The API sits behind two proxy layers (Vercel, then the Render edge), so it trusts two forwarded hops to resolve the browser address for rate limiting. If that topology changes, update `trust proxy` in `backend/src/app.ts`; requests sent directly to the Render hostname bypass Vercel and can forge the forwarded chain.
 
 Hosted database and storage access, the Google OAuth redirect URI, and SMTP deliverability must be configured per environment before launch.
 

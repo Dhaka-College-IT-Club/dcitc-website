@@ -97,21 +97,21 @@ curl -s http://localhost:4000/api/v2/settings/public
 ```
 
 `202` `{ "data": { "accepted": true } }`. `website` is a honeypot: a non-empty value returns the same
-`202` and sends nothing. Limits: name 1â€“100, message 1â€“5000, 5 requests/hour/IP. Delivery failure
-returns `502 delivery_failed`.
+`202` and sends nothing. Limits: name 1â€“100, message 1â€“5000, 5 requests/hour per resolved client
+IP. Delivery failure returns `502 delivery_failed`.
 
 ## Member auth
 
 | Method | Path | Auth | Body | Success |
 |---|---|---|---|---|
-| POST | `/auth/signup/request-otp` | â€” | `{ email }` | `200 { data: { sent: true } }` |
+| POST | `/auth/signup/request-otp` | â€” | `{ email }` | `200 { data: { sent: true } }` or `502 delivery_failed` |
 | POST | `/auth/signup/verify-otp` | â€” | `{ email, code }` | `200 { data: { signupToken } }` |
 | POST | `/auth/signup/complete` | â€” | `{ signupToken, name, hscBatch, password }` | `201 User` + `dcitc_at` |
 | POST | `/auth/login` | â€” | `{ email, password }` | `200 User` + `dcitc_at` |
 | POST | `/auth/logout` | â€” | â€” | `204`, clears `dcitc_at` |
 | GET | `/auth/me` | user | â€” | `200 User` or `401 unauthenticated` |
 | PATCH | `/auth/password` | user | `{ currentPassword, newPassword }` | `200 { data: { updated: true } }` |
-| POST | `/auth/password/forgot` | â€” | `{ email }` | `200 { data: { sent: true } }` always |
+| POST | `/auth/password/forgot` | â€” | `{ email }` | `200 { data: { sent: true } }` or `502 delivery_failed` |
 | POST | `/auth/password/reset` | â€” | `{ email, code, password }` | `200 { data: { reset: true } }` |
 | POST | `/auth/email/recover` | â€” | `{ name, hscBatch }` | `200 { data: { sent: true } }` always |
 | GET | `/auth/google/start` | â€” | â€” | `302` to Google |
@@ -119,10 +119,14 @@ returns `502 delivery_failed`.
 
 Rules: passwords â‰¥ 8 characters; OTPs are 6 digits, expire in 10 minutes, allow 5 attempts, have a
 60-second resend cooldown and a 3-per-hour cap per email. `request-otp`, `verify-otp`, `forgot` and
-`email/recover` never reveal whether an address exists; signup/forgot always answer `200`
-`{ sent: true }`, even during the cooldown â€” the cooldown blocks the send, not the response.
-Changing or resetting a password bumps `token_version`, so older cookies return `401`. Google
-sign-in requires a verified email and links `google_sub` onto an existing password account.
+`email/recover` never reveal whether an address exists; cooldown and throttle outcomes always answer
+`200 { sent: true }`. If the mail transport fails, `request-otp` and `forgot` return
+`502 delivery_failed` and the previously issued code stays valid. Changing or resetting a password
+bumps `token_version`, so older cookies return `401`. Google sign-in requires a verified email and
+links `google_sub` onto an existing password account. Callback errors are `oauth_denied` (consent
+denied), `oauth_state` (missing, expired, or mismatched state), `oauth_email` (unverified Google
+email), and `oauth_failed` (exchange or provider failure). OTP and password-reset rate limits key on
+the resolved client address plus the submitted email; contact limits key on the client address.
 
 ```bash
 curl -s -c jar.txt -H "content-type: application/json" \

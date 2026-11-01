@@ -15,6 +15,15 @@ const shared = {
 
 const byIp = (req: Request) => ipKeyGenerator(req.ip ?? "0.0.0.0");
 
+/**
+ * Per source address *and* submitted address, so one account's limit survives
+ * any future proxy misconfiguration. Falls back to the source alone.
+ */
+const byIpAndEmail = (req: Request) => {
+  const email = typeof req.body?.email === "string" ? req.body.email.trim().toLowerCase() : "";
+  return `${byIp(req)}:${email}`;
+};
+
 export const authLimiter = rateLimit({
   ...shared,
   windowMs: 15 * 60 * 1000,
@@ -51,14 +60,14 @@ export const otpLimiter = rateLimit({
   ...shared,
   windowMs: 60 * 60 * 1000,
   limit: 10,
-  keyGenerator: byIp,
+  keyGenerator: byIpAndEmail,
 });
 
 export const passwordResetLimiter = rateLimit({
   ...shared,
   windowMs: 60 * 60 * 1000,
   limit: 5,
-  keyGenerator: byIp,
+  keyGenerator: byIpAndEmail,
 });
 
 export const contactLimiter = rateLimit({
