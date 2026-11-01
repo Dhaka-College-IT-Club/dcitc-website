@@ -1,10 +1,10 @@
 import { randomUUID } from "node:crypto";
-import { asc, desc, eq } from "drizzle-orm";
+import { asc, desc, eq, sql } from "drizzle-orm";
 import { Router } from "express";
 import { z } from "zod";
 import { db } from "../db/pool.js";
 import { achievements, admins, intels, leadership } from "../db/schema.js";
-import { clearAdminCookie, setAdminCookie } from "../lib/cookies.js";
+import { ADMIN_COOKIE, clearAdminCookie, setAdminCookie } from "../lib/cookies.js";
 import {
   invalidCredentials,
   isUniqueViolation,
@@ -12,7 +12,7 @@ import {
   slotTaken,
   slugTaken,
 } from "../lib/errors.js";
-import { signAdminToken } from "../lib/jwt.js";
+import { signAdminToken, verifyAdminToken } from "../lib/jwt.js";
 import { hashPassword, verifyPassword } from "../lib/password.js";
 import { toAchievement, toAdmin, toIntel, toLeader } from "../lib/serialize.js";
 import { adminLoginLimiter, uploadLimiter } from "../middleware/rateLimit.js";
@@ -68,7 +68,16 @@ adminRouter.post("/auth/login", adminLoginLimiter, validate({ body: adminLogin }
   res.json({ data: toAdmin(updated ?? row) });
 });
 
-adminRouter.post("/auth/logout", (_req, res) => {
+adminRouter.post("/auth/logout", async (req, res) => {
+  // Revoke outstanding admin sessions server-side; `active` stays untouched.
+  const token = req.cookies?.[ADMIN_COOKIE] as string | undefined;
+  const payload = token ? verifyAdminToken(token) : null;
+  if (payload) {
+    await db
+      .update(admins)
+      .set({ tokenVersion: sql`${admins.tokenVersion} + 1`, updatedAt: new Date() })
+      .where(eq(admins.id, payload.sub));
+  }
   clearAdminCookie(res);
   res.status(204).end();
 });
@@ -106,13 +115,19 @@ adminRouter.get("/achievements", async (_req, res) => {
 
 adminRouter.post("/achievements", validate({ body: achievementBody }), async (req, res) => {
   const body = req.body as z.infer<typeof achievementBody>;
-  const [row] = await db.insert(achievements).values(body).returning();
-  await writeAudit({
-    actorAdminId: req.currentAdmin!.id,
-    action: "achievement.created",
-    targetType: "achievement",
-    targetId: String(row!.id),
-    metadata: { title: row!.title },
+  const row = await db.transaction(async (tx) => {
+    const [created] = await tx.insert(achievements).values(body).returning();
+    await writeAudit(
+      {
+        actorAdminId: req.currentAdmin!.id,
+        action: "achievement.created",
+        targetType: "achievement",
+        targetId: String(created!.id),
+        metadata: { title: created!.title },
+      },
+      tx,
+    );
+    return created;
   });
   res.status(201).json({ data: toAchievement(row!) });
 });
@@ -121,34 +136,48 @@ adminRouter.patch("/achievements/:id", validate({ body: achievementPatch }), asy
   const id = Number(req.params.id);
   if (!Number.isInteger(id)) return next(notFound("Achievement not found."));
   const body = req.body as z.infer<typeof achievementPatch>;
-  const [row] = await db
-    .update(achievements)
-    .set({ ...body, updatedAt: new Date() })
-    .where(eq(achievements.id, id))
-    .returning();
-  if (!row) return next(notFound("Achievement not found."));
-  await writeAudit({
-    actorAdminId: req.currentAdmin!.id,
-    action: "achievement.updated",
-    targetType: "achievement",
-    targetId: String(id),
-    metadata: { title: row.title },
+  const row = await db.transaction(async (tx) => {
+    const [updated] = await tx
+      .update(achievements)
+      .set({ ...body, updatedAt: new Date() })
+      .where(eq(achievements.id, id))
+      .returning();
+    if (!updated) return null;
+    await writeAudit(
+      {
+        actorAdminId: req.currentAdmin!.id,
+        action: "achievement.updated",
+        targetType: "achievement",
+        targetId: String(id),
+        metadata: { title: updated.title },
+      },
+      tx,
+    );
+    return updated;
   });
+  if (!row) return next(notFound("Achievement not found."));
   res.json({ data: toAchievement(row) });
 });
 
 adminRouter.delete("/achievements/:id", async (req, res, next) => {
   const id = Number(req.params.id);
   if (!Number.isInteger(id)) return next(notFound("Achievement not found."));
-  const [row] = await db.delete(achievements).where(eq(achievements.id, id)).returning();
-  if (!row) return next(notFound("Achievement not found."));
-  await writeAudit({
-    actorAdminId: req.currentAdmin!.id,
-    action: "achievement.deleted",
-    targetType: "achievement",
-    targetId: String(id),
-    metadata: { title: row.title },
+  const row = await db.transaction(async (tx) => {
+    const [deleted] = await tx.delete(achievements).where(eq(achievements.id, id)).returning();
+    if (!deleted) return null;
+    await writeAudit(
+      {
+        actorAdminId: req.currentAdmin!.id,
+        action: "achievement.deleted",
+        targetType: "achievement",
+        targetId: String(id),
+        metadata: { title: deleted.title },
+      },
+      tx,
+    );
+    return deleted;
   });
+  if (!row) return next(notFound("Achievement not found."));
   res.status(204).end();
 });
 
@@ -159,19 +188,26 @@ adminRouter.put("/achievements/:id/featured", validate({ body: achievementSlot }
   if (!Number.isInteger(id)) return next(notFound("Achievement not found."));
   const { slot } = req.body as z.infer<typeof achievementSlot>;
   try {
-    const [row] = await db
-      .update(achievements)
-      .set({ featuredSlot: slot, updatedAt: new Date() })
-      .where(eq(achievements.id, id))
-      .returning();
-    if (!row) return next(notFound("Achievement not found."));
-    await writeAudit({
-      actorAdminId: req.currentAdmin!.id,
-      action: "achievement.featured",
-      targetType: "achievement",
-      targetId: String(id),
-      metadata: { slot },
+    const row = await db.transaction(async (tx) => {
+      const [updated] = await tx
+        .update(achievements)
+        .set({ featuredSlot: slot, updatedAt: new Date() })
+        .where(eq(achievements.id, id))
+        .returning();
+      if (!updated) return null;
+      await writeAudit(
+        {
+          actorAdminId: req.currentAdmin!.id,
+          action: "achievement.featured",
+          targetType: "achievement",
+          targetId: String(id),
+          metadata: { slot },
+        },
+        tx,
+      );
+      return updated;
     });
+    if (!row) return next(notFound("Achievement not found."));
     res.json({ data: toAchievement(row) });
   } catch (error) {
     if (isUniqueViolation(error)) return next(slotTaken());
@@ -192,7 +228,8 @@ const intelBody = z.object({
     .string()
     .trim()
     .min(1, "Enter a title.")
-    .max(120, "Keep the title under 120 characters."),
+    .max(120, "Keep the title under 120 characters.")
+    .refine((value) => !/[\r\n]/.test(value), "Use a single line."),
   // Optional: an empty excerpt is derived from the body so the two never drift.
   excerpt: z
     .string()
@@ -208,8 +245,15 @@ const intelBody = z.object({
   imageFocalY: focal.optional().default(50),
 });
 
-// Slug changes are intentionally not accepted after creation.
-const intelPatch = intelBody.omit({ slug: true }).partial();
+// Slug changes are intentionally not accepted after creation. The field is
+// rejected in the schema because `validate` replaces `req.body` with its output,
+// so a route-level check would never see a supplied slug.
+const intelPatch = intelBody
+  .omit({ slug: true })
+  .partial()
+  .extend({
+    slug: z.never({ error: "The slug cannot be changed after creation." }).optional(),
+  });
 
 adminRouter.get("/intels", async (_req, res) => {
   const rows = await db.select().from(intels).orderBy(desc(intels.createdAt)).limit(200);
@@ -219,16 +263,22 @@ adminRouter.get("/intels", async (_req, res) => {
 adminRouter.post("/intels", validate({ body: intelBody }), async (req, res, next) => {
   const body = req.body as z.infer<typeof intelBody>;
   try {
-    const [row] = await db
-      .insert(intels)
-      .values({ ...body, excerpt: body.excerpt || autoExcerpt(body.content) })
-      .returning();
-    await writeAudit({
-      actorAdminId: req.currentAdmin!.id,
-      action: "intel.created",
-      targetType: "intel",
-      targetId: String(row!.id),
-      metadata: { slug: row!.slug },
+    const row = await db.transaction(async (tx) => {
+      const [created] = await tx
+        .insert(intels)
+        .values({ ...body, excerpt: body.excerpt || autoExcerpt(body.content) })
+        .returning();
+      await writeAudit(
+        {
+          actorAdminId: req.currentAdmin!.id,
+          action: "intel.created",
+          targetType: "intel",
+          targetId: String(created!.id),
+          metadata: { slug: created!.slug },
+        },
+        tx,
+      );
+      return created;
     });
     res.status(201).json({ data: toIntel(row!) });
   } catch (error) {
@@ -246,34 +296,44 @@ adminRouter.patch("/intels/:id", validate({ body: intelPatch }), async (req, res
     if (update.content) update.excerpt = autoExcerpt(update.content);
     else delete update.excerpt;
   }
-  const [row] = await db
-    .update(intels)
-    .set(update)
-    .where(eq(intels.id, id))
-    .returning();
-  if (!row) return next(notFound("Intel not found."));
-  await writeAudit({
-    actorAdminId: req.currentAdmin!.id,
-    action: "intel.updated",
-    targetType: "intel",
-    targetId: String(id),
-    metadata: { slug: row.slug },
+  const row = await db.transaction(async (tx) => {
+    const [updated] = await tx.update(intels).set(update).where(eq(intels.id, id)).returning();
+    if (!updated) return null;
+    await writeAudit(
+      {
+        actorAdminId: req.currentAdmin!.id,
+        action: "intel.updated",
+        targetType: "intel",
+        targetId: String(id),
+        metadata: { slug: updated.slug },
+      },
+      tx,
+    );
+    return updated;
   });
+  if (!row) return next(notFound("Intel not found."));
   res.json({ data: toIntel(row) });
 });
 
 adminRouter.delete("/intels/:id", async (req, res, next) => {
   const id = Number(req.params.id);
   if (!Number.isInteger(id)) return next(notFound("Intel not found."));
-  const [row] = await db.delete(intels).where(eq(intels.id, id)).returning();
-  if (!row) return next(notFound("Intel not found."));
-  await writeAudit({
-    actorAdminId: req.currentAdmin!.id,
-    action: "intel.deleted",
-    targetType: "intel",
-    targetId: String(id),
-    metadata: { slug: row.slug },
+  const row = await db.transaction(async (tx) => {
+    const [deleted] = await tx.delete(intels).where(eq(intels.id, id)).returning();
+    if (!deleted) return null;
+    await writeAudit(
+      {
+        actorAdminId: req.currentAdmin!.id,
+        action: "intel.deleted",
+        targetType: "intel",
+        targetId: String(id),
+        metadata: { slug: deleted.slug },
+      },
+      tx,
+    );
+    return deleted;
   });
+  if (!row) return next(notFound("Intel not found."));
   res.status(204).end();
 });
 
@@ -284,19 +344,26 @@ adminRouter.put("/intels/:id/featured", validate({ body: intelSlot }), async (re
   if (!Number.isInteger(id)) return next(notFound("Intel not found."));
   const { slot } = req.body as z.infer<typeof intelSlot>;
   try {
-    const [row] = await db
-      .update(intels)
-      .set({ featuredSlot: slot, updatedAt: new Date() })
-      .where(eq(intels.id, id))
-      .returning();
-    if (!row) return next(notFound("Intel not found."));
-    await writeAudit({
-      actorAdminId: req.currentAdmin!.id,
-      action: "intel.featured",
-      targetType: "intel",
-      targetId: String(id),
-      metadata: { slot },
+    const row = await db.transaction(async (tx) => {
+      const [updated] = await tx
+        .update(intels)
+        .set({ featuredSlot: slot, updatedAt: new Date() })
+        .where(eq(intels.id, id))
+        .returning();
+      if (!updated) return null;
+      await writeAudit(
+        {
+          actorAdminId: req.currentAdmin!.id,
+          action: "intel.featured",
+          targetType: "intel",
+          targetId: String(id),
+          metadata: { slot },
+        },
+        tx,
+      );
+      return updated;
     });
+    if (!row) return next(notFound("Intel not found."));
     res.json({ data: toIntel(row) });
   } catch (error) {
     if (isUniqueViolation(error)) return next(slotTaken());
@@ -333,13 +400,19 @@ adminRouter.get("/leadership", validate({ query: batchQuery }), async (req, res)
 
 adminRouter.post("/leadership", validate({ body: leaderBody }), async (req, res) => {
   const body = req.body as z.infer<typeof leaderBody>;
-  const [row] = await db.insert(leadership).values(body).returning();
-  await writeAudit({
-    actorAdminId: req.currentAdmin!.id,
-    action: "leadership.created",
-    targetType: "leadership",
-    targetId: String(row!.id),
-    metadata: { name: row!.name },
+  const row = await db.transaction(async (tx) => {
+    const [created] = await tx.insert(leadership).values(body).returning();
+    await writeAudit(
+      {
+        actorAdminId: req.currentAdmin!.id,
+        action: "leadership.created",
+        targetType: "leadership",
+        targetId: String(created!.id),
+        metadata: { name: created!.name },
+      },
+      tx,
+    );
+    return created;
   });
   res.status(201).json({ data: toLeader(row!) });
 });
@@ -348,34 +421,48 @@ adminRouter.patch("/leadership/:id", validate({ body: leaderPatch }), async (req
   const id = Number(req.params.id);
   if (!Number.isInteger(id)) return next(notFound("Member not found."));
   const body = req.body as z.infer<typeof leaderPatch>;
-  const [row] = await db
-    .update(leadership)
-    .set({ ...body, updatedAt: new Date() })
-    .where(eq(leadership.id, id))
-    .returning();
-  if (!row) return next(notFound("Member not found."));
-  await writeAudit({
-    actorAdminId: req.currentAdmin!.id,
-    action: "leadership.updated",
-    targetType: "leadership",
-    targetId: String(id),
-    metadata: { name: row.name },
+  const row = await db.transaction(async (tx) => {
+    const [updated] = await tx
+      .update(leadership)
+      .set({ ...body, updatedAt: new Date() })
+      .where(eq(leadership.id, id))
+      .returning();
+    if (!updated) return null;
+    await writeAudit(
+      {
+        actorAdminId: req.currentAdmin!.id,
+        action: "leadership.updated",
+        targetType: "leadership",
+        targetId: String(id),
+        metadata: { name: updated.name },
+      },
+      tx,
+    );
+    return updated;
   });
+  if (!row) return next(notFound("Member not found."));
   res.json({ data: toLeader(row) });
 });
 
 adminRouter.delete("/leadership/:id", async (req, res, next) => {
   const id = Number(req.params.id);
   if (!Number.isInteger(id)) return next(notFound("Member not found."));
-  const [row] = await db.delete(leadership).where(eq(leadership.id, id)).returning();
-  if (!row) return next(notFound("Member not found."));
-  await writeAudit({
-    actorAdminId: req.currentAdmin!.id,
-    action: "leadership.deleted",
-    targetType: "leadership",
-    targetId: String(id),
-    metadata: { name: row.name },
+  const row = await db.transaction(async (tx) => {
+    const [deleted] = await tx.delete(leadership).where(eq(leadership.id, id)).returning();
+    if (!deleted) return null;
+    await writeAudit(
+      {
+        actorAdminId: req.currentAdmin!.id,
+        action: "leadership.deleted",
+        targetType: "leadership",
+        targetId: String(id),
+        metadata: { name: deleted.name },
+      },
+      tx,
+    );
+    return deleted;
   });
+  if (!row) return next(notFound("Member not found."));
   res.status(204).end();
 });
 
@@ -390,13 +477,19 @@ const settingsBody = z.object({
 
 adminRouter.put("/settings", validate({ body: settingsBody }), async (req, res) => {
   const body = req.body as z.infer<typeof settingsBody>;
-  const updated = await updateSettings(body);
-  await writeAudit({
-    actorAdminId: req.currentAdmin!.id,
-    action: "settings.updated",
-    targetType: "settings",
-    targetId: null,
-    metadata: { keys: Object.keys(body) },
+  const updated = await db.transaction(async (tx) => {
+    const published = await updateSettings(body, tx);
+    await writeAudit(
+      {
+        actorAdminId: req.currentAdmin!.id,
+        action: "settings.updated",
+        targetType: "settings",
+        targetId: null,
+        metadata: { keys: Object.keys(body) },
+      },
+      tx,
+    );
+    return published;
   });
   res.json({ data: updated });
 });

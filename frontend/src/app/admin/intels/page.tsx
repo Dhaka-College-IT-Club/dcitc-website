@@ -138,7 +138,10 @@ export default function AdminIntelsPage() {
     if (form.title.trim().length > TITLE_MAX) {
       errors.title = `Keep the title under ${TITLE_MAX} characters.`;
     }
-    if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(form.slug.trim())) {
+    if (/[\r\n]/.test(form.title)) {
+      errors.title = "Use a single line.";
+    }
+    if (!editing && !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(form.slug.trim())) {
       errors.slug = "Use lowercase letters, numbers, and single dashes.";
     }
     if (form.excerpt.trim().length > EXCERPT_MAX) {
@@ -160,8 +163,7 @@ export default function AdminIntelsPage() {
     if (Object.keys(errors).length > 0) return;
 
     setSaving(true);
-    const body = {
-      slug: form.slug.trim(),
+    const fields = {
       title: form.title.trim(),
       // Empty means "derive it from the body" on the server.
       excerpt: form.excerpt.trim(),
@@ -173,6 +175,8 @@ export default function AdminIntelsPage() {
       imageFocalX: form.imageFocalX,
       imageFocalY: form.imageFocalY,
     };
+    // The slug is immutable after creation, so an edit must not send it.
+    const body = editing ? fields : { ...fields, slug: form.slug.trim() };
     try {
       if (editing) {
         await apiFetch(`/admin/intels/${editing.id}`, {
@@ -399,7 +403,11 @@ export default function AdminIntelsPage() {
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
         title={editing ? "Edit intel" : "New intel"}
-        description="The slug becomes the public URL. Lowercase letters, numbers, and dashes only."
+        description={
+          editing
+            ? "Editing an existing article. Its public URL stays the same."
+            : "The slug becomes the public URL. Lowercase letters, numbers, and dashes only."
+        }
       >
         <form onSubmit={submit} className="space-y-5" noValidate>
           <TextField
@@ -422,20 +430,33 @@ export default function AdminIntelsPage() {
               text: `${form.title.length}/${TITLE_MAX}`,
               over: form.title.length > TITLE_MAX,
             }}
+            hint="Single line only. Multi-line prose belongs in the body."
             placeholder="e.g. Behind the Robotics Lab"
             required
           />
 
-          <TextField
-            label="Slug"
-            name="slug"
-            value={form.slug}
-            onChange={(event) => setForm({ ...form, slug: event.target.value })}
-            error={fieldErrors.slug}
-            hint="Used as /intel/your-slug."
-            placeholder="behind-the-robotics-lab"
-            required
-          />
+          {editing ? (
+            <div>
+              <p className="dc-label">Slug</p>
+              <p className="mt-1.5 break-all font-rajdhani text-base text-slate-300">
+                /intel/<span className="text-white">{editing.slug}</span>
+              </p>
+              <p className="mt-1 font-rajdhani text-xs leading-relaxed text-slate-500">
+                The public URL cannot change after creation.
+              </p>
+            </div>
+          ) : (
+            <TextField
+              label="Slug"
+              name="slug"
+              value={form.slug}
+              onChange={(event) => setForm({ ...form, slug: event.target.value })}
+              error={fieldErrors.slug}
+              hint="Used as /intel/your-slug."
+              placeholder="behind-the-robotics-lab"
+              required
+            />
+          )}
 
           <TextField
             label="Excerpt"

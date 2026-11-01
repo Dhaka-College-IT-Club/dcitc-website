@@ -34,6 +34,43 @@ export default function ForgotPasswordPage() {
     return () => window.clearInterval(timer);
   }, [resendIn]);
 
+  /** One mapping for the first request and every resend, so neither can lie. */
+  function outcomeFor(err: unknown): { message: string; advance: boolean } {
+    const apiError = err as {
+      code?: string;
+      message?: string;
+      retryAfter?: number;
+    };
+    switch (apiError?.code) {
+      case "email_not_found":
+        return {
+          message:
+            "No account uses that email. Check the address or create an account.",
+          advance: false,
+        };
+      case "rate_limited": {
+        const wait = apiError.retryAfter ?? 60;
+        return {
+          message: `Too many requests. Try again in ${wait} second${wait === 1 ? "" : "s"}.`,
+          advance: false,
+        };
+      }
+      case "delivery_failed":
+        return {
+          message:
+            "We couldn't send the code right now. Please try again in a moment.",
+          advance: false,
+        };
+      default:
+        return {
+          message:
+            apiError?.message ||
+            "We could not send a reset code. Please try again.",
+          advance: false,
+        };
+    }
+  }
+
   async function requestCode(event: React.FormEvent) {
     event.preventDefault();
     if (pending) return;
@@ -49,14 +86,14 @@ export default function ForgotPasswordPage() {
         method: "POST",
         body: { email: email.trim() },
       });
-    } catch {
-      /* Every outcome shows the same neutral message. */
-    } finally {
       setNotice(
         `If ${email.trim()} matches an account, a six-digit reset code is on its way.`
       );
       setStep(2);
       setResendIn(60);
+    } catch (err) {
+      setError(outcomeFor(err).message);
+    } finally {
       setPending(false);
     }
   }
@@ -73,9 +110,10 @@ export default function ForgotPasswordPage() {
       setCode("");
       setResendIn(60);
       setNotice("A fresh reset code is on its way.");
-    } catch {
-      setNotice("A fresh reset code is on its way.");
-      setResendIn(60);
+    } catch (err) {
+      // Never claim success: keep the entered code and leave the control ready.
+      setNotice("");
+      setError(outcomeFor(err).message);
     } finally {
       setPending(false);
     }

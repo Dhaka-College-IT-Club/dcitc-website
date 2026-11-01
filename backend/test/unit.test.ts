@@ -198,16 +198,39 @@ describe("google token exchange", () => {
 
 describe("otp email template", () => {
   for (const kind of ["signup", "password_reset"] as const) {
-    it(`renders the code and club name for ${kind}`, () => {
+    it(`renders a complete, client-safe document for ${kind}`, () => {
       const mail = renderOtpEmail(kind, "123456");
+
+      assert.match(mail.html, /^<!doctype html>/i);
+      assert.equal((mail.html.match(/<html/gi) ?? []).length, 1, "exactly one html root");
+      assert.equal((mail.html.match(/<body/gi) ?? []).length, 1, "exactly one body");
+      assert.match(mail.html, /<meta name="color-scheme" content="light dark">/);
+      assert.match(mail.html, /<meta name="supported-color-schemes" content="light dark">/);
+      assert.ok(mail.html.includes("prefers-color-scheme"), "dark-mode path missing");
+      assert.ok(mail.html.includes("[data-ogsc]"), "Outlook dark selector missing");
+      assert.ok(mail.html.includes("[data-ogsb]"), "Outlook black selector missing");
+
+      // Hosted raster logo, never inline SVG or a data URI.
+      assert.ok(mail.html.includes('src="https://www.dcitc.org/logo.png"'));
+      assert.ok(mail.html.includes('alt="Dhaka College Information & Technology Club"'));
+      assert.ok(!mail.html.includes("data:image"), "logo must be a hosted URL");
+
+      // The code is selectable text, exactly once in each body.
+      assert.equal((mail.html.match(/123456/g) ?? []).length, 1, "code repeated in HTML");
+      assert.equal((mail.text.match(/123456/g) ?? []).length, 1, "code repeated in text");
+      assert.ok(mail.html.includes("Select the code above to copy it."));
+      assert.ok(!/copy code/i.test(mail.html), "no non-functional copy control");
+
       for (const body of [mail.text, mail.html]) {
-        assert.ok(body.includes("123456"), "code missing from the message");
         assert.ok(body.includes("Dhaka College Information & Technology Club"), "club name missing");
         assert.match(body, /10 minutes/);
         assert.match(body, /ignore this email/);
       }
       assert.ok(mail.subject.includes("DCITC"));
-      assert.equal(mail.html.includes("<img"), false, "template must not use external images");
+
+      // No secret reaches the rendered message.
+      assert.ok(!mail.html.includes(env.OTP_PEPPER));
+      if (env.RESEND_API_KEY) assert.ok(!mail.html.includes(env.RESEND_API_KEY));
     });
   }
 });

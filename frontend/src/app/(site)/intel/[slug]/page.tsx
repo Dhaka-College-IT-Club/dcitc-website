@@ -21,8 +21,10 @@ export const revalidate = 60;
 async function getIntelBySlug(slug: string): Promise<Intel | null> {
   try {
     return await apiServer<Intel>(`/intels/${slug}`);
-  } catch {
-    return null;
+  } catch (error) {
+    // Only a genuine miss is a 404 page. An outage must reach the error boundary.
+    if ((error as { status?: number } | null)?.status === 404) return null;
+    throw error;
   }
 }
 
@@ -41,7 +43,13 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const intel = await getIntelBySlug(slug);
+  let intel: Intel | null = null;
+  try {
+    intel = await getIntelBySlug(slug);
+  } catch {
+    // Metadata must never turn an outage into a misleading "not found" title.
+    return { title: "DCITC Intel" };
+  }
   if (!intel) return { title: "Intel Not Found" };
   const image = resolveImageUrl(intel.image);
   return {

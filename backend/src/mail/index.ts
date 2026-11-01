@@ -101,10 +101,109 @@ async function deliver(message: MailMessage, operation: string): Promise<void> {
   if (env.NODE_ENV === "test") testOutbox.push(safe);
 }
 
+/**
+ * Contact notifications stay on the plain `layout()` shell: the recipient is an
+ * internal club inbox, there is no brand audience, and the message is a raw
+ * form paste. Every user-facing message uses `emailDocument` below.
+ */
 const layout = (heading: string, body: string) =>
   `<div style="font-family:system-ui,sans-serif;line-height:1.5"><h2>${heading}</h2>${body}</div>`;
 
 const CLUB_NAME = "Dhaka College Information & Technology Club";
+const CLUB_URL = "https://www.dcitc.org";
+const LOGO_URL = `${CLUB_URL}/logo.png`;
+
+const SANS =
+  "-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
+const MONO = "ui-monospace,SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace";
+
+/**
+ * One client-safe document for every user-facing transactional message.
+ *
+ * Inline styles carry the light rendering, so a client that strips `<head>`
+ * still gets the intended hierarchy. The `style` block adds an explicit dark
+ * variant for clients that honour `prefers-color-scheme` (and the Outlook
+ * `[data-ogsc]`/`[data-ogsb]` hooks). Pixel-identical output across clients is
+ * not achievable; readable and intentional in both is the bar.
+ */
+export function emailDocument(opts: {
+  preheader: string;
+  heading: string;
+  intro: string;
+  body: string;
+}): string {
+  const darkRules = (scope: string) => `
+    ${scope}.dc-page { background-color:#0a0a0a !important; }
+    ${scope}.dc-card { background-color:#141414 !important; border-color:#27272a !important; }
+    ${scope}.dc-ink { color:#fafafa !important; }
+    ${scope}.dc-muted { color:#a1a1aa !important; }
+    ${scope}.dc-border { border-color:#27272a !important; }
+    ${scope}.dc-accent { color:#fb923c !important; }
+    ${scope}.dc-code { background-color:#000000 !important; border-color:#3f3f46 !important; color:#fafafa !important; }
+    ${scope}.dc-divider { border-color:#27272a !important; }
+  `;
+
+  return `<!doctype html>
+<html lang="en" style="color-scheme:light dark;">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<meta name="supported-color-schemes" content="light dark">
+<title>${escapeHtml(opts.heading)}</title>
+<style>
+  :root { color-scheme: light dark; supported-color-schemes: light dark; }
+  @media (prefers-color-scheme: dark) { ${darkRules("")} }
+  ${darkRules("[data-ogsc] ")}
+  ${darkRules("[data-ogsb] ")}
+</style>
+</head>
+<body class="dc-page" style="margin:0;padding:0;background-color:#f4f4f5;">
+<div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;mso-hide:all;">${escapeHtml(opts.preheader)}</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" class="dc-page" style="background-color:#f4f4f5;">
+<tr>
+<td align="center" style="padding:24px 12px;">
+<table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;">
+<tr>
+<td style="background-color:#0a0a0a;padding:20px 24px;">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0">
+<tr>
+<td style="padding:0 12px 0 0;vertical-align:middle;">
+<img src="${LOGO_URL}" width="48" height="48" alt="${CLUB_NAME}" style="display:block;border:0;width:48px;height:48px;">
+</td>
+<td style="vertical-align:middle;">
+<span style="font:700 13px/1.4 ${SANS};letter-spacing:2px;text-transform:uppercase;color:#ffffff;">DCITC</span><br>
+<span style="font:400 11px/1.5 ${SANS};color:#a1a1aa;">${CLUB_NAME}</span>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+<tr>
+<td class="dc-card" style="background-color:#ffffff;border:1px solid #e4e4e7;border-top:0;padding:32px 28px;">
+<h1 class="dc-ink" style="margin:0 0 12px;font:700 22px/1.3 ${SANS};color:#0a0a0a;">${escapeHtml(opts.heading)}</h1>
+<p class="dc-muted" style="margin:0 0 24px;font:400 14px/1.6 ${SANS};color:#52525b;">${escapeHtml(opts.intro)}</p>
+${opts.body}
+</td>
+</tr>
+<tr>
+<td style="padding:18px 8px;text-align:center;">
+<p class="dc-muted" style="margin:0;font:400 12px/1.6 ${SANS};color:#52525b;">
+${CLUB_NAME} ·
+<a class="dc-accent" href="${CLUB_URL}" style="color:#ea580c;text-decoration:none;">www.dcitc.org</a>
+</p>
+<p class="dc-muted" style="margin:6px 0 0;font:400 11px/1.6 ${SANS};color:#52525b;">
+You received this because someone used this address on ${CLUB_URL}.
+</p>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+</table>
+</body>
+</html>`;
+}
 
 /** Builds the transactional OTP mail without touching a transport, so it can be tested. */
 export function renderOtpEmail(
@@ -129,16 +228,18 @@ export function renderOtpEmail(
     "If you didn't request this, you can ignore this email.",
   ].join("\n");
 
-  const html =
-    `<div style="margin:0;padding:24px;background:#0b0b0b;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#e5e7eb">` +
-    `<div style="max-width:480px;margin:0 auto;padding:32px;background:#111111;border:1px solid #262626">` +
-    `<p style="margin:0 0 24px;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:#9ca3af">${CLUB_NAME}</p>` +
-    `<h1 style="margin:0 0 12px;font-size:22px;line-height:1.3;color:#ffffff">${heading}</h1>` +
-    `<p style="margin:0 0 24px;font-size:14px;line-height:1.6;color:#9ca3af">${intro}</p>` +
-    `<div style="margin:0 0 24px;padding:18px 12px;border:1px solid #333333;background:#000000;text-align:center;font-size:32px;font-weight:700;letter-spacing:8px;color:#ffffff">${escapeHtml(code)}</div>` +
-    `<p style="margin:0 0 8px;font-size:13px;line-height:1.6;color:#9ca3af">This code expires in <strong style="color:#e5e7eb">10 minutes</strong>.</p>` +
-    `<p style="margin:0;font-size:12px;line-height:1.6;color:#6b7280">If you didn&#39;t request this, you can ignore this email.</p>` +
-    `</div></div>`;
+  const body =
+    `<div class="dc-code" style="margin:0 0 12px;padding:20px 12px;border:1px solid #e4e4e7;background-color:#fafafa;text-align:center;font:700 36px/1.2 ${MONO};letter-spacing:10px;color:#0a0a0a;word-break:break-all;">${escapeHtml(code)}</div>` +
+    `<p class="dc-muted" style="margin:0 0 20px;font:400 13px/1.6 ${SANS};color:#52525b;">Select the code above to copy it.</p>` +
+    `<p class="dc-muted" style="margin:0 0 8px;font:400 13px/1.6 ${SANS};color:#52525b;">This code expires in <strong class="dc-ink" style="color:#0a0a0a;">10 minutes</strong>.</p>` +
+    `<p class="dc-muted dc-divider" style="margin:20px 0 0;padding-top:16px;border-top:1px solid #e4e4e7;font:400 12px/1.6 ${SANS};color:#52525b;">If you didn&#39;t request this, you can ignore this email.</p>`;
+
+  const html = emailDocument({
+    preheader: `${intro} The code expires in 10 minutes.`,
+    heading,
+    intro,
+    body,
+  });
 
   return { subject, text, html };
 }
@@ -160,12 +261,18 @@ export const otpSenders = {
 };
 
 export async function sendEmailRecovery(to: string, name: string): Promise<void> {
+  const intro = "This address is the one registered to your DCITC account.";
   await deliver(
     {
       to,
       subject: "Your DCITC account email",
       text: `Hello ${name}, this address is the one registered to your DCITC account.`,
-      html: layout("Your DCITC account", `<p>Hello ${escapeHtml(name)}, this is the address registered to your DCITC account.</p>`),
+      html: emailDocument({
+        preheader: intro,
+        heading: "Your DCITC account",
+        intro,
+        body: `<p class="dc-ink" style="margin:0;font:400 14px/1.6 ${SANS};color:#0a0a0a;">Hello ${escapeHtml(name)}, this is the address registered to your DCITC account.</p>`,
+      }),
     },
     "email_recovery",
   );

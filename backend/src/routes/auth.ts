@@ -11,14 +11,22 @@ import {
   OAUTH_STATE_COOKIE,
   setOAuthStateCookie,
   setUserCookie,
+  USER_COOKIE,
 } from "../lib/cookies.js";
 import { AppError, deliveryFailed, emailNotFound, emailTaken, invalidCredentials, invalidOtp, isUniqueViolation, unauthenticated } from "../lib/errors.js";
-import { signSignupToken, signOAuthState, signUserToken, verifyOAuthState, verifySignupToken } from "../lib/jwt.js";
+import { signSignupToken, signOAuthState, signUserToken, verifyOAuthState, verifySignupToken, verifyUserToken } from "../lib/jwt.js";
 import { hashPassword, verifyPassword } from "../lib/password.js";
 import { toUser } from "../lib/serialize.js";
 import { MailDeliveryError, otpSenders, sendEmailRecovery } from "../mail/index.js";
 import { requireUser } from "../middleware/auth.js";
-import { authLimiter, loginLimiter, otpLimiter, passwordResetLimiter } from "../middleware/rateLimit.js";
+import {
+  authLimiter,
+  loginIpLimiter,
+  loginLimiter,
+  otpIpLimiter,
+  otpLimiter,
+  passwordResetLimiter,
+} from "../middleware/rateLimit.js";
 import { validate } from "../middleware/validate.js";
 import { buildAuthorizeUrl, currentGoogleClient, GoogleExchangeError, resolveGoogleUser } from "../services/google.js";
 import { issueOtp, verifyOtp } from "../services/otp.js";
@@ -71,6 +79,7 @@ async function isEmailTaken(email: string): Promise<boolean> {
 
 authRouter.post(
   "/signup/request-otp",
+  otpIpLimiter,
   otpLimiter,
   validate({ body: emailOnly }),
   async (req, res, next) => {
@@ -90,6 +99,7 @@ authRouter.post(
 
 authRouter.post(
   "/signup/verify-otp",
+  otpIpLimiter,
   otpLimiter,
   validate({ body: signupVerify }),
   async (req, res) => {
@@ -123,7 +133,7 @@ authRouter.post(
   },
 );
 
-authRouter.post("/login", loginLimiter, validate({ body: loginBody }), async (req, res, next) => {
+authRouter.post("/login", loginIpLimiter, loginLimiter, validate({ body: loginBody }), async (req, res, next) => {
   const { email, password } = req.body as z.infer<typeof loginBody>;
   const [row] = await db
     .select()
@@ -143,7 +153,17 @@ authRouter.post("/login", loginLimiter, validate({ body: loginBody }), async (re
   res.json({ data: toUser(row) });
 });
 
-authRouter.post("/logout", (_req, res) => {
+authRouter.post("/logout", async (req, res) => {
+  // Revoke every session for the account, not just this browser's cookie. An
+  // absent or invalid cookie is still a successful logout for the caller.
+  const token = req.cookies?.[USER_COOKIE] as string | undefined;
+  const payload = token ? verifyUserToken(token) : null;
+  if (payload) {
+    await db
+      .update(users)
+      .set({ tokenVersion: sql`${users.tokenVersion} + 1`, updatedAt: new Date() })
+      .where(eq(users.id, payload.sub));
+  }
   clearUserCookie(res);
   res.status(204).end();
 });
@@ -185,6 +205,7 @@ authRouter.patch(
 
 authRouter.post(
   "/password/forgot",
+  otpIpLimiter,
   passwordResetLimiter,
   validate({ body: emailOnly }),
   async (req, res, next) => {
@@ -204,6 +225,7 @@ authRouter.post(
 
 authRouter.post(
   "/password/reset",
+  otpIpLimiter,
   passwordResetLimiter,
   validate({ body: passwordReset }),
   async (req, res, next) => {

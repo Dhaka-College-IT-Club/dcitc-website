@@ -43,64 +43,80 @@ export async function issueOtp(
 ): Promise<void> {
   const address = normalize(email);
   const now = new Date();
-
-  const [latest] = await db
-    .select({ createdAt: otpCodes.createdAt })
-    .from(otpCodes)
-    .where(and(eq(otpCodes.email, address), eq(otpCodes.purpose, purpose)))
-    .orderBy(desc(otpCodes.createdAt))
-    .limit(1);
-
-  if (latest) {
-    const elapsed = now.getTime() - latest.createdAt.getTime();
-    if (elapsed < COOLDOWN_MS) throw cooldownError((COOLDOWN_MS - elapsed) / 1000);
-  }
-
-  const [{ count = 0 } = {}] = await db
-    .select({ count: sql<number>`count(*)::int` })
-    .from(otpCodes)
-    .where(
-      and(
-        eq(otpCodes.email, address),
-        eq(otpCodes.purpose, purpose),
-        gt(otpCodes.createdAt, new Date(now.getTime() - 60 * 60 * 1000)),
-      ),
-    );
-  if (count >= MAX_PER_HOUR) throw cooldownError(60 * 60 - 60);
-
   const code = String(randomInt(0, 1_000_000)).padStart(6, "0");
-  const [row] = await db
-    .insert(otpCodes)
-    .values({
-      email: address,
-      purpose,
-      codeHash: hashCode(code),
-      expiresAt: new Date(now.getTime() + TTL_MS),
-    })
-    .returning({ id: otpCodes.id });
+
+  // The cooldown check, hourly cap, and insert are one serialized unit, so two
+  // concurrent requests cannot both pass the check and issue two codes.
+  // ponytail: a hashtext collision only serializes two unrelated addresses;
+  // upgrade to a per-row lock if that contention ever becomes measurable.
+  const row = await db.transaction(async (tx) => {
+    await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${`${address}:${purpose}`}))`);
+
+    // Retention: expired rows older than a week are dead weight.
+    // ponytail: expires_at is unindexed and the table is small; move this to a
+    // scheduled job when row counts make the scan visible.
+    await tx.delete(otpCodes).where(
+      lt(otpCodes.expiresAt, new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)),
+    );
+
+    const [latest] = await tx
+      .select({ createdAt: otpCodes.createdAt })
+      .from(otpCodes)
+      .where(and(eq(otpCodes.email, address), eq(otpCodes.purpose, purpose)))
+      .orderBy(desc(otpCodes.createdAt))
+      .limit(1);
+
+    if (latest) {
+      const elapsed = now.getTime() - latest.createdAt.getTime();
+      if (elapsed < COOLDOWN_MS) throw cooldownError((COOLDOWN_MS - elapsed) / 1000);
+    }
+
+    const [{ count = 0 } = {}] = await tx
+      .select({ count: sql<number>`count(*)::int` })
+      .from(otpCodes)
+      .where(
+        and(
+          eq(otpCodes.email, address),
+          eq(otpCodes.purpose, purpose),
+          gt(otpCodes.createdAt, new Date(now.getTime() - 60 * 60 * 1000)),
+        ),
+      );
+    if (count >= MAX_PER_HOUR) throw cooldownError(60 * 60 - 60);
+
+    const [inserted] = await tx
+      .insert(otpCodes)
+      .values({
+        email: address,
+        purpose,
+        codeHash: hashCode(code),
+        expiresAt: new Date(now.getTime() + TTL_MS),
+      })
+      .returning({ id: otpCodes.id });
+    return inserted;
+  });
+
+  if (!row) throw new AppError(500, "internal_error", "Could not issue a code.");
 
   try {
     await send(code);
   } catch (error) {
     // Leave the previous code usable and start no cooldown.
-    if (row) await db.delete(otpCodes).where(eq(otpCodes.id, row.id));
+    await db.delete(otpCodes).where(eq(otpCodes.id, row.id));
     throw error;
   }
 
   // Only a confirmed send invalidates older codes: only the newest may be used.
-  if (row) {
-    await db
-      .update(otpCodes)
-      .set({ consumedAt: new Date() })
-      .where(
-        and(
-          eq(otpCodes.email, address),
-          eq(otpCodes.purpose, purpose),
-          isNull(otpCodes.consumedAt),
-          ne(otpCodes.id, row.id),
-        ),
-      );
-  }
+  await db
+    .update(otpCodes)
+    .set({ consumedAt: new Date() })
+    .where(
+      and(
+        eq(otpCodes.email, address),
+        eq(otpCodes.purpose, purpose),
+        isNull(otpCodes.consumedAt),
+        ne(otpCodes.id, row.id),
+      ),
+    );
 }
 
 /** Verify a code, consuming it on success. Attempts are counted before comparison. */

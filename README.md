@@ -32,7 +32,9 @@ Public pages are rendered on the server and pull content from the API; the landi
 - Email/password login and logout using an httpOnly JWT cookie (7 days).
 - Google sign-in for accounts with a verified Google email; existing password accounts are linked by email.
 - Password reset with an emailed OTP; account email recovery by name and HSC batch.
-- Member dashboard showing account details and the membership card, with the annual price and membership form URL managed by admins.
+- Signup and password recovery report the real outcome (`email_not_found`, `rate_limited` with `Retry-After`, `delivery_failed`) instead of always claiming a code was sent.
+- Logout asks for confirmation and revokes every session for the account server-side.
+- Member dashboard showing the account email, the one-time membership fee, and the membership form URL managed by admins.
 
 ### Admin features
 
@@ -40,8 +42,9 @@ Public pages are rendered on the server and pull content from the API; the landi
 - Achievements CRUD with a gallery and five featured slots (reordering content on the landing page).
 - Intel CRUD: slug, title, excerpt, content, tag, author, date, image, and three featured slots.
 - Image uploads through signed Supabase Storage URLs (JPEG, PNG, WebP; 5 MiB limit).
-- Settings management for the membership form URL and price.
-- Content and settings changes are recorded in the audit log.
+- Settings management for the membership form URL and price; clearing the URL closes enrolment and the public price always falls back to a positive default.
+- Content and settings changes are recorded in the audit log, in the same transaction as the change.
+- Intel slugs are immutable after creation; the edit form shows the public path as read-only.
 
 ### Super Admin features
 
@@ -127,7 +130,7 @@ npm run dev                 # http://localhost:4000
 
 `npm run dev` also applies pending migrations (`RUN_MIGRATIONS=true`) and seeds a super admin from `SUPER_ADMIN_EMAIL` / `SUPER_ADMIN_PASSWORD` while no super admin exists. Other admin accounts are created from the dashboard.
 
-Local mail uses `MAIL_TRANSPORT=log`, so OTP codes and contact notifications print to the console instead of being sent. To send real mail, set `MAIL_TRANSPORT=resend`, `RESEND_API_KEY`, and `EMAIL_FROM` (an address on a domain verified in Resend); `EMAIL_FROM_NAME` defaults to `DCITC`. Mail is delivered through Resend's HTTPS API rather than a mailbox connection, so there is no mail host, port, or TLS configuration.
+Local mail uses `MAIL_TRANSPORT=log`, so OTP codes and contact notifications print to the console instead of being sent. To send real mail, set `MAIL_TRANSPORT=resend`, `RESEND_API_KEY`, and `EMAIL_FROM` (an address on a domain verified in Resend); `EMAIL_FROM_NAME` defaults to `DCITC`. Mail is delivered through Resend's HTTPS API rather than a mailbox connection, so there is no mail host, port, or TLS configuration. Sign-up, password-reset, and account-recovery messages share one table-based HTML document with inline light-mode styles, a declared `color-scheme`, explicit dark-mode overrides, and the hosted logo; pixel-identical output across Gmail/Outlook is not guaranteed, but readability in both modes is.
 
 Useful database scripts:
 
@@ -148,6 +151,8 @@ npm run dev                 # http://localhost:3000
 ```
 
 Set `API_ORIGIN` to the running API (`http://localhost:4000` by default). `IMAGE_REMOTE_HOSTS` is a comma-separated list of image hostnames allowed by `next/image`; add the Supabase Storage host when uploads are served from it.
+
+`frontend/.env.local` is local-only: it is ignored by git (never commit it). Keep `API_ORIGIN=http://localhost:4000` while developing so the `/api/v2/*` rewrite cannot silently proxy to the production API. When a local backend is not running, the frontend reports the outage rather than showing production data.
 
 ### 3. Checks
 

@@ -18,6 +18,17 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 type FieldErrors = Record<string, string>;
 
+const EXPIRED_VERIFICATION_CODES = new Set(["unauthenticated", "otp_expired"]);
+
+function isExpiredVerification(code: string | undefined): boolean {
+  if (!code) return false;
+  return (
+    EXPIRED_VERIFICATION_CODES.has(code) ||
+    code.includes("token") ||
+    code.includes("expired")
+  );
+}
+
 function passwordScore(password: string) {
   if (!password) return 0;
   let score = 0;
@@ -48,6 +59,19 @@ export default function SignupPage() {
   const [resendIn, setResendIn] = useState(0);
 
   const score = useMemo(() => passwordScore(password), [password]);
+
+  /** Back to step one with the verification state cleared, keeping the details. */
+  function startOver(message = "") {
+    setStep(1);
+    setSignupToken("");
+    setCode("");
+    setPassword("");
+    setConfirm("");
+    setNotice("");
+    setErrorCode("");
+    setFieldErrors({});
+    setError(message);
+  }
 
   useEffect(() => {
     if (resendIn <= 0) return;
@@ -210,11 +234,10 @@ export default function SignupPage() {
         fields?: FieldErrors;
         code?: string;
       };
-      if (apiError?.code?.includes("token")) {
-        setStep(1);
-        setSignupToken("");
-        setCode("");
-        setError("Your verification expired. Request a new code.");
+      if (isExpiredVerification(apiError?.code)) {
+        // `complete` answers `unauthenticated` for an expired token, so match it
+        // alongside any token-ish code instead of leaving a dead end.
+        startOver("Your verification expired. Request a new code.");
       } else if (apiError?.code === "email_taken") {
         setStep(1);
         setError("That email is already registered. Try signing in instead.");
@@ -447,6 +470,16 @@ export default function SignupPage() {
           <Button type="submit" fullWidth loading={pending} className="mt-2">
             {pending ? "Creating account" : "Create account"}
           </Button>
+
+          <div className="flex flex-col items-center gap-2 border-t border-white/10 pt-4 text-center">
+            <button
+              type="button"
+              onClick={() => startOver()}
+              className="font-rajdhani text-sm text-slate-500 underline-offset-4 transition-colors hover:text-white hover:underline"
+            >
+              Start over
+            </button>
+          </div>
         </form>
       ) : null}
     </AuthCard>

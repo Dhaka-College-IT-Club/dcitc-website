@@ -3,6 +3,8 @@
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import AdminShell from "@/components/admin/AdminShell";
+import Alert from "@/components/ui/Alert";
+import Button from "@/components/ui/Button";
 import { apiFetch } from "@/lib/api";
 import type { Admin } from "@/lib/api-types";
 
@@ -15,6 +17,8 @@ export default function AdminLayout({
   const pathname = usePathname();
   const [admin, setAdmin] = useState<Admin | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     if (pathname === "/admin/login") return;
@@ -23,8 +27,14 @@ export default function AdminLayout({
       try {
         const me = await apiFetch<Admin>("/admin/auth/me");
         if (!cancelled) setAdmin(me);
-      } catch {
-        if (!cancelled) router.replace("/admin/login");
+      } catch (err) {
+        // Only an unauthenticated session is a sign-out; an outage is not.
+        const apiError = err as { status?: number };
+        if (apiError?.status === 401) {
+          if (!cancelled) router.replace("/admin/login");
+        } else if (!cancelled) {
+          setError("Could not reach the admin service. Check your connection and try again.");
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -32,9 +42,36 @@ export default function AdminLayout({
     return () => {
       cancelled = true;
     };
-  }, [pathname, router]);
+  }, [pathname, router, attempt]);
 
   if (pathname === "/admin/login") return <>{children}</>;
+
+  if (error) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-black px-4 text-slate-200">
+        <div className="w-full max-w-lg border border-white/10 bg-white/[0.02] p-6">
+          <p className="font-orbitron text-[10px] uppercase tracking-[0.24em] text-slate-500">
+            Admin console
+          </p>
+          <div className="mt-4">
+            <Alert variant="error">{error}</Alert>
+          </div>
+          <div className="mt-5 flex gap-2">
+            <Button
+              type="button"
+              onClick={() => {
+                setError("");
+                setLoading(true);
+                setAttempt((value) => value + 1);
+              }}
+            >
+              Retry
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (

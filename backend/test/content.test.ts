@@ -1,13 +1,14 @@
 import "./setup.js";
 import assert from "node:assert/strict";
 import { after, before, describe, it } from "node:test";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { db } from "../src/db/pool.js";
-import { admins, users } from "../src/db/schema.js";
+import { admins, intels, leadership, settings, users } from "../src/db/schema.js";
 import { signUserToken } from "../src/lib/jwt.js";
 import { hashPassword } from "../src/lib/password.js";
 import { testOutbox } from "../src/mail/index.js";
 import { seedAdmins } from "../src/services/admins.js";
+import { readPublicSettings, updateSettings } from "../src/services/settings.js";
 import { closePool, hasTestDb, prepareDatabase } from "./db.js";
 import { Client, startServer } from "./helpers.js";
 
@@ -403,9 +404,38 @@ describe("intel administration", () => {
       method: "PATCH",
       body: { title: "New title", slug: "changed-slug" },
     });
-    assert.equal(patched.status, 200);
-    assert.equal(patched.body.data.title, "New title");
-    assert.equal(patched.body.data.slug, "my-intel");
+    assert.equal(patched.status, 400);
+    assert.ok(patched.body.error.fields.slug);
+
+    const [unchanged] = await db
+      .select()
+      .from(intels)
+      .where(eq(intels.id, created.body.data.id));
+    assert.equal(unchanged!.title, "Intel my-intel", "a rejected slug edit must not change the row");
+    assert.equal(unchanged!.slug, "my-intel");
+
+    const renamed = await admin.req(`/api/v2/admin/intels/${created.body.data.id}`, {
+      method: "PATCH",
+      body: { title: "New title" },
+    });
+    assert.equal(renamed.status, 200);
+    assert.equal(renamed.body.data.title, "New title");
+    assert.equal(renamed.body.data.slug, "my-intel");
+  });
+
+  dbIt("rejects a title containing a line break", async () => {
+    const response = await admin.req("/api/v2/admin/intels", {
+      body: intel("newline-title", { title: "Two\nlines" }),
+    });
+    assert.equal(response.status, 400);
+    assert.ok(response.body.error.fields.title);
+
+    const patched = await admin.req("/api/v2/admin/intels/999999", {
+      method: "PATCH",
+      body: { title: "Two\r\nlines" },
+    });
+    assert.equal(patched.status, 400);
+    assert.ok(patched.body.error.fields.title);
   });
 
   dbIt("rejects a fourth featured intel", async () => {
@@ -536,6 +566,31 @@ describe("leadership administration", () => {
   });
 });
 
+describe("audit atomicity", () => {
+  dbIt("rolls back the content change when the audit insert fails", async () => {
+    await db.execute(
+      sql`create or replace function fail_audit_insert() returns trigger language plpgsql as $$ begin raise exception 'forced audit failure'; end $$`,
+    );
+    await db.execute(
+      sql`create trigger fail_audit_insert before insert on audit_log for each row execute function fail_audit_insert()`,
+    );
+
+    try {
+      const name = "Rollback Probe";
+      const response = await admin.req("/api/v2/admin/leadership", {
+        body: { name, role: "Member", tier: "joint", batch: "DC-27" },
+      });
+      assert.equal(response.status, 500);
+
+      const rows = await db.select().from(leadership).where(eq(leadership.name, name));
+      assert.equal(rows.length, 0, "the content row must roll back with its audit record");
+    } finally {
+      await db.execute(sql`drop trigger if exists fail_audit_insert on audit_log`);
+      await db.execute(sql`drop function if exists fail_audit_insert()`);
+    }
+  });
+});
+
 describe("plain admin content access", () => {
   dbIt("can create, update and delete all three content types but cannot reach super-admin routes", async () => {
     await db.insert(admins).values({
@@ -604,6 +659,63 @@ describe("plain admin content access", () => {
 });
 
 describe("settings administration", () => {
+  dbIt("publishes the default price when the stored value is missing or unusable", async () => {
+    const cases: Array<[string | null, number]> = [
+      [null, 100],
+      ["abc", 100],
+      ["0", 100],
+      ["-5", 100],
+      ["150", 150],
+    ];
+
+    for (const [stored, expected] of cases) {
+      await db.delete(settings).where(eq(settings.key, "membership_price_bdt"));
+      if (stored !== null) {
+        await db.insert(settings).values({ key: "membership_price_bdt", value: stored });
+      }
+      const published = await readPublicSettings();
+      assert.equal(
+        published.membershipPriceBdt,
+        expected,
+        `stored ${JSON.stringify(stored)} should publish ${expected}`,
+      );
+    }
+
+    // Restore a valid row so order-independent later tests have a real value.
+    await updateSettings({ membershipPriceBdt: 150, membershipFormUrl: "https://forms.gle/abc123" });
+  });
+
+  dbIt("accepts a cleared form URL, rejects an empty string and reflects the clear publicly", async () => {
+    const cleared = await admin.req("/api/v2/admin/settings", {
+      method: "PUT",
+      body: { membershipFormUrl: null },
+    });
+    assert.equal(cleared.status, 200);
+    assert.equal(cleared.body.data.membershipFormUrl, null);
+
+    const publicAfterClear = await new Client(baseUrl).req("/api/v2/settings/public");
+    assert.equal(publicAfterClear.body.data.membershipFormUrl, null);
+
+    const empty = await admin.req("/api/v2/admin/settings", {
+      method: "PUT",
+      body: { membershipFormUrl: "" },
+    });
+    assert.equal(empty.status, 400);
+    assert.ok(empty.body.error.fields.membershipFormUrl);
+    assert.equal(empty.body.data, undefined);
+    assert.equal(
+      (await new Client(baseUrl).req("/api/v2/settings/public")).body.data.membershipFormUrl,
+      null,
+      "a rejected save must leave the stored value unchanged",
+    );
+
+    const restored = await admin.req("/api/v2/admin/settings", {
+      method: "PUT",
+      body: { membershipFormUrl: "https://forms.gle/abc123" },
+    });
+    assert.equal(restored.status, 200);
+  });
+
   dbIt("updates public settings and validates input", async () => {
     const updated = await admin.req("/api/v2/admin/settings", {
       method: "PUT",

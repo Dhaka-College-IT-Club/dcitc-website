@@ -4,14 +4,20 @@ import { db } from "../db/pool.js";
 import { admins, auditLog } from "../db/schema.js";
 import { hashPassword } from "../lib/password.js";
 
-export async function writeAudit(entry: {
-  actorAdminId: string | null;
-  action: string;
-  targetType?: string | null;
-  targetId?: string | null;
-  metadata?: Record<string, unknown>;
-}): Promise<void> {
-  await db.insert(auditLog).values({
+/** A pool handle or a transaction handle, so the audit insert can join the mutation. */
+type AuditExecutor = Pick<typeof db, "insert">;
+
+export async function writeAudit(
+  entry: {
+    actorAdminId: string | null;
+    action: string;
+    targetType?: string | null;
+    targetId?: string | null;
+    metadata?: Record<string, unknown>;
+  },
+  executor: AuditExecutor = db,
+): Promise<void> {
+  await executor.insert(auditLog).values({
     actorAdminId: entry.actorAdminId,
     action: entry.action,
     targetType: entry.targetType ?? null,

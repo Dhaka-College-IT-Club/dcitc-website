@@ -78,7 +78,7 @@ export const otpCodes = pgTable(
   },
   (t) => [
     check("otp_codes_purpose_check", sql`${t.purpose} in ('signup', 'password_reset')`),
-    index("otp_codes_lookup_idx").on(sql`lower(${t.email})`, t.purpose, t.createdAt),
+    index("otp_codes_lookup_idx").on(t.email, t.purpose, t.createdAt),
   ],
 );
 

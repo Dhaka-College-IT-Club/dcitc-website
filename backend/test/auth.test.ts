@@ -128,6 +128,24 @@ describe("signup", () => {
     assert.equal(testOutbox.length, 1, "the cooldown must block a second send");
   });
 
+  dbIt("issues exactly one code when two requests arrive concurrently", async () => {
+    const email = "concurrent-issuance@example.com";
+    testOutbox.length = 0;
+    const [a, b] = await Promise.all([
+      client.req("/api/v2/auth/signup/request-otp", { body: { email } }),
+      client.req("/api/v2/auth/signup/request-otp", { body: { email } }),
+    ]);
+
+    assert.deepEqual(
+      [a.status, b.status].sort((left, right) => left - right),
+      [200, 429],
+      "exactly one request may pass the cooldown",
+    );
+    const throttled = a.status === 429 ? a : b;
+    assert.equal(throttled.body.error.code, "rate_limited");
+    assert.equal(testOutbox.length, 1, "the losing request must not send a second mail");
+  });
+
   dbIt("reports a provider failure as 502 and starts no cooldown", async () => {
     const email = "delivery-failure@example.com";
     const originalTransport = env.MAIL_TRANSPORT;
@@ -312,6 +330,45 @@ describe("login and session", () => {
     forged.cookie = `dcitc_at=${verified.body.data.signupToken}`;
     const me = await forged.req("/api/v2/auth/me");
     assert.equal(me.status, 401);
+  });
+
+  dbIt("revokes the session server-side so a replayed cookie is refused", async () => {
+    const email = "logout-revoke@example.com";
+    await signup(email, "Logout Revoke");
+    const replayed = client.cookie;
+    assert.ok(replayed.includes("dcitc_at="));
+
+    const logout = await client.req("/api/v2/auth/logout", { method: "POST" });
+    assert.equal(logout.status, 204);
+
+    const replay = new Client(baseUrl);
+    replay.cookie = replayed;
+    assert.equal((await replay.req("/api/v2/auth/me")).status, 401);
+
+    // Logout is still idempotent for a caller with no valid session.
+    const anonymous = new Client(baseUrl);
+    anonymous.cookie = "dcitc_at=not-a-real-token";
+    assert.equal((await anonymous.req("/api/v2/auth/logout", { method: "POST" })).status, 204);
+  });
+
+  dbIt("revokes an admin session on logout without deactivating the account", async () => {
+    const session = new Client(baseUrl);
+    const login = await session.req("/api/v2/admin/auth/login", {
+      body: { email: process.env.SUPER_ADMIN_EMAIL!, password: process.env.SUPER_ADMIN_PASSWORD! },
+    });
+    assert.equal(login.status, 200);
+    const replayed = session.cookie;
+
+    assert.equal((await session.req("/api/v2/admin/auth/logout", { method: "POST" })).status, 204);
+
+    const replay = new Client(baseUrl);
+    replay.cookie = replayed;
+    assert.equal((await replay.req("/api/v2/admin/auth/me")).status, 401);
+
+    const again = await new Client(baseUrl).req("/api/v2/admin/auth/login", {
+      body: { email: process.env.SUPER_ADMIN_EMAIL!, password: process.env.SUPER_ADMIN_PASSWORD! },
+    });
+    assert.equal(again.status, 200, "logout must not deactivate the admin");
   });
 });
 

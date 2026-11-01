@@ -41,21 +41,27 @@ superAdminRouter.get("/admins", async (_req, res) => {
 superAdminRouter.post("/admins", validate({ body: createAdmin }), async (req, res, next) => {
   const body = req.body as z.infer<typeof createAdmin>;
   try {
-    const [row] = await db
-      .insert(admins)
-      .values({
-        email: body.email,
-        name: body.name,
-        passwordHash: await hashPassword(body.password),
-        role: body.role,
-      })
-      .returning();
-    await writeAudit({
-      actorAdminId: req.currentAdmin!.id,
-      action: "admin.created",
-      targetType: "admin",
-      targetId: row!.id,
-      metadata: { email: row!.email, role: row!.role },
+    const row = await db.transaction(async (tx) => {
+      const [created] = await tx
+        .insert(admins)
+        .values({
+          email: body.email,
+          name: body.name,
+          passwordHash: await hashPassword(body.password),
+          role: body.role,
+        })
+        .returning();
+      await writeAudit(
+        {
+          actorAdminId: req.currentAdmin!.id,
+          action: "admin.created",
+          targetType: "admin",
+          targetId: created!.id,
+          metadata: { email: created!.email, role: created!.role },
+        },
+        tx,
+      );
+      return created;
     });
     res.status(201).json({ data: toAdmin(row!) });
   } catch (error) {
@@ -103,23 +109,28 @@ superAdminRouter.patch(
           })
           .where(eq(admins.id, id))
           .returning();
+        if (!updated) return null;
+
+        await writeAudit(
+          {
+            actorAdminId: req.currentAdmin!.id,
+            action:
+              body.active === undefined
+                ? "admin.updated"
+                : body.active
+                  ? "admin.activated"
+                  : "admin.deactivated",
+            targetType: "admin",
+            targetId: id,
+            // `email` is the post-change address; `changes` names the fields touched.
+            metadata: { email: updated.email, changes: Object.keys(body) },
+          },
+          tx,
+        );
         return updated;
       });
       if (!row) return next(notFound("Admin not found."));
 
-      await writeAudit({
-        actorAdminId: req.currentAdmin!.id,
-        action:
-          body.active === undefined
-            ? "admin.updated"
-            : body.active
-              ? "admin.activated"
-              : "admin.deactivated",
-        targetType: "admin",
-        targetId: id,
-        // `email` is the post-change address; `changes` names the fields touched.
-        metadata: { email: row.email, changes: Object.keys(body) },
-      });
       res.json({ data: toAdmin(row) });
     } catch (error) {
       if (isUniqueViolation(error)) return next(emailTaken());
@@ -139,21 +150,26 @@ superAdminRouter.post(
     const [current] = await db.select().from(admins).where(eq(admins.id, id)).limit(1);
     if (!current) return next(notFound("Admin not found."));
 
-    await db
-      .update(admins)
-      .set({
-        passwordHash: await hashPassword(password),
-        tokenVersion: current.tokenVersion + 1,
-        updatedAt: new Date(),
-      })
-      .where(eq(admins.id, id));
+    await db.transaction(async (tx) => {
+      await tx
+        .update(admins)
+        .set({
+          passwordHash: await hashPassword(password),
+          tokenVersion: current.tokenVersion + 1,
+          updatedAt: new Date(),
+        })
+        .where(eq(admins.id, id));
 
-    await writeAudit({
-      actorAdminId: req.currentAdmin!.id,
-      action: "admin.password_rotated",
-      targetType: "admin",
-      targetId: id,
-      metadata: { email: current.email },
+      await writeAudit(
+        {
+          actorAdminId: req.currentAdmin!.id,
+          action: "admin.password_rotated",
+          targetType: "admin",
+          targetId: id,
+          metadata: { email: current.email },
+        },
+        tx,
+      );
     });
     res.json({ data: { rotated: true } });
   },
