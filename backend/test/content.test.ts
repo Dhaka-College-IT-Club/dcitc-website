@@ -97,26 +97,31 @@ describe("admin seeding", () => {
   });
 
   dbIt("creates an env operator account and keeps its credentials in sync", async () => {
-    await reconcileSeedAdmin({
-      email: "operator@example.com",
-      password: "Operator123!",
-      name: "Operator",
-      role: "admin",
-    });
+    try {
+      await reconcileSeedAdmin({
+        email: "operator@example.com",
+        password: "Operator123!",
+        name: "Operator",
+        role: "admin",
+      });
 
-    assert.equal((await loginAdmin("operator@example.com", "Operator123!")).cookie.includes("dcitc_admin="), true);
+      assert.equal((await loginAdmin("operator@example.com", "Operator123!")).cookie.includes("dcitc_admin="), true);
 
-    // A rotated env password replaces the stored one without adding a row.
-    await reconcileSeedAdmin({
-      email: "operator@example.com",
-      password: "Rotated123!",
-      name: "Operator",
-      role: "admin",
-    });
-    const rows = await db.select().from(admins).where(eq(admins.email, "operator@example.com"));
-    assert.equal(rows.length, 1);
-    assert.ok(await verifyPassword("Rotated123!", rows[0]!.passwordHash));
-    assert.equal((await loginAdmin("operator@example.com", "Rotated123!")).cookie.includes("dcitc_admin="), true);
+      // A rotated env password replaces the stored one without adding a row.
+      await reconcileSeedAdmin({
+        email: "operator@example.com",
+        password: "Rotated123!",
+        name: "Operator",
+        role: "admin",
+      });
+      const rows = await db.select().from(admins).where(eq(admins.email, "operator@example.com"));
+      assert.equal(rows.length, 1);
+      assert.ok(await verifyPassword("Rotated123!", rows[0]!.passwordHash));
+      assert.equal((await loginAdmin("operator@example.com", "Rotated123!")).cookie.includes("dcitc_admin="), true);
+    } finally {
+      // Later suites create their own operator with this email; the row must not leak.
+      await db.delete(admins).where(eq(admins.email, "operator@example.com"));
+    }
   });
 });
 
