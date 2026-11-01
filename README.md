@@ -2,14 +2,13 @@
 
 ![Version](https://img.shields.io/badge/version-2.0.0-blue)
 
-The official website of the **Dhaka College Information & Technology Club (DCITC)** â€” a public club site, member accounts, and an admin content console.
+The official website of the **Dhaka College Information & Technology Club (DCITC)** — a public club site, member accounts, and an admin content console.
 
 ## What's new in 2.0
 
-- The public API moved from `/api/v2` to `/api/v2`; nothing else changed shape, so clients only update the prefix.
+- The public API moved from `/api/v1` to `/api/v2`; nothing else changed shape, so clients only update the prefix.
 - Google sign-in, the health check, and the frontend rewrite all target the v2 prefix.
 - A single release version is now declared in both manifests and shown in the footer and admin settings.
-- See [`CHANGELOG.md`](CHANGELOG.md) for the full release notes.
 
 ## Overview
 
@@ -52,38 +51,17 @@ Public pages are rendered on the server and pull content from the API; the landi
 
 ## Tech stack
 
-Versions reflect the `package.json` files in this repository.
+| Frontend | Backend | Database |
+|---|---|---|
+| Next.js (App Router) | Express | PostgreSQL |
+| React | Drizzle ORM | Supabase (hosted) |
+| TypeScript | TypeScript | |
+| Tailwind CSS | Zod | |
+| Framer Motion | JWT (jose) | |
+| Lucide React | Nodemailer | |
+| ESLint | Supabase client | |
+| | Helmet / express-rate-limit | |
 
-### Frontend
-
-| Package | Version |
-|---|---|
-| Next.js | ^16.4.3 (App Router, React Compiler enabled) |
-| React / React DOM | 19.2.0 |
-| TypeScript | ^5 |
-| Tailwind CSS | ^4 (`@tailwindcss/postcss` ^4.1.17) |
-| Framer Motion | ^12.23.24 |
-| Lucide React | ^0.555.0 |
-| ESLint | ^9 (`eslint-config-next` 16.0.4) |
-
-### Backend
-
-| Package | Version |
-|---|---|
-| Node.js | >= 22 |
-| Express | ^5.1.0 |
-| TypeScript | ^5.9.0 (`tsx` ^4.20.0 for dev) |
-| Drizzle ORM | ^0.45.4 (`drizzle-kit` ^0.31.0) |
-| PostgreSQL driver (`pg`) | ^8.16.0 |
-| Zod | ^4.6.7 |
-| JWT | `jose` ^6.1.0, `jsonwebtoken` ^9.0.2 |
-| Mail | Nodemailer ^10.3.1 |
-| Supabase client | `@supabase/supabase-js` ^2.58.0 |
-| Hardening | Helmet ^8.1.0, `express-rate-limit` ^8.0.0, compression ^1.8.0 |
-
-### Database
-
-- PostgreSQL, with the schema and queries defined in `backend/src/db/schema.ts`.
 - Local development runs the Supabase CLI stack (Postgres and Storage) in Docker; see `backend/supabase/config.toml`.
 - Tables: `users`, `admins`, `otp_codes`, `leadership`, `achievements`, `intels`, `settings`, `audit_log`.
 - Drizzle-generated SQL migrations live in `backend/drizzle/`; custom SQL covers what Drizzle does not express (`citext`, the `updated_at` trigger, RLS enablement).
@@ -99,29 +77,28 @@ Versions reflect the `package.json` files in this repository.
 
 ```
 dcitc-website/
-â”œâ”€â”€ frontend/                    Next.js app
-â”‚   â”œâ”€â”€ src/app/                 route groups: (site), (auth), (member), admin
-â”‚   â”œâ”€â”€ src/components/          landing, auth, dashboard, admin, and UI components
-â”‚   â”œâ”€â”€ src/lib/                 API client and shared types
-â”‚   â”œâ”€â”€ next.config.ts           API rewrite, image hosts, admin redirects
-â”‚   â”œâ”€â”€ vercel.json
-â”‚   â””â”€â”€ .env.example
-â”œâ”€â”€ backend/                     Express + TypeScript API
-â”‚   â”œâ”€â”€ src/
-â”‚   â”‚   â”œâ”€â”€ routes/              public, auth, admin, superAdmin, contact
-â”‚   â”‚   â”œâ”€â”€ db/                  Drizzle schema, migration runner, seed
-â”‚   â”‚   â”œâ”€â”€ mail/                transactional email
-â”‚   â”‚   â”œâ”€â”€ uploads/             signed Supabase Storage uploads
-â”‚   â”‚   â”œâ”€â”€ middleware/          auth, validation, rate limiting
-â”‚   â”‚   â””â”€â”€ config/, lib/, services/
-â”‚   â”œâ”€â”€ drizzle/                 SQL migrations
-â”‚   â”œâ”€â”€ scripts/                 local database, test database, storage setup
-â”‚   â”œâ”€â”€ test/                    unit and integration tests
-â”‚   â”œâ”€â”€ supabase/                local Supabase CLI configuration only
-â”‚   â”œâ”€â”€ render.yaml
-â”‚   â””â”€â”€ .env.example
-â”œâ”€â”€ docs/
-    â””â”€â”€ api-contract.md          full HTTP API reference
+├── frontend/                    Next.js app
+│   ├── src/app/                 route groups: (site), (auth), (member), admin
+│   ├── src/components/          landing, auth, dashboard, admin, and UI components
+│   ├── src/lib/                 API client and shared types
+│   ├── next.config.ts           API rewrite, image hosts, admin redirects
+│   ├── vercel.json
+│   └── .env.example
+├── backend/                     Express + TypeScript API
+│   ├── src/
+│   │   ├── routes/              public, auth, admin, superAdmin, contact
+│   │   ├── db/                  Drizzle schema, migration runner, seed
+│   │   ├── mail/                transactional email
+│   │   ├── uploads/             signed Supabase Storage uploads
+│   │   ├── middleware/          auth, validation, rate limiting
+│   │   └── config/, lib/, services/
+│   ├── drizzle/                 SQL migrations
+│   ├── scripts/                 local database, test database, storage setup
+│   ├── test/                    unit and integration tests
+│   ├── supabase/                local Supabase CLI configuration only
+│   └── render.yaml
+└── docs/
+    └── api-contract.md          full HTTP API reference
 ```
 
 ## Getting started
@@ -185,14 +162,14 @@ npm run db:test
 npm test                    # unit and integration tests against the local stack
 ```
 
-The complete HTTP API â€” envelopes, cookies, routes, rate limits, and status codes â€” is documented in [`docs/api-contract.md`](docs/api-contract.md).
+The complete HTTP API — envelopes, cookies, routes, rate limits, and status codes — is documented in [`docs/api-contract.md`](docs/api-contract.md).
 
 ## Environment variables
 
 Each app documents its variables in its own `.env.example`:
 
-- `frontend/.env.example` â€” API origin and allowed image hosts.
-- `backend/.env.example` â€” database URLs, JWT and OTP secrets, seeded super admin credentials, SMTP settings, Google OAuth credentials, and Supabase Storage settings.
+- `frontend/.env.example` — API origin and allowed image hosts.
+- `backend/.env.example` — database URLs, JWT and OTP secrets, seeded super admin credentials, SMTP settings, Google OAuth credentials, and Supabase Storage settings.
 
 Copy the example file and fill in the values. Never commit real secrets.
 
@@ -203,7 +180,6 @@ The intended topology is a Vercel frontend, a Render or Railway API service, and
 - `backend/render.yaml` defines the API web service, its build and start commands, health check, and environment variables.
 - `frontend/vercel.json` sets the Next.js framework, with the Vercel project root directory set to `frontend/`.
 - The frontend reaches the API through the `/api/v2/*` rewrite, so `API_ORIGIN` must point at the deployed API.
-- [`DEPLOY_CHECKLIST.md`](DEPLOY_CHECKLIST.md) covers the production-specific checks: storage bucket limits, proxy hop count, database TLS, admin seeding, and secret rotation.
 
 Hosted database and storage access, the Google OAuth redirect URI, and SMTP deliverability must be configured per environment before launch.
 
@@ -211,7 +187,7 @@ Hosted database and storage access, the Google OAuth redirect URI, and SMTP deli
 
 This is a club project, and DCITC members are welcome to contribute.
 
-1. Read [`docs/api-contract.md`](docs/api-contract.md) and [`backend/README.md`](backend/README.md) before changing code.
+1. Read [`docs/api-contract.md`](docs/api-contract.md) before changing code.
 2. Branch from the current development branch; do not commit directly to `main`.
 3. Keep the API contract in `docs/api-contract.md` in sync with any endpoint change.
 4. Run the checks above before opening a pull request, and describe what you changed and why.
