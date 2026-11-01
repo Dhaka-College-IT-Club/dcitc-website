@@ -12,11 +12,11 @@ import {
   setOAuthStateCookie,
   setUserCookie,
 } from "../lib/cookies.js";
-import { AppError, emailTaken, invalidCredentials, invalidOtp, isUniqueViolation, unauthenticated } from "../lib/errors.js";
+import { AppError, deliveryFailed, emailNotFound, emailTaken, invalidCredentials, invalidOtp, isUniqueViolation, unauthenticated } from "../lib/errors.js";
 import { signSignupToken, signOAuthState, signUserToken, verifyOAuthState, verifySignupToken } from "../lib/jwt.js";
 import { hashPassword, verifyPassword } from "../lib/password.js";
 import { toUser } from "../lib/serialize.js";
-import { sendEmailRecovery, sendResetOtp, sendSignupOtp } from "../mail/index.js";
+import { MailDeliveryError, sendEmailRecovery, sendResetOtp, sendSignupOtp } from "../mail/index.js";
 import { requireUser } from "../middleware/auth.js";
 import { authLimiter, loginLimiter, otpLimiter, passwordResetLimiter } from "../middleware/rateLimit.js";
 import { validate } from "../middleware/validate.js";
@@ -73,21 +73,17 @@ authRouter.post(
   "/signup/request-otp",
   otpLimiter,
   validate({ body: emailOnly }),
-  async (req, res) => {
+  async (req, res, next) => {
     const email = req.body.email as string;
-    if (!(await isEmailTaken(email))) {
-      try {
-        const code = await issueOtp(email, "signup");
-        await sendSignupOtp(email, code);
-      } catch (error) {
-        // Includes the per-address cooldown. Answering 429 only for addresses
-        // that are not registered would turn this endpoint into an account
-        // existence oracle, so every outcome answers "sent".
-        if (!(error instanceof AppError)) {
-          console.error(JSON.stringify({ level: "error", message: "signup_otp_send_failed" }));
-        }
-      }
+    if (await isEmailTaken(email)) return next(emailTaken());
+
+    try {
+      await issueOtp(email, "signup", (code) => sendSignupOtp(email, code));
+    } catch (error) {
+      if (error instanceof MailDeliveryError) return next(deliveryFailed());
+      return next(error);
     }
+
     res.json({ data: { sent: true } });
   },
 );
@@ -191,20 +187,17 @@ authRouter.post(
   "/password/forgot",
   passwordResetLimiter,
   validate({ body: emailOnly }),
-  async (req, res) => {
+  async (req, res, next) => {
     const email = req.body.email as string;
-    if (await isEmailTaken(email)) {
-      try {
-        const code = await issueOtp(email, "password_reset");
-        await sendResetOtp(email, code);
-      } catch (error) {
-        // Same reasoning as signup: a cooldown-only 429 would reveal that the
-        // address has an account.
-        if (!(error instanceof AppError)) {
-          console.error(JSON.stringify({ level: "error", message: "reset_otp_send_failed" }));
-        }
-      }
+    if (!(await isEmailTaken(email))) return next(emailNotFound());
+
+    try {
+      await issueOtp(email, "password_reset", (code) => sendResetOtp(email, code));
+    } catch (error) {
+      if (error instanceof MailDeliveryError) return next(deliveryFailed());
+      return next(error);
     }
+
     res.json({ data: { sent: true } });
   },
 );

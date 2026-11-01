@@ -1,10 +1,6 @@
 import "dotenv/config";
 import { z } from "zod";
 
-const boolish = z
-  .enum(["true", "false", "1", "0"])
-  .transform((v) => v === "true" || v === "1");
-
 const envSchema = z
   .object({
     NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
@@ -23,13 +19,10 @@ const envSchema = z
     GOOGLE_CLIENT_ID: z.string().min(1),
     GOOGLE_CLIENT_SECRET: z.string().min(1),
 
-    MAIL_TRANSPORT: z.enum(["smtp", "log"]).default("smtp"),
-    SMTP_HOST: z.string().min(1).optional(),
-    SMTP_PORT: z.coerce.number().int().positive().optional(),
-    SMTP_USER: z.string().optional(),
-    SMTP_PASS: z.string().optional(),
-    SMTP_FROM: z.string().min(1).optional(),
-    SMTP_SECURE: boolish.optional(),
+    MAIL_TRANSPORT: z.enum(["resend", "log"]).default("resend"),
+    RESEND_API_KEY: z.string().min(1).optional(),
+    EMAIL_FROM: z.string().email().optional(),
+    EMAIL_FROM_NAME: z.string().min(1).default("DCITC"),
 
     CONTACT_TO: z.string().email(),
 
@@ -46,10 +39,10 @@ const envSchema = z
       .transform((v) => v === "true" || v === "1"),
   })
   .superRefine((value, ctx) => {
-    if (value.MAIL_TRANSPORT === "smtp") {
-      for (const key of ["SMTP_HOST", "SMTP_PORT", "SMTP_FROM"] as const) {
+    if (value.MAIL_TRANSPORT === "resend") {
+      for (const key of ["RESEND_API_KEY", "EMAIL_FROM"] as const) {
         if (!value[key]) {
-          ctx.addIssue({ code: "custom", path: [key], message: "required when MAIL_TRANSPORT=smtp" });
+          ctx.addIssue({ code: "custom", path: [key], message: "required when MAIL_TRANSPORT=resend" });
         }
       }
     }

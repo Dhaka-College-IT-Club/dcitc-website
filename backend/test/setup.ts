@@ -1,6 +1,8 @@
 import "dotenv/config";
 
 process.env.NODE_ENV = "test";
+// Never inherit backend/.env's real transport: tests must not reach the mail provider.
+process.env.MAIL_TRANSPORT = "log";
 // Legacy seeding variables, kept set so the boot-seed test fails if they ever
 // start creating accounts again.
 process.env.ADMIN_EMAIL = "legacy-admin@example.com";

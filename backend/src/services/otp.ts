@@ -1,5 +1,5 @@
 import { createHmac, randomInt, timingSafeEqual } from "node:crypto";
-import { and, desc, eq, gt, isNull, sql } from "drizzle-orm";
+import { and, desc, eq, gt, isNull, ne, sql } from "drizzle-orm";
 import { env } from "../config/env.js";
 import { db } from "../db/pool.js";
 import { otpCodes } from "../db/schema.js";
@@ -32,8 +32,15 @@ function cooldownError(seconds: number): AppError {
   });
 }
 
-/** Create and store a fresh OTP. Returns the plain code so the caller can mail it. */
-export async function issueOtp(email: string, purpose: OtpPurpose): Promise<string> {
+/**
+ * Create, store, and deliver a fresh OTP. The row is written before delivery so a
+ * code cannot be mailed without existing; a failed send removes only that row.
+ */
+export async function issueOtp(
+  email: string,
+  purpose: OtpPurpose,
+  send: (code: string) => Promise<void>,
+): Promise<void> {
   const address = normalize(email);
   const now = new Date();
 
@@ -61,20 +68,39 @@ export async function issueOtp(email: string, purpose: OtpPurpose): Promise<stri
     );
   if (count >= MAX_PER_HOUR) throw cooldownError(60 * 60 - 60);
 
-  // Only the newest code may be used.
-  await db
-    .update(otpCodes)
-    .set({ consumedAt: now })
-    .where(and(eq(otpCodes.email, address), eq(otpCodes.purpose, purpose), isNull(otpCodes.consumedAt)));
-
   const code = String(randomInt(0, 1_000_000)).padStart(6, "0");
-  await db.insert(otpCodes).values({
-    email: address,
-    purpose,
-    codeHash: hashCode(code),
-    expiresAt: new Date(now.getTime() + TTL_MS),
-  });
-  return code;
+  const [row] = await db
+    .insert(otpCodes)
+    .values({
+      email: address,
+      purpose,
+      codeHash: hashCode(code),
+      expiresAt: new Date(now.getTime() + TTL_MS),
+    })
+    .returning({ id: otpCodes.id });
+
+  try {
+    await send(code);
+  } catch (error) {
+    // Leave the previous code usable and start no cooldown.
+    if (row) await db.delete(otpCodes).where(eq(otpCodes.id, row.id));
+    throw error;
+  }
+
+  // Only a confirmed send invalidates older codes: only the newest may be used.
+  if (row) {
+    await db
+      .update(otpCodes)
+      .set({ consumedAt: new Date() })
+      .where(
+        and(
+          eq(otpCodes.email, address),
+          eq(otpCodes.purpose, purpose),
+          isNull(otpCodes.consumedAt),
+          ne(otpCodes.id, row.id),
+        ),
+      );
+  }
 }
 
 /** Verify a code, consuming it on success. Attempts are counted before comparison. */
