@@ -128,7 +128,7 @@ npm run storage:setup       # create the public-read "uploads" bucket
 npm run dev                 # http://localhost:4000
 ```
 
-`npm run dev` also applies pending migrations (`RUN_MIGRATIONS=true`) and seeds a super admin from `SUPER_ADMIN_EMAIL` / `SUPER_ADMIN_PASSWORD` while no super admin exists. Other admin accounts are created from the dashboard.
+`npm run dev` also applies pending migrations (`RUN_MIGRATIONS=true`) and syncs the env-managed admin accounts on every boot: the super admin from `SUPER_ADMIN_EMAIL` / `SUPER_ADMIN_PASSWORD` (re-created if missing, password/role re-applied from `.env`) and, when both are set, an operator from `ADMIN_EMAIL` / `ADMIN_PASSWORD`. Editing either pair in `.env` and restarting changes that login immediately; renaming or deleting them in the dashboard is temporary. Additional admins can still be created from the dashboard.
 
 Local mail uses `MAIL_TRANSPORT=log`, so OTP codes and contact notifications print to the console instead of being sent. To send real mail, set `MAIL_TRANSPORT=resend`, `RESEND_API_KEY`, and `EMAIL_FROM` (an address on a domain verified in Resend); `EMAIL_FROM_NAME` defaults to `DCITC`. Mail is delivered through Resend's HTTPS API rather than a mailbox connection, so there is no mail host, port, or TLS configuration. Sign-up, password-reset, and account-recovery messages share one table-based HTML document with inline light-mode styles, a declared `color-scheme`, explicit dark-mode overrides, and the hosted logo; pixel-identical output across Gmail/Outlook is not guaranteed, but readability in both modes is.
 

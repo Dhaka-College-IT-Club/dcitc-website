@@ -5,9 +5,9 @@ import { eq, sql } from "drizzle-orm";
 import { db } from "../src/db/pool.js";
 import { admins, intels, leadership, settings, users } from "../src/db/schema.js";
 import { signUserToken } from "../src/lib/jwt.js";
-import { hashPassword } from "../src/lib/password.js";
+import { hashPassword, verifyPassword } from "../src/lib/password.js";
 import { testOutbox } from "../src/mail/index.js";
-import { seedAdmins } from "../src/services/admins.js";
+import { reconcileSeedAdmin, seedAdmins } from "../src/services/admins.js";
 import { readPublicSettings, updateSettings } from "../src/services/settings.js";
 import { closePool, hasTestDb, prepareDatabase } from "./db.js";
 import { Client, startServer } from "./helpers.js";
@@ -66,12 +66,57 @@ after(async () => {
 describe("admin seeding", () => {
   dbIt("seeds only the super admin on boot", async () => {
     // prepareDatabase() truncates and re-seeds, so this runs before any test
-    // creates an operator. test/setup.ts keeps the legacy ADMIN_EMAIL pair set,
-    // so old two-account seeding would leave a second row here.
+    // creates an operator. test/setup.ts leaves ADMIN_EMAIL/ADMIN_PASSWORD
+    // unset, so an operator must not be created.
     const rows = await db.select().from(admins);
     assert.equal(rows.length, 1);
     assert.equal(rows[0]!.email, superEmail());
     assert.equal(rows[0]!.role, "super_admin");
+  });
+
+  dbIt("re-applies a changed env password to the seeded super admin", async () => {
+    const [seeded] = await db.select().from(admins).where(eq(admins.email, superEmail()));
+    assert.ok(seeded, "seeded super admin missing");
+
+    // Simulate an env password change: the stored hash no longer matches.
+    await db
+      .update(admins)
+      .set({ passwordHash: await hashPassword("OutOfSync123!"), active: false })
+      .where(eq(admins.id, seeded.id));
+
+    await seedAdmins();
+
+    const [synced] = await db.select().from(admins).where(eq(admins.id, seeded.id));
+    assert.ok(synced);
+    assert.ok(await verifyPassword(superPassword(), synced.passwordHash), "env password must work");
+    assert.equal(synced.active, true);
+    assert.ok(synced.tokenVersion > seeded.tokenVersion, "credential change revokes old sessions");
+
+    // The bump above invalidated the suite's session; log back in with .env values.
+    admin = await loginAdmin(superEmail(), superPassword());
+  });
+
+  dbIt("creates an env operator account and keeps its credentials in sync", async () => {
+    await reconcileSeedAdmin({
+      email: "operator@example.com",
+      password: "Operator123!",
+      name: "Operator",
+      role: "admin",
+    });
+
+    assert.equal((await loginAdmin("operator@example.com", "Operator123!")).cookie.includes("dcitc_admin="), true);
+
+    // A rotated env password replaces the stored one without adding a row.
+    await reconcileSeedAdmin({
+      email: "operator@example.com",
+      password: "Rotated123!",
+      name: "Operator",
+      role: "admin",
+    });
+    const rows = await db.select().from(admins).where(eq(admins.email, "operator@example.com"));
+    assert.equal(rows.length, 1);
+    assert.ok(await verifyPassword("Rotated123!", rows[0]!.passwordHash));
+    assert.equal((await loginAdmin("operator@example.com", "Rotated123!")).cookie.includes("dcitc_admin="), true);
   });
 });
 
@@ -973,7 +1018,7 @@ describe("super admin", () => {
     assert.equal(uppercaseSelf.body.error.code, "cannot_modify_self");
   });
 
-  dbIt("does not resurrect the seeded super admin after its email is renamed", async () => {
+  dbIt("restores the env super admin after its email is renamed", async () => {
     const [seeded] = await db.select().from(admins).where(eq(admins.email, superEmail()));
     assert.ok(seeded, "seeded super admin missing");
 
@@ -983,9 +1028,12 @@ describe("super admin", () => {
       .where(eq(admins.id, seeded.id));
     try {
       await seedAdmins();
-      const recreated = await db.select().from(admins).where(eq(admins.email, superEmail()));
-      assert.equal(recreated.length, 0);
+      const [recreated] = await db.select().from(admins).where(eq(admins.email, superEmail()));
+      assert.ok(recreated, "the .env email must always be able to log in");
+      assert.equal(recreated.role, "super_admin");
+      assert.ok(await verifyPassword(superPassword(), recreated.passwordHash));
     } finally {
+      await db.delete(admins).where(eq(admins.email, superEmail()));
       await db.update(admins).set({ email: superEmail() }).where(eq(admins.id, seeded.id));
     }
   });
