@@ -50,7 +50,8 @@ next-env.d.ts
 # Local Netlify folder
 .netlify
 .opencode
-openspec
+# OpenSpec local workflow state — never commit or push this folder
+/openspec/
 opencode.json
 AGENTS.md
 supabase/.temp
