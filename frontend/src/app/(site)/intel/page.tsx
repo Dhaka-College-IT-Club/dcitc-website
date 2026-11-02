@@ -1,9 +1,27 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { apiServer } from "@/lib/api";
 import IntelCard from "@/components/ui/IntelCard";
 import type { Intel } from "@/lib/api-types";
 
 export const revalidate = 60;
+
+const DESCRIPTION =
+  "Dhaka College IT Club (DCITC) Intel: articles, insights, and updates written by our members on technology, programming, cybersecurity, and robotics.";
+
+export const metadata: Metadata = {
+  title: "Intel",
+  description: DESCRIPTION,
+  alternates: { canonical: "/intel" },
+  openGraph: {
+    siteName: "Dhaka College IT Club",
+    type: "website",
+    locale: "en_US",
+    url: "/intel",
+    title: "Intel | Dhaka College IT Club",
+    description: DESCRIPTION,
+  },
+};
 
 export default async function IntelsPage() {
   let intels: Intel[] = [];

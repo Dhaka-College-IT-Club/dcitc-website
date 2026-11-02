@@ -1,16 +1,35 @@
+import type { Metadata } from "next";
 import AchievementCard from "@/components/ui/AchievementCard";
-import { apiServer } from "@/lib/api";
-import type { Achievement } from "@/lib/api-types";
+import { getAchievements } from "@/lib/public-content";
 
 export const revalidate = 60;
 
+const DESCRIPTION =
+  "Dhaka College IT Club (DCITC) achievements: milestones, competition results, and project highlights from our student members across Dhaka College.";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const achievements = await getAchievements();
+  const empty = achievements !== null && achievements.length === 0;
+
+  return {
+    title: "Achievements",
+    description: DESCRIPTION,
+    alternates: { canonical: "/achievements" },
+    openGraph: {
+      siteName: "Dhaka College IT Club",
+      type: "website",
+      locale: "en_US",
+      url: "/achievements",
+      title: "Achievements | Dhaka College IT Club",
+      description: DESCRIPTION,
+    },
+    ...(empty ? { robots: { index: false, follow: true } } : {}),
+  };
+}
+
 export default async function AchievementsPage() {
-  let achievements: Achievement[] = [];
-  try {
-    achievements = await apiServer<Achievement[]>("/achievements");
-  } catch {
-    achievements = [];
-  }
+  const achievements = await getAchievements();
+  const items = achievements ?? [];
 
   return (
     <div className="min-h-screen bg-black text-slate-200 pt-32 pb-16">
@@ -27,7 +46,7 @@ export default async function AchievementsPage() {
           </p>
         </header>
 
-        {achievements.length === 0 ? (
+        {items.length === 0 ? (
           <div className="text-center py-20">
             <p className="text-slate-500 font-rajdhani text-xl">
               No achievements recorded yet. Check back soon!
@@ -35,7 +54,7 @@ export default async function AchievementsPage() {
           </div>
         ) : (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {achievements.map((item) => (
+            {items.map((item) => (
               <AchievementCard key={item.id} achievement={item} />
             ))}
           </div>

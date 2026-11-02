@@ -48,16 +48,36 @@ export async function generateMetadata({
     intel = await getIntelBySlug(slug);
   } catch {
     // Metadata must never turn an outage into a misleading "not found" title.
-    return { title: "DCITC Intel" };
+    return { title: "Intel" };
   }
   if (!intel) return { title: "Intel Not Found" };
+
   const image = resolveImageUrl(intel.image);
+  const description = `Dhaka College IT Club (DCITC): ${intel.excerpt}`;
+  const published = intel.createdAt ? new Date(intel.createdAt) : null;
+  const publishedTime =
+    published && !Number.isNaN(published.getTime())
+      ? published.toISOString()
+      : undefined;
+
   return {
-    title: `${intel.title} | DCITC Intel`,
-    description: intel.excerpt,
+    title: intel.title,
+    description,
+    alternates: { canonical: `/intel/${intel.slug}` },
     openGraph: {
+      siteName: "Dhaka College IT Club",
+      type: "article",
+      locale: "en_US",
+      url: `/intel/${intel.slug}`,
       title: intel.title,
-      description: intel.excerpt,
+      description,
+      publishedTime,
+      images: image ? [image] : [],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: intel.title,
+      description,
       images: image ? [image] : [],
     },
   };

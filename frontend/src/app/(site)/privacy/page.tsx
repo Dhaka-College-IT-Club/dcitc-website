@@ -2,10 +2,21 @@ import type { Metadata } from "next";
 import { LEGAL } from "@/constants";
 import styles from "@/components/legal/LegalContent.module.css";
 
+const DESCRIPTION =
+  "Dhaka College IT Club (DCITC) privacy policy: what this site collects, how it is stored, who can access it, and how to request correction or deletion.";
+
 export const metadata: Metadata = {
-  title: "Privacy Policy | DCITC",
-  description:
-    "What Dhaka College Information & Technology Club collects through this site, how it is stored, who can see it, and how to ask for it to be corrected or deleted.",
+  title: "Privacy Policy",
+  description: DESCRIPTION,
+  alternates: { canonical: "/privacy" },
+  openGraph: {
+    siteName: "Dhaka College IT Club",
+    type: "website",
+    locale: "en_US",
+    url: "/privacy",
+    title: "Privacy Policy | Dhaka College IT Club",
+    description: DESCRIPTION,
+  },
 };
 
 export default function PrivacyPolicyPage() {

@@ -58,6 +58,21 @@ const nextConfig: NextConfig = {
       { source: "/admin1841/:path*", destination: "/admin/:path*", permanent: true },
     ];
   },
+  async headers() {
+    // Keep private routes crawlable so the directive is actually read.
+    return [
+      "/login",
+      "/signup",
+      "/forgot-password",
+      "/forgot-email",
+      "/dashboard",
+      "/admin",
+      "/admin/:path*",
+    ].map((source) => ({
+      source,
+      headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }],
+    }));
+  },
 };
 
 export default nextConfig;
