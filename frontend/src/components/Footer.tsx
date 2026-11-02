@@ -3,7 +3,7 @@ import React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Facebook, Instagram, Linkedin, Mail, Youtube } from "lucide-react";
-import { CLUB, NAV_ITEMS, SOCIAL_URLS } from "../constants";
+import { CLUB, FOOTER_LINKS, SOCIAL_URLS } from "../constants";
 
 const Footer: React.FC = () => {
   const socialLinks = [
@@ -51,7 +51,7 @@ const Footer: React.FC = () => {
               Quick Links
             </h4>
             <ul className="space-y-2">
-              {NAV_ITEMS.map((item) => (
+              {FOOTER_LINKS.map((item) => (
                 <li key={item.label}>
                   <Link
                     href={item.href}

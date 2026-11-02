@@ -6,6 +6,9 @@ export const revalidate = 3600;
 
 const STATIC_ROUTES: MetadataRoute.Sitemap = [
   { url: `${SITE_URL}/` },
+  { url: `${SITE_URL}/about` },
+  { url: `${SITE_URL}/departments` },
+  { url: `${SITE_URL}/leadership` },
   { url: `${SITE_URL}/intel` },
   { url: `${SITE_URL}/privacy` },
   { url: `${SITE_URL}/terms` },

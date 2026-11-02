@@ -40,6 +40,15 @@ export const NAV_ITEMS: NavItem[] = [
   { label: "Intel", href: "/intel" },
 ];
 
+/** Footer links point at the dedicated pages instead of the homepage anchors. */
+export const FOOTER_LINKS: NavItem[] = [
+  { label: "About", href: "/about" },
+  { label: "Departments", href: "/departments" },
+  { label: "Leadership", href: "/leadership" },
+  { label: "Achievements", href: "/achievements" },
+  { label: "Intel", href: "/intel" },
+];
+
 export const DEPARTMENTS: DomainFeature[] = [
   {
     title: "Web Development",
