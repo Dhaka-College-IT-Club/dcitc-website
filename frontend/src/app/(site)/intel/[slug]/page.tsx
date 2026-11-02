@@ -7,7 +7,11 @@ import ReadingProgress from "@/components/ui/ReadingProgress";
 import TableOfContents from "@/components/ui/TableOfContents";
 import { apiServer } from "@/lib/api";
 import { resolveImageUrl } from "@/lib/images";
+import { DEFAULT_OG_IMAGE } from "@/lib/site";
+import { absoluteUrl, breadcrumbList, isoDate } from "@/lib/structured-data";
+import JsonLd from "@/components/seo/JsonLd";
 import {
+  cleanTitle,
   extractHeadings,
   formatShortDate,
   readingMinutes,
@@ -48,17 +52,38 @@ export async function generateMetadata({
     intel = await getIntelBySlug(slug);
   } catch {
     // Metadata must never turn an outage into a misleading "not found" title.
-    return { title: "DCITC Intel" };
+    return { title: "Intel" };
   }
   if (!intel) return { title: "Intel Not Found" };
+
   const image = resolveImageUrl(intel.image);
+  const title = cleanTitle(intel.title);
+  const description = `Dhaka College IT Club (DCITC): ${intel.excerpt}`;
+  const published = intel.createdAt ? new Date(intel.createdAt) : null;
+  const publishedTime =
+    published && !Number.isNaN(published.getTime())
+      ? published.toISOString()
+      : undefined;
+
   return {
-    title: `${intel.title} | DCITC Intel`,
-    description: intel.excerpt,
+    title,
+    description,
+    alternates: { canonical: `/intel/${intel.slug}` },
     openGraph: {
-      title: intel.title,
-      description: intel.excerpt,
-      images: image ? [image] : [],
+      siteName: "Dhaka College IT Club",
+      type: "article",
+      locale: "en_US",
+      url: `/intel/${intel.slug}`,
+      title,
+      description,
+      publishedTime,
+      images: image ? [image] : [DEFAULT_OG_IMAGE],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: image ? [image] : [DEFAULT_OG_IMAGE.url],
     },
   };
 }
@@ -73,11 +98,42 @@ export default async function IntelDetailPage({
   if (!intel) notFound();
 
   const related = await getRelatedIntel(slug);
+  const title = cleanTitle(intel.title);
   const headings = extractHeadings(intel.content);
   const minutes = readingMinutes(intel.content);
+  const image = resolveImageUrl(intel.image);
+  const publishedIso = isoDate(intel.date) ?? isoDate(intel.createdAt);
+  const modifiedIso = isoDate(intel.updatedAt) ?? publishedIso;
+
+  const articleJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: title,
+    description: intel.excerpt,
+    image: image ? absoluteUrl(image) : absoluteUrl(DEFAULT_OG_IMAGE.url),
+    ...(publishedIso ? { datePublished: publishedIso } : {}),
+    ...(modifiedIso ? { dateModified: modifiedIso } : {}),
+    author: { "@type": "Person", name: intel.author },
+    publisher: {
+      "@type": "Organization",
+      name: "Dhaka College IT Club",
+      logo: { "@type": "ImageObject", url: absoluteUrl("/icon.png") },
+    },
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": absoluteUrl(`/intel/${intel.slug}`),
+    },
+  };
+  const breadcrumbs = breadcrumbList([
+    { name: "Home", path: "/" },
+    { name: "Intel", path: "/intel" },
+    { name: title, path: `/intel/${intel.slug}` },
+  ]);
 
   return (
     <div className="min-h-screen bg-black pb-24 text-slate-200">
+      <JsonLd data={articleJsonLd} />
+      <JsonLd data={breadcrumbs} />
       <ReadingProgress />
 
       <div className="pt-24 sm:pt-28">
@@ -92,7 +148,7 @@ export default async function IntelDetailPage({
           <div className="relative mt-6 aspect-video w-full overflow-hidden border border-white/10 xl:aspect-[21/9]">
             <IntelImage
               src={intel.image}
-              alt={intel.title}
+              alt={title}
               focalX={intel.imageFocalX}
               focalY={intel.imageFocalY}
               sizes="(min-width: 1280px) 1152px, 100vw"
@@ -108,13 +164,20 @@ export default async function IntelDetailPage({
                   {intel.tag}
                 </span>
                 <span className="font-rajdhani text-sm text-slate-400">
-                  By {intel.author} · {formatShortDate(intel.date)} · {minutes} min
-                  read
+                  By {intel.author} ·{" "}
+                  {publishedIso ? (
+                    <time dateTime={publishedIso}>
+                      {formatShortDate(intel.date)}
+                    </time>
+                  ) : (
+                    formatShortDate(intel.date)
+                  )}{" "}
+                  · {minutes} min read
                 </span>
               </div>
 
               <h1 className="mt-4 text-balance font-orbitron text-3xl font-bold leading-tight text-white md:text-5xl">
-                {intel.title}
+                {title}
               </h1>
               {shouldShowStandfirst(intel.excerpt, intel.content) ? (
                 <p className="mt-4 font-rajdhani text-lg leading-relaxed text-slate-300 md:text-xl">

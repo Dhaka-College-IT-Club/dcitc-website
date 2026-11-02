@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Orbitron, Rajdhani } from "next/font/google";
+import { DEFAULT_OG_IMAGE, SITE_DESCRIPTION, SITE_URL } from "@/lib/site";
 import "./globals.css";
 
 const inter = Inter({
@@ -20,10 +21,28 @@ const rajdhani = Rajdhani({
 });
 
 export const metadata: Metadata = {
-  title: "DCITC - Dhaka College Information & Technology Club",
-  description: "Official website for Dhaka College Information & Technology Club",
-  icons: {
-    icon: "/favicon.ico",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: "Dhaka College IT Club (DCITC) - Official Website",
+    template: "%s | Dhaka College IT Club",
+  },
+  description: SITE_DESCRIPTION,
+  applicationName: "Dhaka College IT Club",
+  authors: [{ name: "Dhaka College IT Club" }],
+  openGraph: {
+    siteName: "Dhaka College IT Club",
+    type: "website",
+    locale: "en_US",
+    url: "/",
+    title: "Dhaka College IT Club (DCITC) - Official Website",
+    description: SITE_DESCRIPTION,
+    images: [DEFAULT_OG_IMAGE],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Dhaka College IT Club (DCITC) - Official Website",
+    description: SITE_DESCRIPTION,
+    images: [DEFAULT_OG_IMAGE.url],
   },
 };
 

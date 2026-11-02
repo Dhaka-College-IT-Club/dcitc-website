@@ -20,6 +20,11 @@ export function stripMarkdown(markdown: string): string {
     .trim();
 }
 
+/** Stored titles sometimes carry markdown heading markers; display them once, cleanly. */
+export function cleanTitle(value: string): string {
+  return value.replace(/^\s*#+\s*/, "").trim();
+}
+
 /** Plain first `max` characters, cut on a word boundary. */
 export function autoExcerpt(content: string, max = 200): string {
   const text = stripMarkdown(content).replace(/\s+/g, " ").trim();

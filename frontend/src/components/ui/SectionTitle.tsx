@@ -19,12 +19,12 @@ const SectionTitle: React.FC<SectionTitleProps> = ({ title, subtitle, align = 'c
         viewport={{ once: true }}
         transition={{ duration: 0.6 }}
       >
-        <h2 className="text-2xl sm:text-4xl md:text-5xl font-orbitron font-bold text-white tracking-widest uppercase mb-4 relative inline-block">
+        <h2
+          data-ghost={title}
+          className="section-title-ghost text-2xl sm:text-4xl md:text-5xl font-orbitron font-bold text-white tracking-widest uppercase mb-4 relative inline-block"
+        >
           <span className="relative z-10">{title}</span>
           <span className="absolute -bottom-2 left-0 w-full h-1 bg-linear-to-r from-transparent via-slate-500 to-transparent"></span>
-          <span className="absolute -top-6 -left-6 text-5xl sm:text-6xl text-slate-800 opacity-20 select-none blur-sm pointer-events-none">
-            {title}
-          </span>
         </h2>
         {subtitle && (
           <p className="text-slate-400 font-rajdhani text-xl tracking-wide max-w-2xl mt-4">

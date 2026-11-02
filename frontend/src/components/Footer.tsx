@@ -3,14 +3,14 @@ import React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Facebook, Instagram, Linkedin, Mail, Youtube } from "lucide-react";
-import { CLUB, NAV_ITEMS } from "../constants";
+import { CLUB, FOOTER_LINKS, SOCIAL_URLS } from "../constants";
 
 const Footer: React.FC = () => {
   const socialLinks = [
-    { icon: Facebook, href: "https://www.facebook.com/DCITC", label: "Facebook" },
-    { icon: Instagram, href: "https://www.instagram.com/dcitc_official/", label: "Instagram" },
-    { icon: Linkedin, href: "https://www.linkedin.com/company/dhaka-college-it-club/", label: "LinkedIn" },
-    { icon: Youtube, href: "https://www.youtube.com/@DhakacollegeITClub", label: "YouTube" },
+    { icon: Facebook, href: SOCIAL_URLS.facebook, label: "Facebook" },
+    { icon: Instagram, href: SOCIAL_URLS.instagram, label: "Instagram" },
+    { icon: Linkedin, href: SOCIAL_URLS.linkedin, label: "LinkedIn" },
+    { icon: Youtube, href: SOCIAL_URLS.youtube, label: "YouTube" },
     { icon: Mail, href: "mailto:dhakacollegeitclubofficial@gmail.com", label: "Email" },
   ];
 
@@ -51,7 +51,7 @@ const Footer: React.FC = () => {
               Quick Links
             </h4>
             <ul className="space-y-2">
-              {NAV_ITEMS.map((item) => (
+              {FOOTER_LINKS.map((item) => (
                 <li key={item.label}>
                   <Link
                     href={item.href}

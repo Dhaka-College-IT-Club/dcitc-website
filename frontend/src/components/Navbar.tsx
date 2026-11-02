@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
 import { LayoutDashboard, LogOut, Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { NAV_ITEMS, CLUB } from "../constants";
+import { NAV_ITEMS } from "../constants";
 import { apiFetch } from "@/lib/api";
 import type { User } from "@/lib/api-types";
 import { initials } from "@/lib/initials";
@@ -17,11 +17,15 @@ type AuthState =
   | { status: "in"; user: User };
 
 const Logo: React.FC = () => (
-  <Link href="/" className="flex items-center gap-3 group relative z-10">
+  <Link
+    href="/"
+    aria-label="Dhaka College IT Club - Home"
+    className="flex items-center gap-3 group relative z-10"
+  >
     <div className="relative w-20 h-20 sm:w-20 sm:h-20 md:w-24 md:h-24 transition-all duration-300 -my-2">
       <Image
         src="/logo.png"
-        alt={`${CLUB.SHORT} Logo`}
+        alt="Dhaka College IT Club logo"
         width={200}
         height={200}
         priority

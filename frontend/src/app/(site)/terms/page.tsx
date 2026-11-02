@@ -1,12 +1,25 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { LEGAL } from "@/constants";
+import { DEFAULT_OG_IMAGE } from "@/lib/site";
 import styles from "@/components/legal/LegalContent.module.css";
 
+const DESCRIPTION =
+  "Dhaka College IT Club (DCITC) terms of service: the rules for using this website and for holding a DCITC member account at Dhaka College.";
+
 export const metadata: Metadata = {
-  title: "Terms of Service | DCITC",
-  description:
-    "The rules for using the Dhaka College Information & Technology Club website and for holding a DCITC member account.",
+  title: "Terms of Service",
+  description: DESCRIPTION,
+  alternates: { canonical: "/terms" },
+  openGraph: {
+    siteName: "Dhaka College IT Club",
+    type: "website",
+    locale: "en_US",
+    url: "/terms",
+    title: "Terms of Service | Dhaka College IT Club",
+    description: DESCRIPTION,
+    images: [DEFAULT_OG_IMAGE],
+  },
 };
 
 export default function TermsOfServicePage() {

@@ -1,9 +1,31 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { apiServer } from "@/lib/api";
+import { DEFAULT_OG_IMAGE } from "@/lib/site";
+import { breadcrumbList } from "@/lib/structured-data";
+import JsonLd from "@/components/seo/JsonLd";
 import IntelCard from "@/components/ui/IntelCard";
 import type { Intel } from "@/lib/api-types";
 
 export const revalidate = 60;
+
+const DESCRIPTION =
+  "Dhaka College IT Club (DCITC) Intel: articles, insights, and updates written by our members on technology, programming, cybersecurity, and robotics.";
+
+export const metadata: Metadata = {
+  title: "Intel",
+  description: DESCRIPTION,
+  alternates: { canonical: "/intel" },
+  openGraph: {
+    siteName: "Dhaka College IT Club",
+    type: "website",
+    locale: "en_US",
+    url: "/intel",
+    title: "Intel | Dhaka College IT Club",
+    description: DESCRIPTION,
+    images: [DEFAULT_OG_IMAGE],
+  },
+};
 
 export default async function IntelsPage() {
   let intels: Intel[] = [];
@@ -14,8 +36,14 @@ export default async function IntelsPage() {
     failed = true;
   }
 
+  const breadcrumbs = breadcrumbList([
+    { name: "Home", path: "/" },
+    { name: "Intel", path: "/intel" },
+  ]);
+
   return (
     <div className="min-h-screen bg-black text-slate-200 pt-32 pb-16">
+      <JsonLd data={breadcrumbs} />
       <div className="max-w-6xl mx-auto px-6">
         <header className="mb-10">
           <p className="text-xs font-orbitron tracking-[0.3em] text-slate-500 uppercase mb-3">
@@ -25,7 +53,8 @@ export default async function IntelsPage() {
             Intel
           </h1>
           <p className="text-slate-400 font-rajdhani text-lg">
-            Latest insights and updates from the DCITC team
+            Articles, insights, and updates from the Dhaka College IT Club
+            (DCITC) team
           </p>
         </header>
 

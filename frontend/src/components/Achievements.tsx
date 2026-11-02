@@ -30,7 +30,7 @@ const Achievements = ({ items = [] }: { items?: Achievement[] }) => {
                 href="/achievements"
                 className="font-rajdhani text-sm font-semibold tracking-wide text-slate-300 border-b border-white/30 pb-0.5 transition-colors hover:text-white hover:border-white"
               >
-                See all →
+                See all<span className="sr-only"> achievements</span> →
               </Link>
             </div>
           </>

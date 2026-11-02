@@ -41,6 +41,8 @@ export type Intel = {
   imageFocalX: number;
   imageFocalY: number;
   featuredSlot: number | null;
+  createdAt?: string;
+  updatedAt?: string;
 };
 
 export type Leader = {
