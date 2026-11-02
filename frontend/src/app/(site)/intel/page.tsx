@@ -45,7 +45,8 @@ export default async function IntelsPage() {
             Intel
           </h1>
           <p className="text-slate-400 font-rajdhani text-lg">
-            Latest insights and updates from the DCITC team
+            Articles, insights, and updates from the Dhaka College IT Club
+            (DCITC) team
           </p>
         </header>
 

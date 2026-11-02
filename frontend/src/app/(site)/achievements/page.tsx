@@ -44,7 +44,8 @@ export default async function AchievementsPage() {
             Achievements
           </h1>
           <p className="text-slate-400 font-rajdhani text-lg">
-            Celebrating our milestones and competitive victories
+            Milestones and competitive results from Dhaka College IT Club
+            (DCITC) members
           </p>
         </header>
 

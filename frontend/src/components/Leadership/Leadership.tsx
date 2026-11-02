@@ -119,7 +119,11 @@ const Leadership: React.FC<{ members?: Leader[] }> = ({ members = [] }) => {
               <LeaderImage member={member} />
             ) : (
               <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-white/10 to-black">
-                <span className="font-orbitron text-xl font-bold tracking-[0.2em] text-slate-400 md:text-2xl">
+                <span
+                  role="img"
+                  aria-label={member.name}
+                  className="font-orbitron text-xl font-bold tracking-[0.2em] text-slate-400 md:text-2xl"
+                >
                   {initials(member.name)}
                 </span>
               </div>

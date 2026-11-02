@@ -35,6 +35,9 @@ export default function ConfirmDialog({
     if (!open && dialog.open) dialog.close();
   }, [open]);
 
+  // A closed dialog must not put its heading and body into the page text.
+  if (!open) return null;
+
   return (
     <dialog
       ref={ref}

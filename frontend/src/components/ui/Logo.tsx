@@ -14,7 +14,7 @@ export default function Logo({
     <Link
       href={href}
       className={`group inline-flex items-center gap-3 ${className}`}
-      aria-label="DCITC home"
+      aria-label="Dhaka College IT Club - Home"
     >
       <span className="relative block h-10 w-10 shrink-0 sm:h-11 sm:w-11">
         <Image

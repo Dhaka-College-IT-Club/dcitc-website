@@ -1,10 +1,12 @@
 import Link from "next/link";
 import IntelImage from "./IntelImage";
-import { formatShortDate } from "@/lib/intel";
+import { cleanTitle, formatShortDate } from "@/lib/intel";
 import type { Intel } from "@/lib/api-types";
 
 /** Shared intel card for the landing preview and the full /intel list. */
 export default function IntelCard({ intel }: { intel: Intel }) {
+  const title = cleanTitle(intel.title);
+
   return (
     <Link
       href={`/intel/${intel.slug}`}
@@ -13,7 +15,7 @@ export default function IntelCard({ intel }: { intel: Intel }) {
       <div className="relative aspect-video overflow-hidden">
         <IntelImage
           src={intel.image}
-          alt={intel.title}
+          alt={title}
           focalX={intel.imageFocalX}
           focalY={intel.imageFocalY}
           sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
@@ -31,13 +33,14 @@ export default function IntelCard({ intel }: { intel: Intel }) {
           By {intel.author} · {formatShortDate(intel.date)}
         </p>
         <h3 className="mt-2 line-clamp-2 font-orbitron text-xl font-bold leading-snug text-white transition-colors group-hover:text-slate-200">
-          {intel.title}
+          {title}
         </h3>
         <p className="mt-2 line-clamp-2 font-rajdhani text-[15px] leading-relaxed text-slate-400">
           {intel.excerpt}
         </p>
         <span className="mt-4 inline-flex items-center gap-1.5 font-rajdhani text-sm font-semibold tracking-wide text-slate-300 transition-colors group-hover:text-white">
           Read more
+          <span className="sr-only">: {title}</span>
           <span
             aria-hidden="true"
             className="transition-transform duration-300 group-hover:translate-x-1"

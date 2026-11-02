@@ -28,6 +28,28 @@ body {
   font-family: var(--font-rajdhani);
 }
 
+/* Decorative duplicate of a section title, drawn without adding DOM text. */
+.section-title-ghost::before {
+  content: attr(data-ghost);
+  position: absolute;
+  top: -1.5rem;
+  left: -1.5rem;
+  z-index: 1;
+  font-size: 3rem;
+  line-height: 1;
+  color: var(--color-slate-800, #1e293b);
+  opacity: 0.2;
+  filter: blur(4px);
+  user-select: none;
+  pointer-events: none;
+}
+
+@media (min-width: 640px) {
+  .section-title-ghost::before {
+    font-size: 3.75rem;
+  }
+}
+
 section {
   overflow-x: hidden;
 }

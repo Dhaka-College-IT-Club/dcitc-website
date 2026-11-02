@@ -9,6 +9,7 @@ import { apiServer } from "@/lib/api";
 import { resolveImageUrl } from "@/lib/images";
 import { DEFAULT_OG_IMAGE } from "@/lib/site";
 import {
+  cleanTitle,
   extractHeadings,
   formatShortDate,
   readingMinutes,
@@ -54,6 +55,7 @@ export async function generateMetadata({
   if (!intel) return { title: "Intel Not Found" };
 
   const image = resolveImageUrl(intel.image);
+  const title = cleanTitle(intel.title);
   const description = `Dhaka College IT Club (DCITC): ${intel.excerpt}`;
   const published = intel.createdAt ? new Date(intel.createdAt) : null;
   const publishedTime =
@@ -62,7 +64,7 @@ export async function generateMetadata({
       : undefined;
 
   return {
-    title: intel.title,
+    title,
     description,
     alternates: { canonical: `/intel/${intel.slug}` },
     openGraph: {
@@ -70,14 +72,14 @@ export async function generateMetadata({
       type: "article",
       locale: "en_US",
       url: `/intel/${intel.slug}`,
-      title: intel.title,
+      title,
       description,
       publishedTime,
       images: image ? [image] : [DEFAULT_OG_IMAGE],
     },
     twitter: {
       card: "summary_large_image",
-      title: intel.title,
+      title,
       description,
       images: image ? [image] : [DEFAULT_OG_IMAGE.url],
     },
@@ -94,6 +96,7 @@ export default async function IntelDetailPage({
   if (!intel) notFound();
 
   const related = await getRelatedIntel(slug);
+  const title = cleanTitle(intel.title);
   const headings = extractHeadings(intel.content);
   const minutes = readingMinutes(intel.content);
 
@@ -113,7 +116,7 @@ export default async function IntelDetailPage({
           <div className="relative mt-6 aspect-video w-full overflow-hidden border border-white/10 xl:aspect-[21/9]">
             <IntelImage
               src={intel.image}
-              alt={intel.title}
+              alt={title}
               focalX={intel.imageFocalX}
               focalY={intel.imageFocalY}
               sizes="(min-width: 1280px) 1152px, 100vw"
@@ -135,7 +138,7 @@ export default async function IntelDetailPage({
               </div>
 
               <h1 className="mt-4 text-balance font-orbitron text-3xl font-bold leading-tight text-white md:text-5xl">
-                {intel.title}
+                {title}
               </h1>
               {shouldShowStandfirst(intel.excerpt, intel.content) ? (
                 <p className="mt-4 font-rajdhani text-lg leading-relaxed text-slate-300 md:text-xl">

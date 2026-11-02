@@ -7,7 +7,6 @@ import { CLUB } from "../constants";
 import CTAButtons from "./CTAButtons";
 
 const CLUB_NAME: string = CLUB.NAME;
-const FOUNDED: string = CLUB.FOUNDED;
 
 const Hero: React.FC = () => {
   return (
@@ -63,18 +62,19 @@ const Hero: React.FC = () => {
           >
 
 
-            <h1 className="text-4xl sm:text-5xl font-bold font-orbitron text-white leading-tight mb-4">
+            <p className="text-4xl sm:text-5xl font-bold font-orbitron text-white leading-tight mb-4">
               SHAPING <br />
               <span className="text-transparent bg-clip-text bg-linear-to-r from-white via-slate-300 to-slate-500">
                 TOMORROW
               </span>{" "}
               <br />
               TODAY
-            </h1>
-
-            <p className="text-slate-400 font-rajdhani text-base sm:text-lg mb-6 tracking-wide max-w-lg mx-auto px-2">
-              {CLUB_NAME}
             </p>
+
+            <h1 className="text-slate-400 font-rajdhani text-base sm:text-lg mb-6 tracking-wide max-w-lg mx-auto px-2">
+              <span className="sr-only">Dhaka College IT Club</span>
+              <span aria-hidden="true">{CLUB_NAME}</span>
+            </h1>
 
             <CTAButtons />
           </motion.div>
@@ -89,14 +89,14 @@ const Hero: React.FC = () => {
             >
 
 
-              <h1 className="text-5xl lg:text-7xl font-bold font-orbitron text-white leading-tight mb-6">
+              <p className="text-5xl lg:text-7xl font-bold font-orbitron text-white leading-tight mb-6">
                 SHAPING <br />
                 <span className="text-transparent bg-clip-text bg-linear-to-r from-white via-slate-300 to-slate-500">
                   TOMORROW
                 </span>{" "}
                 <br />
                 TODAY
-              </h1>
+              </p>
 
               <p className="text-slate-400 font-rajdhani text-xl lg:text-2xl mb-8 tracking-wide max-w-xl mx-auto lg:mx-0">
                 {CLUB_NAME}

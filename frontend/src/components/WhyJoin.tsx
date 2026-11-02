@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 import { Code2, Users, Trophy, Rocket, BookOpen, Network } from "lucide-react";
+import { CLUB } from "../constants";
 import SectionTitle from "./ui/SectionTitle";
 
 const benefits = [
@@ -17,6 +18,13 @@ const WhyJoin: React.FC = () => {
     <section id="why-join" className="py-24 bg-black relative overflow-hidden border-t border-white/5">
       <div className="max-w-7xl mx-auto px-6 relative z-10">
         <SectionTitle title="Why Join DCITC" subtitle="What you gain by being part of the club" />
+
+        <p className="mx-auto mb-12 max-w-3xl text-center font-rajdhani text-lg leading-relaxed tracking-wide text-slate-400">
+          Dhaka College IT Club (DCITC) is a student technology club at Dhaka
+          College in Dhaka, Bangladesh. Also known as the Dhaka College
+          Information Technology Club, its mission is clear: {CLUB.MISSION.STATEMENT}{" "}
+          This website is the club&apos;s public home.
+        </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {benefits.map(({ icon: Icon, title, desc }) => (
