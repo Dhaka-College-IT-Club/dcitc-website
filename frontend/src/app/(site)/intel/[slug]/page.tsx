@@ -8,6 +8,8 @@ import TableOfContents from "@/components/ui/TableOfContents";
 import { apiServer } from "@/lib/api";
 import { resolveImageUrl } from "@/lib/images";
 import { DEFAULT_OG_IMAGE } from "@/lib/site";
+import { absoluteUrl, breadcrumbList, isoDate } from "@/lib/structured-data";
+import JsonLd from "@/components/seo/JsonLd";
 import {
   cleanTitle,
   extractHeadings,
@@ -99,9 +101,39 @@ export default async function IntelDetailPage({
   const title = cleanTitle(intel.title);
   const headings = extractHeadings(intel.content);
   const minutes = readingMinutes(intel.content);
+  const image = resolveImageUrl(intel.image);
+  const publishedIso = isoDate(intel.date) ?? isoDate(intel.createdAt);
+  const modifiedIso = isoDate(intel.updatedAt) ?? publishedIso;
+
+  const articleJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: title,
+    description: intel.excerpt,
+    image: image ? absoluteUrl(image) : absoluteUrl(DEFAULT_OG_IMAGE.url),
+    ...(publishedIso ? { datePublished: publishedIso } : {}),
+    ...(modifiedIso ? { dateModified: modifiedIso } : {}),
+    author: { "@type": "Person", name: intel.author },
+    publisher: {
+      "@type": "Organization",
+      name: "Dhaka College IT Club",
+      logo: { "@type": "ImageObject", url: absoluteUrl("/icon.png") },
+    },
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": absoluteUrl(`/intel/${intel.slug}`),
+    },
+  };
+  const breadcrumbs = breadcrumbList([
+    { name: "Home", path: "/" },
+    { name: "Intel", path: "/intel" },
+    { name: title, path: `/intel/${intel.slug}` },
+  ]);
 
   return (
     <div className="min-h-screen bg-black pb-24 text-slate-200">
+      <JsonLd data={articleJsonLd} />
+      <JsonLd data={breadcrumbs} />
       <ReadingProgress />
 
       <div className="pt-24 sm:pt-28">
@@ -132,8 +164,15 @@ export default async function IntelDetailPage({
                   {intel.tag}
                 </span>
                 <span className="font-rajdhani text-sm text-slate-400">
-                  By {intel.author} · {formatShortDate(intel.date)} · {minutes} min
-                  read
+                  By {intel.author} ·{" "}
+                  {publishedIso ? (
+                    <time dateTime={publishedIso}>
+                      {formatShortDate(intel.date)}
+                    </time>
+                  ) : (
+                    formatShortDate(intel.date)
+                  )}{" "}
+                  · {minutes} min read
                 </span>
               </div>
 

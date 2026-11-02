@@ -2,6 +2,8 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { apiServer } from "@/lib/api";
 import { DEFAULT_OG_IMAGE } from "@/lib/site";
+import { breadcrumbList } from "@/lib/structured-data";
+import JsonLd from "@/components/seo/JsonLd";
 import IntelCard from "@/components/ui/IntelCard";
 import type { Intel } from "@/lib/api-types";
 
@@ -34,8 +36,14 @@ export default async function IntelsPage() {
     failed = true;
   }
 
+  const breadcrumbs = breadcrumbList([
+    { name: "Home", path: "/" },
+    { name: "Intel", path: "/intel" },
+  ]);
+
   return (
     <div className="min-h-screen bg-black text-slate-200 pt-32 pb-16">
+      <JsonLd data={breadcrumbs} />
       <div className="max-w-6xl mx-auto px-6">
         <header className="mb-10">
           <p className="text-xs font-orbitron tracking-[0.3em] text-slate-500 uppercase mb-3">

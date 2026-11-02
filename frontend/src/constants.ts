@@ -25,6 +25,14 @@ export const LEGAL = {
   CONTACT_EMAIL: "dhakacollegeitclubofficial@gmail.com",
 } as const;
 
+/** Public profiles that exist today; reused by the footer and JSON-LD. */
+export const SOCIAL_URLS = {
+  facebook: "https://www.facebook.com/DCITC",
+  instagram: "https://www.instagram.com/dcitc_official/",
+  linkedin: "https://www.linkedin.com/company/dhaka-college-it-club/",
+  youtube: "https://www.youtube.com/@DhakacollegeITClub",
+} as const;
+
 export const NAV_ITEMS: NavItem[] = [
   { label: "Departments", href: "/#departments" },
   { label: "Leadership", href: "/#leadership" },
