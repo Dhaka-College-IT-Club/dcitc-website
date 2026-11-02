@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Orbitron, Rajdhani } from "next/font/google";
-import { SITE_DESCRIPTION, SITE_URL } from "@/lib/site";
+import { DEFAULT_OG_IMAGE, SITE_DESCRIPTION, SITE_URL } from "@/lib/site";
 import "./globals.css";
 
 const inter = Inter({
@@ -36,11 +36,13 @@ export const metadata: Metadata = {
     url: "/",
     title: "Dhaka College IT Club (DCITC) - Official Website",
     description: SITE_DESCRIPTION,
+    images: [DEFAULT_OG_IMAGE],
   },
   twitter: {
     card: "summary_large_image",
     title: "Dhaka College IT Club (DCITC) - Official Website",
     description: SITE_DESCRIPTION,
+    images: [DEFAULT_OG_IMAGE.url],
   },
 };
 

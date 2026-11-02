@@ -7,6 +7,7 @@ import ReadingProgress from "@/components/ui/ReadingProgress";
 import TableOfContents from "@/components/ui/TableOfContents";
 import { apiServer } from "@/lib/api";
 import { resolveImageUrl } from "@/lib/images";
+import { DEFAULT_OG_IMAGE } from "@/lib/site";
 import {
   extractHeadings,
   formatShortDate,
@@ -72,13 +73,13 @@ export async function generateMetadata({
       title: intel.title,
       description,
       publishedTime,
-      images: image ? [image] : [],
+      images: image ? [image] : [DEFAULT_OG_IMAGE],
     },
     twitter: {
       card: "summary_large_image",
       title: intel.title,
       description,
-      images: image ? [image] : [],
+      images: image ? [image] : [DEFAULT_OG_IMAGE.url],
     },
   };
 }

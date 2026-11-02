@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { LEGAL } from "@/constants";
+import { DEFAULT_OG_IMAGE } from "@/lib/site";
 import styles from "@/components/legal/LegalContent.module.css";
 
 const DESCRIPTION =
@@ -16,6 +17,7 @@ export const metadata: Metadata = {
     url: "/privacy",
     title: "Privacy Policy | Dhaka College IT Club",
     description: DESCRIPTION,
+    images: [DEFAULT_OG_IMAGE],
   },
 };
 

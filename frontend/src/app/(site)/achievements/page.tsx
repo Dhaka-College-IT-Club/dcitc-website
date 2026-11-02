@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import AchievementCard from "@/components/ui/AchievementCard";
 import { getAchievements } from "@/lib/public-content";
+import { DEFAULT_OG_IMAGE } from "@/lib/site";
 
 export const revalidate = 60;
 
@@ -22,6 +23,7 @@ export async function generateMetadata(): Promise<Metadata> {
       url: "/achievements",
       title: "Achievements | Dhaka College IT Club",
       description: DESCRIPTION,
+      images: [DEFAULT_OG_IMAGE],
     },
     ...(empty ? { robots: { index: false, follow: true } } : {}),
   };

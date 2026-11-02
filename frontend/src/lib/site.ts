@@ -15,3 +15,10 @@ export const SITE_URL = resolveSiteUrl();
 
 export const SITE_DESCRIPTION =
   "Dhaka College IT Club (DCITC) is a student technology club at Dhaka College in Dhaka, Bangladesh, exploring robotics, programming, cybersecurity, and AI.";
+
+export const DEFAULT_OG_IMAGE = {
+  url: "/opengraph-image.png",
+  width: 1200,
+  height: 630,
+  alt: "Dhaka College IT Club (DCITC) logo",
+};

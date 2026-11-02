@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { apiServer } from "@/lib/api";
+import { DEFAULT_OG_IMAGE } from "@/lib/site";
 import IntelCard from "@/components/ui/IntelCard";
 import type { Intel } from "@/lib/api-types";
 
@@ -20,6 +21,7 @@ export const metadata: Metadata = {
     url: "/intel",
     title: "Intel | Dhaka College IT Club",
     description: DESCRIPTION,
+    images: [DEFAULT_OG_IMAGE],
   },
 };
 
