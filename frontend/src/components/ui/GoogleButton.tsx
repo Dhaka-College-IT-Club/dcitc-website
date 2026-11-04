@@ -8,7 +8,7 @@ export default function GoogleButton({
   return (
     <a
       href={href}
-      className="group flex h-12 w-full items-center justify-center gap-3 border border-line-strong bg-white type-button normal-case tracking-normal text-bg transition-all duration-200 hover:bg-slate-100"
+      className="group flex h-12 w-full items-center justify-center gap-3 border border-line-strong bg-surface type-button normal-case tracking-normal text-text transition-colors duration-200 hover:border-accent/60 hover:bg-surface-2"
     >
       <svg
         viewBox="0 0 48 48"
