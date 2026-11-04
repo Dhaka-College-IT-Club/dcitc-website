@@ -60,7 +60,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
               className={`pointer-events-auto flex items-start gap-2.5 border border-line border-l-2 bg-surface/95 px-3.5 py-3 shadow-elev-1 backdrop-blur ${config.classes}`}
             >
               <Icon className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-              <p className="flex-1 font-rajdhani text-sm leading-snug">
+              <p className="flex-1 type-body-sm leading-snug">
                 {toast.message}
               </p>
               <button

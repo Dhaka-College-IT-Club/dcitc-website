@@ -251,7 +251,7 @@ export default function AdminAchievementsPage() {
           </span>
           <span
             title={item.title}
-            className="line-clamp-2 min-w-0 flex-1 font-rajdhani text-sm font-semibold leading-snug text-text"
+            className="line-clamp-2 min-w-0 flex-1 type-body-sm font-semibold leading-snug text-text"
           >
             {item.title}
           </span>
@@ -263,7 +263,7 @@ export default function AdminAchievementsPage() {
       header: "Year",
       className: "w-20 whitespace-nowrap",
       render: (item) => (
-        <span className="font-orbitron text-3xs tracking-[0.1em] text-subtle">
+        <span className="type-overline tracking-[0.1em] text-subtle">
           {item.year}
         </span>
       ),
@@ -274,9 +274,9 @@ export default function AdminAchievementsPage() {
       className: "hidden w-28 xl:table-cell",
       render: (item) =>
         item.featuredSlot === null ? (
-          <span className="font-rajdhani text-xs text-faint">Not featured</span>
+          <span className="type-caption text-faint">Not featured</span>
         ) : (
-          <span className="inline-flex items-center gap-1 whitespace-nowrap border border-line-strong bg-surface-2 px-1.5 py-0.5 font-orbitron text-3xs uppercase tracking-[0.12em] text-text">
+          <span className="inline-flex items-center gap-1 whitespace-nowrap border border-line-strong bg-surface-2 px-1.5 py-0.5 type-overline uppercase tracking-[0.12em] text-text">
             Slot {item.featuredSlot + 1}
           </span>
         ),
@@ -301,10 +301,10 @@ export default function AdminAchievementsPage() {
 
       <div className="flex items-center justify-between gap-4 border border-line bg-surface p-4">
         <div className="min-w-0">
-          <p className="font-orbitron text-3xs uppercase tracking-[0.2em] text-faint">
+          <p className="type-overline uppercase tracking-[0.2em] text-faint">
             Landing page section
           </p>
-          <p className="mt-1 font-rajdhani text-sm leading-snug text-muted">
+          <p className="mt-1 type-body-sm leading-snug text-muted">
             {visible
               ? "The Achievements section is visible on the public landing page."
               : "The Achievements section is hidden from the public landing page."}
@@ -421,7 +421,7 @@ export default function AdminAchievementsPage() {
               <p
                 id="achievement-detail-error"
                 role="alert"
-                className="mt-1.5 font-rajdhani text-sm text-red-300"
+                className="mt-1.5 type-body-sm text-red-300"
               >
                 {fieldErrors.detail}
               </p>
@@ -458,7 +458,7 @@ export default function AdminAchievementsPage() {
           </div>
 
           <div className="border-t border-line pt-5">
-            <p className="font-orbitron text-3xs uppercase tracking-[0.2em] text-faint">
+            <p className="type-overline uppercase tracking-[0.2em] text-faint">
               Gallery
             </p>
             <div className="mt-3 grid gap-4 sm:grid-cols-2">

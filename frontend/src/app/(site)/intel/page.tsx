@@ -44,15 +44,15 @@ export default async function IntelsPage() {
   return (
     <div className="min-h-screen bg-bg text-muted pt-32 pb-16">
       <JsonLd data={breadcrumbs} />
-      <div className="max-w-6xl mx-auto px-6">
+      <div className="mx-auto w-full max-w-[1200px] px-6">
         <header className="mb-10">
-          <p className="text-xs font-orbitron tracking-[0.3em] text-faint uppercase mb-3">
+          <p className="type-overline tracking-[0.3em] text-faint uppercase mb-3">
             Intelligence Briefing
           </p>
-          <h1 className="text-4xl md:text-5xl font-orbitron font-bold text-text mb-4">
+          <h1 className="type-h1 mb-4">
             Intel
           </h1>
-          <p className="text-subtle font-rajdhani text-lg">
+          <p className="text-subtle type-body">
             Articles, insights, and updates from the Dhaka College IT Club
             (DCITC) team
           </p>
@@ -60,23 +60,23 @@ export default async function IntelsPage() {
 
         {failed ? (
           <div className="border border-line bg-white/[0.02] px-6 py-16 text-center">
-            <p className="font-orbitron text-xs uppercase tracking-[0.24em] text-faint">
+            <p className="type-overline uppercase tracking-[0.24em] text-faint">
               Content unavailable
             </p>
-            <p className="mt-3 font-rajdhani text-lg text-subtle">
+            <p className="mt-3 type-body text-subtle">
               We couldn&apos;t load Intel right now. This is not an empty
               archive — check again in a moment.
             </p>
             <Link
               href="/intel"
-              className="mt-5 inline-block font-orbitron text-3xs uppercase tracking-[0.2em] text-text underline-offset-4 hover:underline"
+              className="mt-5 inline-block type-overline uppercase tracking-[0.2em] text-text underline-offset-4 hover:underline"
             >
               Try again
             </Link>
           </div>
         ) : intels.length === 0 ? (
           <div className="text-center py-20">
-            <p className="text-faint font-rajdhani text-xl">
+            <p className="text-faint type-subhead">
               No intelligence reports available at this time.
             </p>
           </div>

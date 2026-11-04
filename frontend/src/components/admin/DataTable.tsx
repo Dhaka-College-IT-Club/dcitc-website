@@ -53,7 +53,7 @@ export default function DataTable<T>({
             onChange={(event) => onSearch(event.target.value)}
             placeholder={searchPlaceholder}
             aria-label={searchPlaceholder}
-            className="h-8 w-full bg-transparent font-rajdhani text-sm text-muted placeholder:text-faint focus:outline-none"
+            className="h-8 w-full bg-transparent type-body-sm text-muted placeholder:text-faint focus:outline-none"
           />
         </div>
       ) : null}
@@ -88,11 +88,11 @@ export default function DataTable<T>({
           <span className="flex h-11 w-11 items-center justify-center border border-line text-faint">
             <Inbox className="h-5 w-5" aria-hidden="true" />
           </span>
-          <p className="mt-4 font-orbitron text-xs uppercase tracking-[0.18em] text-muted">
+          <p className="mt-4 type-overline uppercase tracking-[0.18em] text-muted">
             {emptyTitle}
           </p>
           {emptyDescription ? (
-            <p className="mt-2 max-w-sm font-rajdhani text-sm text-faint">
+            <p className="mt-2 max-w-sm type-body-sm text-faint">
               {emptyDescription}
             </p>
           ) : null}
@@ -111,7 +111,7 @@ export default function DataTable<T>({
                   <th
                     key={column.key}
                     scope="col"
-                    className={`px-4 py-3 font-orbitron text-3xs font-medium uppercase tracking-[0.16em] text-faint ${column.className ?? ""}`}
+                    className={`px-4 py-3 type-overline font-medium uppercase tracking-[0.16em] text-faint ${column.className ?? ""}`}
                   >
                     {column.header}
                   </th>
@@ -161,17 +161,17 @@ export default function DataTable<T>({
           <ul className="divide-y divide-white/5 lg:hidden">
             {rows.map((row) => (
               <li key={getKey(row)} className="min-w-0 space-y-3 p-4">
-                <div className="min-w-0 font-rajdhani text-base text-text">
+                <div className="min-w-0 type-body text-text">
                   {primary.render(row)}
                 </div>
                 {secondary.length > 0 ? (
                   <dl className="grid grid-cols-2 gap-x-3 gap-y-2">
                     {secondary.map((column) => (
                       <div key={column.key} className="min-w-0">
-                        <dt className="font-orbitron text-3xs uppercase tracking-[0.14em] text-faint">
+                        <dt className="type-overline uppercase tracking-[0.14em] text-faint">
                           {column.header}
                         </dt>
-                        <dd className="mt-0.5 min-w-0 break-words font-rajdhani text-sm text-muted">
+                        <dd className="mt-0.5 min-w-0 break-words type-body-sm text-muted">
                           {column.render(row)}
                         </dd>
                       </div>

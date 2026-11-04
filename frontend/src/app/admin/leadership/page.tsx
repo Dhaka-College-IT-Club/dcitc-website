@@ -222,11 +222,11 @@ export default function AdminLeadershipPage() {
               className="h-9 w-9 shrink-0 border border-line object-cover"
             />
           ) : (
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center border border-line bg-surface-2 font-orbitron text-3xs text-subtle">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center border border-line bg-surface-2 type-overline text-subtle">
               {initials(item.name)}
             </span>
           )}
-          <span className="font-rajdhani text-sm font-semibold text-text">
+          <span className="type-body-sm font-semibold text-text">
             {item.name}
           </span>
         </div>
@@ -236,14 +236,14 @@ export default function AdminLeadershipPage() {
       key: "role",
       header: "Role",
       render: (item) => (
-        <span className="font-rajdhani text-sm text-muted">{item.role}</span>
+        <span className="type-body-sm text-muted">{item.role}</span>
       ),
     },
     {
       key: "tier",
       header: "Tier",
       render: (item) => (
-        <span className="inline-flex border border-line px-1.5 py-0.5 font-orbitron text-3xs uppercase tracking-[0.12em] text-subtle">
+        <span className="inline-flex border border-line px-1.5 py-0.5 type-overline uppercase tracking-[0.12em] text-subtle">
           {tierLabels[item.tier]}
         </span>
       ),
@@ -252,7 +252,7 @@ export default function AdminLeadershipPage() {
       key: "batch",
       header: "Batch",
       render: (item) => (
-        <span className="font-orbitron text-3xs tracking-[0.1em] text-subtle">
+        <span className="type-overline tracking-[0.1em] text-subtle">
           {item.batch}
         </span>
       ),
@@ -268,7 +268,7 @@ export default function AdminLeadershipPage() {
           { href: item.portfolio, Icon: Globe, label: "Portfolio" },
         ].filter((link) => Boolean(link.href));
         if (links.length === 0) {
-          return <span className="font-rajdhani text-xs text-faint">—</span>;
+          return <span className="type-caption text-faint">—</span>;
         }
         return (
           <span className="flex gap-1.5">
@@ -312,9 +312,9 @@ export default function AdminLeadershipPage() {
             type="button"
             onClick={() => setActiveBatch("all")}
             aria-pressed={activeBatch === "all"}
-            className={`rounded-full px-4 py-1.5 font-orbitron text-3xs uppercase tracking-[0.16em] transition-all sm:px-5 sm:py-2 ${
+            className={`rounded-full px-4 py-1.5 type-overline uppercase tracking-[0.16em] transition-all sm:px-5 sm:py-2 ${
               activeBatch === "all"
-                ? "bg-white text-black shadow-glow"
+                ? "bg-white text-bg shadow-glow"
                 : "text-subtle hover:text-text"
             }`}
           >
@@ -326,9 +326,9 @@ export default function AdminLeadershipPage() {
               type="button"
               onClick={() => setActiveBatch(batch)}
               aria-pressed={activeBatch === batch}
-              className={`rounded-full px-4 py-1.5 font-orbitron text-3xs uppercase tracking-[0.16em] transition-all sm:px-5 sm:py-2 ${
+              className={`rounded-full px-4 py-1.5 type-overline uppercase tracking-[0.16em] transition-all sm:px-5 sm:py-2 ${
                 activeBatch === batch
-                  ? "bg-white text-black shadow-glow"
+                  ? "bg-white text-bg shadow-glow"
                   : "text-subtle hover:text-text"
               }`}
             >
@@ -336,7 +336,7 @@ export default function AdminLeadershipPage() {
             </button>
           ))}
         </div>
-        <span className="font-rajdhani text-xs text-faint">
+        <span className="type-caption text-faint">
           {items.length} member{items.length === 1 ? "" : "s"} listed
         </span>
       </div>
@@ -456,7 +456,7 @@ export default function AdminLeadershipPage() {
           </div>
 
           <div className="border-t border-line pt-5">
-            <p className="font-orbitron text-3xs uppercase tracking-[0.2em] text-faint">
+            <p className="type-overline uppercase tracking-[0.2em] text-faint">
               Social links (optional)
             </p>
             <div className="mt-3 grid gap-4 sm:grid-cols-2">

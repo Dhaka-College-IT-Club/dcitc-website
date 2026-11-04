@@ -19,11 +19,11 @@ function LeaderImage({ member }: { member: Leader }) {
 
   if (!resolved || failed) {
     return (
-      <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-white/10 to-black">
+      <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-surface-2 to-bg">
         <span
           role="img"
           aria-label={member.name}
-          className="font-orbitron text-xl font-bold tracking-[0.2em] text-subtle md:text-2xl"
+          className="type-h3 font-bold tracking-[0.2em] text-subtle md:text-2xl"
         >
           {initials(member.name)}
         </span>
@@ -62,26 +62,11 @@ const Leadership: React.FC<{ members?: Leader[] }> = ({ members = [] }) => {
   const chiefs = batchMembers.filter((m) => m.tier === "chief");
   const joints = batchMembers.filter((m) => m.tier === "joint");
 
-  const cardVariants = {
-    hidden: { opacity: 0, y: 30 },
-    visible: (i: number) => ({
-      opacity: 1,
-      y: 0,
-      transition: {
-        delay: i * 0.1,
-        duration: 0.5,
-        ease: "easeOut" as const,
-      },
-    }),
-  };
-
   const LeaderCard = ({
     member,
-    index,
     size = "normal",
   }: {
     member: Leader;
-    index: number;
     size?: "large" | "normal" | "small";
   }) => {
     const sizeClasses: Record<"large" | "normal" | "small", string> = {
@@ -91,17 +76,10 @@ const Leadership: React.FC<{ members?: Leader[] }> = ({ members = [] }) => {
     };
 
     return (
-      <motion.div
-        custom={index}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true }}
-        variants={cardVariants}
-        className="group relative flex flex-col items-center h-full"
-      >
+      <div className="group relative flex h-full flex-col items-center">
         <div className={`relative ${sizeClasses[size]} mb-4 overflow-hidden`}>
           <div
-            className="absolute inset-0 border border-line group-hover:border-line-strong/40 transition-all duration-500 bg-linear-to-br from-white/5 to-transparent"
+            className="absolute inset-0 border border-line bg-linear-to-br from-surface-2 to-transparent transition-colors duration-300 group-hover:border-accent/40"
             style={{
               clipPath:
                 "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)",
@@ -118,28 +96,28 @@ const Leadership: React.FC<{ members?: Leader[] }> = ({ members = [] }) => {
             {member.image ? (
               <LeaderImage member={member} />
             ) : (
-              <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-white/10 to-black">
+              <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-surface-2 to-bg">
                 <span
                   role="img"
                   aria-label={member.name}
-                  className="font-orbitron text-xl font-bold tracking-[0.2em] text-subtle md:text-2xl"
+                  className="type-h3 font-bold tracking-[0.2em] text-subtle md:text-2xl"
                 >
                   {initials(member.name)}
                 </span>
               </div>
             )}
-            <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <div aria-hidden="true" className="absolute inset-0 bg-linear-to-t from-bg/70 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
           </div>
 
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-2 h-2 border-t border-l border-line-strong group-hover:border-line-strong/60 transition-colors"></div>
-          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-2 h-2 border-b border-r border-line-strong group-hover:border-line-strong/60 transition-colors"></div>
+          <span aria-hidden="true" className="absolute left-1/2 top-0 h-2 w-2 -translate-x-1/2 border-l border-t border-accent/40" />
+          <span aria-hidden="true" className="absolute bottom-0 left-1/2 h-2 w-2 -translate-x-1/2 border-b border-r border-accent/40" />
         </div>
 
         <div className="text-center flex flex-col items-center flex-1 w-full">
-          <h3 className="font-orbitron text-text text-sm md:text-base font-bold tracking-wider uppercase mb-1 min-h-[2.5rem] md:min-h-[2.75rem] flex items-end justify-center">
+          <h3 className="type-h4 mb-1 flex min-h-[2.5rem] items-end justify-center text-center uppercase tracking-wide md:min-h-[2.75rem]">
             {member.name}
           </h3>
-          <p className="font-rajdhani text-subtle text-sm md:text-base tracking-wide min-h-[1.5rem] flex items-start justify-center">
+          <p className="type-caption flex min-h-[1.5rem] items-start justify-center text-center text-subtle">
             {member.role}
           </p>
           {(member.facebook || member.linkedin || member.github || member.portfolio) && (
@@ -149,10 +127,10 @@ const Leadership: React.FC<{ members?: Leader[] }> = ({ members = [] }) => {
                   href={member.facebook}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center w-9 h-9 rounded-full border border-line-strong bg-surface-2 text-muted hover:text-text hover:border-line-strong/40 hover:bg-surface-2 transition-all"
+                  className="inline-flex h-8 w-8 items-center justify-center border border-line text-subtle transition-colors hover:border-accent/60 hover:text-accent"
                   aria-label={`${member.name} Facebook`}
                 >
-                  <Facebook className="w-5 h-5" />
+                  <Facebook className="h-4 w-4" aria-hidden="true" />
                 </a>
               )}
               {member.linkedin && (
@@ -160,10 +138,10 @@ const Leadership: React.FC<{ members?: Leader[] }> = ({ members = [] }) => {
                   href={member.linkedin}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center w-9 h-9 rounded-full border border-line-strong bg-surface-2 text-muted hover:text-text hover:border-line-strong/40 hover:bg-surface-2 transition-all"
+                  className="inline-flex h-8 w-8 items-center justify-center border border-line text-subtle transition-colors hover:border-accent/60 hover:text-accent"
                   aria-label={`${member.name} LinkedIn`}
                 >
-                  <Linkedin className="w-5 h-5" />
+                  <Linkedin className="h-4 w-4" aria-hidden="true" />
                 </a>
               )}
               {member.github && (
@@ -171,10 +149,10 @@ const Leadership: React.FC<{ members?: Leader[] }> = ({ members = [] }) => {
                   href={member.github}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center w-9 h-9 rounded-full border border-line-strong bg-surface-2 text-muted hover:text-text hover:border-line-strong/40 hover:bg-surface-2 transition-all"
+                  className="inline-flex h-8 w-8 items-center justify-center border border-line text-subtle transition-colors hover:border-accent/60 hover:text-accent"
                   aria-label={`${member.name} GitHub`}
                 >
-                  <Github className="w-5 h-5" />
+                  <Github className="h-4 w-4" aria-hidden="true" />
                 </a>
               )}
               {member.portfolio && (
@@ -182,51 +160,45 @@ const Leadership: React.FC<{ members?: Leader[] }> = ({ members = [] }) => {
                   href={member.portfolio}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center w-9 h-9 rounded-full border border-line-strong bg-surface-2 text-muted hover:text-text hover:border-line-strong/40 hover:bg-surface-2 transition-all"
+                  className="inline-flex h-8 w-8 items-center justify-center border border-line text-subtle transition-colors hover:border-accent/60 hover:text-accent"
                   aria-label={`${member.name} Portfolio`}
                 >
-                  <Globe className="w-5 h-5" />
+                  <Globe className="h-4 w-4" aria-hidden="true" />
                 </a>
               )}
             </div>
           )}
         </div>
-
-        <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden opacity-0 group-hover:opacity-100">
-          <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-transparent via-white/20 to-transparent animate-[scan_2s_linear_infinite]"></div>
-        </div>
-      </motion.div>
+      </div>
     );
   };
 
   return (
     <section
       id="leadership"
-      className="py-24 bg-bg relative overflow-hidden"
+      className="section-seam relative overflow-hidden bg-bg py-16 md:py-24"
     >
-      <div className="absolute inset-0 opacity-5">
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage:
-              "linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)",
-            backgroundSize: "50px 50px",
-          }}
-        ></div>
-      </div>
+      <div
+        aria-hidden="true"
+        className="tech-grid pointer-events-none absolute inset-0 opacity-[0.04]"
+      />
 
-      <div className="max-w-7xl mx-auto px-6 relative z-10">
-        <SectionTitle title="Leadership" subtitle={LEADERSHIP_SUBTITLE} />
+      <div className="relative z-10 mx-auto w-full max-w-[1200px] px-6">
+        <SectionTitle
+          eyebrow="The panel"
+          title="Leadership"
+          subtitle={LEADERSHIP_SUBTITLE}
+        />
 
         <div className="flex justify-center mb-12">
-          <div className="inline-flex items-center gap-1 p-1 rounded-full border border-line bg-surface backdrop-blur-sm">
+          <div className="inline-flex items-center gap-1 border border-line bg-surface p-1">
             {LEADERSHIP_BATCHES.map((batch) => (
               <button
                 key={batch}
                 onClick={() => setActiveBatch(batch)}
-                className={`px-5 py-2 font-orbitron text-xs tracking-widest uppercase rounded-full transition-all duration-300 ${
+                className={`type-overline px-5 py-2 transition-colors duration-200 ${
                   activeBatch === batch
-                    ? "bg-white text-black shadow-glow"
+                    ? "bg-accent text-bg"
                     : "text-subtle hover:text-text"
                 }`}
               >
@@ -237,8 +209,8 @@ const Leadership: React.FC<{ members?: Leader[] }> = ({ members = [] }) => {
         </div>
 
         {batchMembers.length === 0 ? (
-          <div className="text-center py-20">
-            <p className="text-faint font-rajdhani text-xl">
+          <div className="py-20 text-center">
+            <p className="type-body text-faint">
               Panel coming soon
             </p>
           </div>
@@ -251,19 +223,18 @@ const Leadership: React.FC<{ members?: Leader[] }> = ({ members = [] }) => {
             viewport={{ once: true }}
             className="flex justify-center items-center mb-8 text-center"
           >
-            <div className="h-px w-8 sm:w-16 bg-linear-to-r from-transparent to-white/30"></div>
-            <span className="px-4 font-orbitron text-3xs sm:text-xs tracking-[0.2em] sm:tracking-[0.3em] text-faint uppercase">
+            <div className="h-px w-8 bg-linear-to-r from-transparent to-line-strong sm:w-16" />
+            <span className="type-overline px-4 text-faint">
               {LEADERSHIP_EXEC_LABEL}
             </span>
-            <div className="h-px w-8 sm:w-16 bg-linear-to-l from-transparent to-white/30"></div>
+            <div className="h-px w-8 bg-linear-to-l from-transparent to-line-strong sm:w-16" />
           </motion.div>
 
           <div className="flex flex-wrap justify-center gap-8 md:gap-16">
-            {executives.map((member, index) => (
+            {executives.map((member) => (
               <LeaderCard
                 key={member.batch + '-' + member.name}
                 member={member}
-                index={index}
                 size="large"
               />
             ))}
@@ -277,19 +248,18 @@ const Leadership: React.FC<{ members?: Leader[] }> = ({ members = [] }) => {
             viewport={{ once: true }}
             className="flex justify-center items-center mb-8 text-center"
           >
-            <div className="h-px w-8 sm:w-16 bg-linear-to-r from-transparent to-white/20"></div>
-            <span className="px-4 font-orbitron text-3xs sm:text-xs tracking-[0.2em] sm:tracking-[0.3em] text-faint uppercase">
+            <div className="h-px w-8 bg-linear-to-r from-transparent to-line-strong sm:w-16" />
+            <span className="type-overline px-4 text-faint">
               {LEADERSHIP_CHIEF_LABEL}
             </span>
-            <div className="h-px w-8 sm:w-16 bg-linear-to-l from-transparent to-white/20"></div>
+            <div className="h-px w-8 bg-linear-to-l from-transparent to-line-strong sm:w-16" />
           </motion.div>
 
           <div className="flex flex-wrap justify-center gap-6 md:gap-10">
-            {chiefs.map((member, index) => (
+            {chiefs.map((member) => (
               <LeaderCard
                 key={member.batch + '-' + member.name}
                 member={member}
-                index={index + executives.length}
                 size="normal"
               />
             ))}
@@ -304,19 +274,18 @@ const Leadership: React.FC<{ members?: Leader[] }> = ({ members = [] }) => {
               viewport={{ once: true }}
               className="flex justify-center items-center mb-8 text-center"
             >
-              <div className="h-px w-8 sm:w-16 bg-linear-to-r from-transparent to-white/10"></div>
-              <span className="px-4 font-orbitron text-3xs sm:text-xs tracking-[0.2em] sm:tracking-[0.3em] text-faint uppercase">
+              <div className="h-px w-8 bg-linear-to-r from-transparent to-line-strong sm:w-16" />
+              <span className="type-overline px-4 text-faint">
                 {LEADERSHIP_JOINT_LABEL}
               </span>
-              <div className="h-px w-8 sm:w-16 bg-linear-to-l from-transparent to-white/10"></div>
+              <div className="h-px w-8 bg-linear-to-l from-transparent to-line-strong sm:w-16" />
             </motion.div>
 
             <div className="flex flex-wrap justify-center gap-6 md:gap-10">
-              {joints.map((member, index) => (
+              {joints.map((member) => (
                 <LeaderCard
                   key={member.batch + '-' + member.name}
                   member={member}
-                  index={index + executives.length + chiefs.length}
                   size="small"
                 />
               ))}
@@ -327,8 +296,8 @@ const Leadership: React.FC<{ members?: Leader[] }> = ({ members = [] }) => {
         )}
       </div>
 
-      <div className="absolute top-1/4 left-0 w-32 h-32 bg-white/5 blur-3xl rounded-full"></div>
-      <div className="absolute bottom-1/4 right-0 w-48 h-48 bg-white/3 blur-3xl rounded-full"></div>
+      <div aria-hidden="true" className="pointer-events-none absolute left-0 top-1/4 h-32 w-32 rounded-full bg-accent-soft blur-3xl" />
+      <div aria-hidden="true" className="pointer-events-none absolute bottom-1/4 right-0 h-48 w-48 rounded-full bg-accent-soft blur-3xl" />
     </section >
   );
 };

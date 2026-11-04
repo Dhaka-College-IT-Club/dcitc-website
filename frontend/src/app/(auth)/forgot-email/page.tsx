@@ -55,10 +55,10 @@ export default function ForgotEmailPage() {
               aria-hidden="true"
             />
             <div>
-              <p className="font-orbitron text-xs uppercase tracking-[0.16em] text-text">
+              <p className="type-overline uppercase tracking-[0.16em] text-text">
                 Check your inbox
               </p>
-              <p className="mt-1.5 font-rajdhani text-sm leading-snug text-subtle">
+              <p className="mt-1.5 type-body-sm leading-snug text-subtle">
                 If a member matches {name.trim() || "those details"}{" "}
                 {hscBatch.trim() ? `in ${hscBatch.trim()}` : ""}, the email on
                 file will receive a recovery message shortly.
@@ -66,7 +66,7 @@ export default function ForgotEmailPage() {
             </div>
           </div>
 
-          <p className="font-rajdhani text-sm text-faint">
+          <p className="type-body-sm text-faint">
             For privacy, we show the same message whether or not an account
             matches.
           </p>
@@ -81,7 +81,7 @@ export default function ForgotEmailPage() {
                 setSubmitted(false);
                 setError("");
               }}
-              className="font-rajdhani text-sm text-faint underline-offset-4 transition-colors hover:text-text hover:underline"
+              className="type-body-sm text-faint underline-offset-4 transition-colors hover:text-text hover:underline"
             >
               Try different details
             </button>
@@ -119,7 +119,7 @@ export default function ForgotEmailPage() {
             {pending ? "Checking" : "Recover my email"}
           </Button>
 
-          <p className="border-t border-line pt-4 text-center font-rajdhani text-sm text-faint">
+          <p className="border-t border-line pt-4 text-center type-body-sm text-faint">
             Know your email?{" "}
             <Link
               href="/login"

@@ -3,7 +3,7 @@ import Link from "next/link";
 import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ReactNode } from "react";
 
 const variants = {
-  primary: "bg-white text-black hover:bg-slate-200 hover:shadow-glow",
+  primary: "bg-white text-bg hover:bg-slate-200 hover:shadow-glow",
   secondary:
     "border border-line-strong bg-surface text-text hover:border-accent/60 hover:bg-surface-2",
   ghost: "text-subtle hover:text-text hover:bg-surface",

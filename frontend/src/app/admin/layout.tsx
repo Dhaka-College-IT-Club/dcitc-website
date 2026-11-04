@@ -50,7 +50,7 @@ export default function AdminLayout({
     return (
       <div className="flex min-h-screen items-center justify-center bg-bg px-4 text-muted">
         <div className="w-full max-w-lg border border-line bg-white/[0.02] p-6">
-          <p className="font-orbitron text-3xs uppercase tracking-[0.24em] text-faint">
+          <p className="type-overline uppercase tracking-[0.24em] text-faint">
             Admin console
           </p>
           <div className="mt-4">

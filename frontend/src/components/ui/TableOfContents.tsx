@@ -6,7 +6,7 @@ export default function TableOfContents({ headings }: { headings: Heading[] }) {
 
   return (
     <aside aria-label="On this page" className="sticky top-28">
-      <p className="font-orbitron text-3xs uppercase tracking-[0.24em] text-faint">
+      <p className="type-overline uppercase tracking-[0.24em] text-faint">
         On this page
       </p>
       <nav className="mt-3 border-l border-line">

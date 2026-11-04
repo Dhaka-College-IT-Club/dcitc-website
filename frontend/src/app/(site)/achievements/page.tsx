@@ -35,15 +35,15 @@ export default async function AchievementsPage() {
 
   return (
     <div className="min-h-screen bg-bg text-muted pt-32 pb-16">
-      <div className="max-w-6xl mx-auto px-6">
+      <div className="mx-auto w-full max-w-[1200px] px-6">
         <header className="mb-10">
-          <p className="text-xs font-orbitron tracking-[0.3em] text-faint uppercase mb-3">
+          <p className="type-overline tracking-[0.3em] text-faint uppercase mb-3">
             Mission Log
           </p>
-          <h1 className="text-4xl md:text-5xl font-orbitron font-bold text-text mb-4">
+          <h1 className="type-h1 mb-4">
             Achievements
           </h1>
-          <p className="text-subtle font-rajdhani text-lg">
+          <p className="text-subtle type-body">
             Milestones and competitive results from Dhaka College IT Club
             (DCITC) members
           </p>
@@ -51,7 +51,7 @@ export default async function AchievementsPage() {
 
         {items.length === 0 ? (
           <div className="text-center py-20">
-            <p className="text-faint font-rajdhani text-xl">
+            <p className="text-faint type-subhead">
               No achievements recorded yet. Check back soon!
             </p>
           </div>

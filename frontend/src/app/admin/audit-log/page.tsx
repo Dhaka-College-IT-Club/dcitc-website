@@ -87,10 +87,10 @@ export default function AdminAuditLogPage() {
       mobilePrimary: true,
       render: (entry) => (
         <span className="flex flex-col">
-          <span className="font-rajdhani text-sm font-semibold text-text">
+          <span className="type-body-sm font-semibold text-text">
             {humanAction(entry.action)}
           </span>
-          <span className="mt-0.5 font-orbitron text-3xs uppercase tracking-[0.12em] text-faint">
+          <span className="mt-0.5 type-overline uppercase tracking-[0.12em] text-faint">
             {entry.action}
           </span>
         </span>
@@ -100,7 +100,7 @@ export default function AdminAuditLogPage() {
       key: "actor",
       header: "Actor",
       render: (entry) => (
-        <span className="font-rajdhani text-sm text-muted">
+        <span className="type-body-sm text-muted">
           {entry.actorAdminId === null ? "System" : `Admin ${entry.actorAdminId.slice(0, 8)}`}
         </span>
       ),
@@ -110,19 +110,19 @@ export default function AdminAuditLogPage() {
       header: "Target",
       render: (entry) =>
         entry.targetType ? (
-          <span className="font-rajdhani text-sm text-subtle">
+          <span className="type-body-sm text-subtle">
             {entry.targetType}
             {entry.targetId !== null ? ` #${entry.targetId}` : ""}
           </span>
         ) : (
-          <span className="font-rajdhani text-sm text-faint">—</span>
+          <span className="type-body-sm text-faint">—</span>
         ),
     },
     {
       key: "time",
       header: "When",
       render: (entry) => (
-        <span className="whitespace-nowrap font-rajdhani text-sm text-subtle">
+        <span className="whitespace-nowrap type-body-sm text-subtle">
           {formatStamp(entry.createdAt)}
         </span>
       ),
@@ -140,11 +140,11 @@ export default function AdminAuditLogPage() {
       {error ? <Alert variant="error">{error}</Alert> : null}
 
       <div className="flex flex-wrap items-center justify-between gap-2 border border-line bg-white/[0.02] px-4 py-2.5">
-        <p className="font-rajdhani text-sm text-subtle">
-          <span className="font-orbitron text-xs text-text">{items.length}</span>{" "}
+        <p className="type-body-sm text-subtle">
+          <span className="type-overline text-text">{items.length}</span>{" "}
           recorded {items.length === 1 ? "entry" : "entries"}
         </p>
-        <p className="font-orbitron text-3xs uppercase tracking-[0.16em] text-faint">
+        <p className="type-overline uppercase tracking-[0.16em] text-faint">
           Read only
         </p>
       </div>

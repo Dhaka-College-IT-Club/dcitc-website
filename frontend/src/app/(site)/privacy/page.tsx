@@ -23,20 +23,20 @@ export const metadata: Metadata = {
 
 export default function PrivacyPolicyPage() {
   return (
-    <div className="min-h-screen bg-bg pb-24 pt-32 text-muted">
-      <div className="mx-auto max-w-[768px] px-6">
+    <div className="min-h-screen bg-bg pb-16 pt-28 text-muted md:pb-24">
+      <div className="mx-auto w-full max-w-[720px] px-6">
         <header className="mb-12">
-          <p className="mb-3 font-orbitron text-xs uppercase tracking-[0.3em] text-faint">
+          <p className="mb-3 type-overline uppercase tracking-[0.3em] text-faint">
             Legal / Privacy
           </p>
-          <h1 className="mb-4 font-orbitron text-4xl font-bold leading-tight text-text md:text-5xl">
+          <h1 className="type-h1 mb-4">
             Privacy Policy
           </h1>
-          <p className="font-rajdhani text-lg leading-relaxed text-subtle">
+          <p className="type-body leading-relaxed text-subtle">
             What the club collects through this site, why we keep it, and how to
             have it corrected or removed.
           </p>
-          <p className="mt-6 font-orbitron text-3xs uppercase tracking-[0.18em] text-faint sm:text-2xs sm:tracking-[0.2em]">
+          <p className="mt-6 type-overline uppercase tracking-[0.18em] text-faint sm:text-2xs sm:tracking-[0.2em]">
             Last updated{" "}
             <time dateTime={LEGAL.LAST_UPDATED_ISO} className="text-muted">
               {LEGAL.LAST_UPDATED}

@@ -8,7 +8,7 @@ export default function Breadcrumbs({ items }: { items: BreadcrumbItem[] }) {
       <JsonLd data={breadcrumbList(items)} />
       <nav
         aria-label="Breadcrumb"
-        className="mb-6 font-orbitron text-3xs uppercase tracking-[0.2em] text-faint"
+        className="mb-6 type-overline uppercase tracking-[0.2em] text-faint"
       >
         <ol className="flex flex-wrap items-center gap-2">
           {items.map((item, index) => {

@@ -94,7 +94,7 @@ export default function DashboardPage() {
     return (
       <div className="flex min-h-screen items-center justify-center bg-bg px-4 text-muted">
         <div className="w-full max-w-lg border border-line bg-white/[0.02] p-6">
-          <p className="font-orbitron text-3xs uppercase tracking-[0.28em] text-faint">
+          <p className="type-overline uppercase tracking-[0.28em] text-faint">
             Member portal
           </p>
           <div className="mt-4">
@@ -129,15 +129,15 @@ export default function DashboardPage() {
   return (
     <DashboardShell user={user} onLogout={signOut} signingOut={signingOut}>
       <header className="mb-7">
-        <p className="font-orbitron text-3xs uppercase tracking-[0.28em] text-faint">
+        <p className="type-overline uppercase tracking-[0.28em] text-faint">
           Member portal
         </p>
-        <h1 className="mt-2 font-orbitron text-3xl font-bold leading-tight tracking-tight text-text sm:text-4xl md:text-5xl">
+        <h1 className="type-h3 mt-2 font-bold leading-tight tracking-tight text-text sm:text-4xl md:text-5xl">
           Welcome, <span className="break-words text-text">{user.name}</span>
         </h1>
-        <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 font-rajdhani text-sm text-subtle">
+        <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 type-body-sm text-subtle">
           {user.hscBatch ? (
-            <span className="inline-flex items-center gap-1.5 border border-line-strong px-2 py-0.5 font-orbitron text-3xs uppercase tracking-[0.16em] text-muted">
+            <span className="inline-flex items-center gap-1.5 border border-line-strong px-2 py-0.5 type-overline uppercase tracking-[0.16em] text-muted">
               <GraduationCap className="h-3 w-3" aria-hidden="true" />
               {user.hscBatch}
             </span>
@@ -155,14 +155,14 @@ export default function DashboardPage() {
         aria-label="Account"
         className="mb-4 border border-line bg-white/[0.02] px-5 py-4"
       >
-        <p className="font-orbitron text-3xs uppercase tracking-[0.2em] text-faint">
+        <p className="type-overline uppercase tracking-[0.2em] text-faint">
           Account
         </p>
         <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6">
-          <p className="min-w-0 break-all font-rajdhani text-base text-muted">
+          <p className="min-w-0 break-all type-body text-muted">
             {user.email}
           </p>
-          <p className="font-rajdhani text-sm text-faint">
+          <p className="type-body-sm text-faint">
             Need a detail changed?{" "}
             <Link
               href="/#contact"
@@ -181,17 +181,17 @@ export default function DashboardPage() {
       >
         <h2
           id="membership-title"
-          className="font-orbitron text-xl font-bold tracking-tight text-text sm:text-2xl"
+          className="type-h3 font-bold tracking-tight text-text sm:text-2xl"
         >
           Membership
         </h2>
-        <p className="mt-4 font-orbitron text-3xl font-bold leading-none text-text sm:text-4xl">
+        <p className="type-h3 mt-4 font-bold leading-none text-text sm:text-4xl">
           {price}
-          <span className="ml-2 font-orbitron text-base font-medium tracking-[0.16em] text-subtle">
+          <span className="ml-2 type-h4 font-medium tracking-[0.16em] text-subtle">
             BDT
           </span>
         </p>
-        <p className="mt-3 max-w-xl font-rajdhani text-base leading-snug tracking-wide text-muted">
+        <p className="mt-3 max-w-xl type-body leading-snug tracking-wide text-muted">
           One-time registration fee. Membership lasts through your HSC years.
           Some workshops and events may carry a separate fee.
         </p>
@@ -207,7 +207,7 @@ export default function DashboardPage() {
               <Button type="button" size="md" disabled>
                 Membership closed
               </Button>
-              <p className="mt-3 max-w-xl font-rajdhani text-sm text-subtle">
+              <p className="mt-3 max-w-xl type-body-sm text-subtle">
                 Membership is closed right now. The club will publish the form
                 here when enrolment opens.
               </p>
@@ -216,7 +216,7 @@ export default function DashboardPage() {
         </div>
 
         {formUrl ? (
-          <p className="mt-3 font-rajdhani text-xs text-faint">
+          <p className="mt-3 type-caption text-faint">
             Takes about two minutes.
           </p>
         ) : null}

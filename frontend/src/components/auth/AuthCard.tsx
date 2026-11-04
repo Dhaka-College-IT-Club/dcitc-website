@@ -18,15 +18,15 @@ export default function AuthCard({
             className="absolute left-0 top-9 h-10 w-px bg-white/40"
           />
           {eyebrow ? (
-            <p className="mb-3 font-orbitron text-3xs uppercase tracking-[0.3em] text-faint">
+            <p className="mb-3 type-overline uppercase tracking-[0.3em] text-faint">
               {eyebrow}
             </p>
           ) : null}
-          <h1 className="font-orbitron text-2xl font-bold leading-tight tracking-tight text-text sm:text-3xl">
+          <h1 className="type-h3 font-bold leading-tight tracking-tight text-text sm:text-3xl">
             {title}
           </h1>
           {subtitle ? (
-            <p className="mt-2 font-rajdhani text-base leading-snug tracking-wide text-subtle">
+            <p className="mt-2 type-body leading-snug tracking-wide text-subtle">
               {subtitle}
             </p>
           ) : null}

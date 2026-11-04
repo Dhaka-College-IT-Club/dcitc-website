@@ -59,17 +59,17 @@ export default function Drawer({
       <div className="flex h-full min-h-0 flex-col">
         <header className="flex shrink-0 items-start justify-between gap-4 border-b border-line px-5 py-4 sm:px-6">
           <div>
-            <p className="font-orbitron text-3xs uppercase tracking-[0.28em] text-faint">
+            <p className="type-overline uppercase tracking-[0.28em] text-faint">
               Admin console
             </p>
             <h2
               id={titleId}
-              className="mt-1 font-orbitron text-lg font-bold text-text"
+              className="mt-1 type-h3 font-bold text-text"
             >
               {title}
             </h2>
             {description ? (
-              <p className="mt-1 font-rajdhani text-sm text-faint">
+              <p className="mt-1 type-body-sm text-faint">
                 {description}
               </p>
             ) : null}

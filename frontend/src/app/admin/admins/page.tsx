@@ -249,19 +249,19 @@ export default function AdminAdminsPage() {
         <span className="flex flex-col">
           <span className="flex items-center gap-2">
             <span
-              className={`font-rajdhani text-sm font-semibold ${
+              className={`type-body-sm font-semibold ${
                 item.active ? "text-text" : "text-faint"
               }`}
             >
               {item.name}
             </span>
             {item.id === me?.id ? (
-              <span className="border border-line-strong px-1 py-0.5 font-orbitron text-3xs uppercase tracking-[0.12em] text-subtle">
+              <span className="border border-line-strong px-1 py-0.5 type-overline uppercase tracking-[0.12em] text-subtle">
                 You
               </span>
             ) : null}
           </span>
-          <span className="font-rajdhani text-xs text-faint">
+          <span className="type-caption text-faint">
             {item.email}
           </span>
         </span>
@@ -272,7 +272,7 @@ export default function AdminAdminsPage() {
       header: "Role",
       render: (item) => (
         <span
-          className={`inline-flex items-center gap-1 border px-1.5 py-0.5 font-orbitron text-3xs uppercase tracking-[0.12em] ${
+          className={`inline-flex items-center gap-1 border px-1.5 py-0.5 type-overline uppercase tracking-[0.12em] ${
             item.role === "super_admin"
               ? "border-white/40 bg-surface-2 text-text"
               : "border-line text-subtle"
@@ -290,7 +290,7 @@ export default function AdminAdminsPage() {
       header: "Status",
       render: (item) => (
         <span
-          className={`inline-flex items-center gap-1.5 font-rajdhani text-xs ${
+          className={`inline-flex items-center gap-1.5 type-caption ${
             item.active ? "text-emerald-300" : "text-faint"
           }`}
         >
@@ -308,7 +308,7 @@ export default function AdminAdminsPage() {
       key: "created",
       header: "Created",
       render: (item) => (
-        <span className="font-rajdhani text-sm text-subtle">
+        <span className="type-body-sm text-subtle">
           {formatDate(item.createdAt)}
         </span>
       ),
@@ -397,7 +397,7 @@ export default function AdminAdminsPage() {
         }}
       />
 
-      <p className="font-rajdhani text-xs leading-snug text-faint">
+      <p className="type-caption leading-snug text-faint">
         Your own row cannot be edited or deactivated, so at least one active
         super admin always remains. Ask another super admin to change your
         access.

@@ -30,7 +30,7 @@ export default function FocalPointPicker({
   return (
     <div className="space-y-3">
       <div>
-        <p className="font-orbitron text-3xs uppercase tracking-[0.18em] text-faint">
+        <p className="type-overline uppercase tracking-[0.18em] text-faint">
           Focal point
         </p>
         <div
@@ -74,7 +74,7 @@ export default function FocalPointPicker({
             <Crosshair className="h-full w-full" />
           </span>
         </div>
-        <p className="mt-1.5 font-rajdhani text-xs text-faint">
+        <p className="mt-1.5 type-caption text-faint">
           Click the image (or use arrow keys) to set what stays in frame.{" "}
           {focalX}% / {focalY}%
         </p>
@@ -91,7 +91,7 @@ export default function FocalPointPicker({
               style={{ objectPosition: position }}
             />
           </div>
-          <figcaption className="mt-1 font-orbitron text-3xs uppercase tracking-[0.16em] text-faint">
+          <figcaption className="mt-1 type-overline uppercase tracking-[0.16em] text-faint">
             Card crop · 16:9
           </figcaption>
         </figure>
@@ -105,7 +105,7 @@ export default function FocalPointPicker({
               style={{ objectPosition: position }}
             />
           </div>
-          <figcaption className="mt-1 font-orbitron text-3xs uppercase tracking-[0.16em] text-faint">
+          <figcaption className="mt-1 type-overline uppercase tracking-[0.16em] text-faint">
             Detail hero · 21:9
           </figcaption>
         </figure>

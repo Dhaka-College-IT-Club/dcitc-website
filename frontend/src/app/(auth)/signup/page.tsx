@@ -279,13 +279,13 @@ export default function SignupPage() {
       {step === 1 ? (
         <>
           <GoogleButton label="Continue with Google" />
-          <p className="mb-4 mt-2 text-center font-rajdhani text-xs tracking-wide text-faint">
+          <p className="mb-4 mt-2 text-center type-caption tracking-wide text-faint">
             Already have a Google account? Skip the code.
           </p>
 
           <div className="my-5 flex items-center gap-3" aria-hidden="true">
             <span className="h-px flex-1 bg-surface-2" />
-            <span className="font-orbitron text-3xs uppercase tracking-[0.24em] text-faint">
+            <span className="type-overline uppercase tracking-[0.24em] text-faint">
               or use email
             </span>
             <span className="h-px flex-1 bg-surface-2" />
@@ -351,7 +351,7 @@ export default function SignupPage() {
             </Button>
           </form>
 
-          <p className="mt-6 border-t border-line pt-5 text-center font-rajdhani text-sm text-faint">
+          <p className="mt-6 border-t border-line pt-5 text-center type-body-sm text-faint">
             Already a member?{" "}
             <Link
               href="/login"
@@ -388,7 +388,7 @@ export default function SignupPage() {
               type="button"
               onClick={resend}
               disabled={resendIn > 0 || pending}
-              className="font-rajdhani text-sm text-muted underline-offset-4 transition-colors hover:text-text hover:underline disabled:cursor-not-allowed disabled:text-faint disabled:no-underline"
+              className="type-body-sm text-muted underline-offset-4 transition-colors hover:text-text hover:underline disabled:cursor-not-allowed disabled:text-faint disabled:no-underline"
             >
               {resendIn > 0
                 ? `Resend code in ${resendIn}s`
@@ -404,7 +404,7 @@ export default function SignupPage() {
                 setErrorCode("");
                 setFieldErrors({});
               }}
-              className="font-rajdhani text-sm text-faint underline-offset-4 transition-colors hover:text-text hover:underline"
+              className="type-body-sm text-faint underline-offset-4 transition-colors hover:text-text hover:underline"
             >
               Use a different email
             </button>
@@ -445,7 +445,7 @@ export default function SignupPage() {
                   />
                 ))}
               </div>
-              <div className="mt-1.5 flex items-center justify-between font-rajdhani text-xs">
+              <div className="mt-1.5 flex items-center justify-between type-caption">
                 <span className="text-faint">
                   Use 8 or more characters.
                 </span>
@@ -475,7 +475,7 @@ export default function SignupPage() {
             <button
               type="button"
               onClick={() => startOver()}
-              className="font-rajdhani text-sm text-faint underline-offset-4 transition-colors hover:text-text hover:underline"
+              className="type-body-sm text-faint underline-offset-4 transition-colors hover:text-text hover:underline"
             >
               Start over
             </button>

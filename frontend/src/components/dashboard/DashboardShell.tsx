@@ -34,12 +34,12 @@ export default function DashboardShell({
           <div className="flex items-center gap-2.5 sm:gap-4">
             <Link
               href="/"
-              className="whitespace-nowrap font-orbitron text-3xs uppercase tracking-[0.14em] text-subtle transition-colors hover:text-text"
+              className="whitespace-nowrap type-overline uppercase tracking-[0.14em] text-subtle transition-colors hover:text-text"
             >
               Back to site
             </Link>
             <span
-              className="flex h-9 w-9 items-center justify-center border border-line-strong bg-surface-2 font-orbitron text-2xs text-text"
+              className="flex h-9 w-9 items-center justify-center border border-line-strong bg-surface-2 type-overline text-text"
               title={user.name}
             >
               <span aria-hidden="true">{initials(user.name)}</span>
@@ -49,7 +49,7 @@ export default function DashboardShell({
               type="button"
               onClick={() => setConfirmOpen(true)}
               disabled={signingOut}
-              className="inline-flex h-9 items-center gap-1.5 border border-line-strong px-2.5 font-orbitron text-3xs uppercase tracking-[0.14em] text-subtle transition-colors hover:border-line-strong/40 hover:text-text disabled:opacity-50 sm:px-3 sm:text-3xs"
+              className="inline-flex h-9 items-center gap-1.5 border border-line-strong px-2.5 type-overline uppercase tracking-[0.14em] text-subtle transition-colors hover:border-line-strong/40 hover:text-text disabled:opacity-50 sm:px-3 sm:text-3xs"
             >
               <LogOut className="h-3.5 w-3.5" aria-hidden="true" />
               <span className="hidden sm:inline">Log out</span>

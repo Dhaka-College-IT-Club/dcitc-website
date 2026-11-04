@@ -27,10 +27,10 @@ export default function SlotGrid({
     <section aria-label="Featured slots">
       <div className="mb-3 flex items-end justify-between gap-3">
         <div>
-          <h2 className="font-orbitron text-xs uppercase tracking-[0.18em] text-muted">
+          <h2 className="type-overline uppercase tracking-[0.18em] text-muted">
             Landing page slots
           </h2>
-          <p className="mt-1 font-rajdhani text-sm text-faint">
+          <p className="mt-1 type-body-sm text-faint">
             {filled} of {count} filled. Empty slots stay hidden on the public
             page.
           </p>
@@ -53,11 +53,11 @@ export default function SlotGrid({
               }`}
             >
               <div className="flex items-center justify-between">
-                <span className="font-orbitron text-3xs uppercase tracking-[0.2em] text-faint">
+                <span className="type-overline uppercase tracking-[0.2em] text-faint">
                   Slot {String(slot + 1).padStart(2, "0")}
                 </span>
                 {occupant ? (
-                  <span className="flex h-4 w-4 items-center justify-center bg-white text-black">
+                  <span className="flex h-4 w-4 items-center justify-center bg-white text-bg">
                     <Check className="h-2.5 w-2.5" aria-hidden="true" />
                   </span>
                 ) : (
@@ -67,14 +67,14 @@ export default function SlotGrid({
 
               {occupant ? (
                 <>
-                  <p className="mt-3 line-clamp-2 font-rajdhani text-sm font-semibold leading-snug text-text">
+                  <p className="mt-3 line-clamp-2 type-body-sm font-semibold leading-snug text-text">
                     {occupant.title}
                   </p>
                   <button
                     type="button"
                     onClick={() => onClear(occupant.id)}
                     disabled={busy}
-                    className="mt-2 inline-flex w-fit items-center gap-1 font-orbitron text-3xs uppercase tracking-[0.14em] text-faint transition-colors hover:text-red-300 disabled:opacity-40"
+                    className="mt-2 inline-flex w-fit items-center gap-1 type-overline uppercase tracking-[0.14em] text-faint transition-colors hover:text-red-300 disabled:opacity-40"
                   >
                     <X className="h-3 w-3" aria-hidden="true" />
                     Clear
@@ -82,7 +82,7 @@ export default function SlotGrid({
                 </>
               ) : (
                 <>
-                  <p className="mt-3 font-rajdhani text-sm text-faint">
+                  <p className="mt-3 type-body-sm text-faint">
                     Empty
                   </p>
                   <select

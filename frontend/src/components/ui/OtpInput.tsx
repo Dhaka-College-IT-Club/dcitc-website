@@ -119,7 +119,7 @@ export default function OtpInput({
             aria-label={`Digit ${index + 1} of ${length}`}
             aria-invalid={error ? true : undefined}
             autoFocus={index === 0}
-            className={`dc-input h-12 min-w-0 flex-1 px-0 text-center font-orbitron text-lg ${
+            className={`dc-input h-12 min-w-0 flex-1 px-0 text-center type-h3 ${
               error ? "border-red-500/60" : ""
             }`}
           />
@@ -129,7 +129,7 @@ export default function OtpInput({
         <p
           id="otp-error"
           role="alert"
-          className="mt-1.5 font-rajdhani text-sm text-red-300"
+          className="mt-1.5 type-body-sm text-red-300"
         >
           {error}
         </p>

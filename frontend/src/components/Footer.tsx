@@ -16,16 +16,10 @@ const Footer: React.FC = () => {
 
   return (
     <footer className="bg-bg border-t border-line relative overflow-hidden">
-      <div className="absolute inset-0 opacity-5 pointer-events-none">
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage:
-              "linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)",
-            backgroundSize: "50px 50px",
-          }}
-        />
-      </div>
+      <div
+        aria-hidden="true"
+        className="tech-grid pointer-events-none absolute inset-0 opacity-[0.04]"
+      />
 
       <div className="max-w-7xl mx-auto px-6 py-16 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
@@ -33,21 +27,21 @@ const Footer: React.FC = () => {
             <div className="flex items-center gap-3">
               <Image src="/logo.png" alt="DCITC Logo" width={48} height={48} className="object-contain" />
               <div>
-                <h4 className="font-orbitron font-bold text-lg text-text tracking-wider">
+                <h4 className="type-h3 font-bold text-text tracking-wider">
                   DCITC
                 </h4>
-                <p className="font-rajdhani text-xs text-faint tracking-widest uppercase">
+                <p className="type-caption text-faint tracking-widest uppercase">
                   Shaping Tomorrow Today
                 </p>
               </div>
             </div>
-            <p className="font-rajdhani text-subtle text-sm tracking-wide max-w-xs">
+            <p className="type-body-sm text-subtle tracking-wide max-w-xs">
               To enrich higher secondary level DCians with core and deep knowledge of Robotics, Programming, Cybersecurity, and Artificial Intelligence.
             </p>
           </div>
 
           <div>
-            <h4 className="font-orbitron font-bold text-sm text-text tracking-widest uppercase mb-4">
+            <h4 className="type-overline mb-4 text-subtle">
               Quick Links
             </h4>
             <ul className="space-y-2">
@@ -55,14 +49,14 @@ const Footer: React.FC = () => {
                 <li key={item.label}>
                   <Link
                     href={item.href}
-                    className="font-rajdhani text-subtle text-sm tracking-wide hover:text-text transition-colors"
+                    className="type-body-sm text-subtle tracking-wide hover:text-text transition-colors"
                   >
                     {item.label}
                   </Link>
                 </li>
               ))}
               <li>
-                <Link href="/#contact" className="font-rajdhani text-subtle text-sm tracking-wide hover:text-text transition-colors">
+                <Link href="/#contact" className="type-body-sm text-subtle transition-colors hover:text-text">
                   Contact
                 </Link>
               </li>
@@ -70,10 +64,10 @@ const Footer: React.FC = () => {
           </div>
 
           <div>
-            <h4 className="font-orbitron font-bold text-sm text-text tracking-widest uppercase mb-4">
+            <h4 className="type-overline mb-4 text-subtle">
               Contact
             </h4>
-            <ul className="space-y-2 font-rajdhani text-subtle text-sm tracking-wide">
+            <ul className="type-body-sm space-y-2 text-subtle">
               <li>Dhaka College, Dhaka, Bangladesh</li>
               <li>
                 <a href="mailto:dhakacollegeitclubofficial@gmail.com" className="hover:text-text transition-colors break-all">
@@ -84,7 +78,7 @@ const Footer: React.FC = () => {
           </div>
 
           <div>
-            <h4 className="font-orbitron font-bold text-sm text-text tracking-widest uppercase mb-4">
+            <h4 className="type-overline mb-4 text-subtle">
               Connect
             </h4>
             <div className="flex flex-wrap gap-3">
@@ -95,7 +89,7 @@ const Footer: React.FC = () => {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={label}
-                  className="w-10 h-10 flex items-center justify-center border border-slate-700 rounded hover:bg-white hover:text-black hover:border-line-strong transition-all duration-300 text-subtle"
+                  className="flex h-10 w-10 items-center justify-center border border-line text-subtle transition-colors hover:border-accent/60 hover:text-accent"
                 >
                   <Icon className="w-5 h-5" />
                 </a>
@@ -104,7 +98,7 @@ const Footer: React.FC = () => {
           </div>
         </div>
 
-        <div className="border-t border-line pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-3xs md:text-xs font-rajdhani text-faint uppercase tracking-widest text-center md:text-left">
+        <div className="flex flex-col items-center justify-between gap-4 border-t border-line pt-8 text-center type-caption text-faint md:flex-row md:text-left">
           <p>
             &copy; {new Date().getFullYear()} Dhaka College Information & Technology Club. All rights reserved.
             <span className="ml-2 text-faint">v{CLUB.VERSION}</span>
@@ -112,19 +106,19 @@ const Footer: React.FC = () => {
           <nav aria-label="Legal" className="flex flex-wrap items-center gap-4">
             <Link
               href="/privacy"
-              className="font-rajdhani text-3xs md:text-xs uppercase tracking-widest text-faint hover:text-text transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/60"
+              className="type-caption text-faint transition-colors hover:text-text"
             >
               Privacy Policy
             </Link>
             <Link
               href="/terms"
-              className="font-rajdhani text-3xs md:text-xs uppercase tracking-widest text-faint hover:text-text transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/60"
+              className="type-caption text-faint transition-colors hover:text-text"
             >
               Terms of Service
             </Link>
           </nav>
           <p>
-            Designed & Developed by <span className="text-orange-500">DCITC Team</span>
+            Designed &amp; Developed by <span className="text-accent">DCITC Team</span>
           </p>
         </div>
       </div>

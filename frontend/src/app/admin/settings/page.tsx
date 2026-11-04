@@ -137,7 +137,7 @@ export default function AdminSettingsPage() {
                     onClick={() =>
                       window.open(formUrl.trim(), "_blank", "noopener,noreferrer")
                     }
-                    className="inline-flex items-center gap-1.5 font-orbitron text-3xs uppercase tracking-[0.14em] text-subtle transition-colors hover:text-text disabled:cursor-not-allowed disabled:text-faint"
+                    className="inline-flex items-center gap-1.5 type-overline uppercase tracking-[0.14em] text-subtle transition-colors hover:text-text disabled:cursor-not-allowed disabled:text-faint"
                   >
                     <ExternalLink className="h-3 w-3" aria-hidden="true" />
                     Test link
@@ -167,40 +167,40 @@ export default function AdminSettingsPage() {
           </form>
 
           <aside className="border border-line bg-white/[0.02] p-5 sm:p-6 lg:col-span-2">
-            <p className="font-orbitron text-3xs uppercase tracking-[0.24em] text-faint">
+            <p className="type-overline uppercase tracking-[0.24em] text-faint">
               Member preview
             </p>
             <div className=" mt-4 border border-line-strong bg-surface-2 p-4">
-              <p className="font-orbitron text-3xs uppercase tracking-[0.2em] text-subtle">
+              <p className="type-overline uppercase tracking-[0.2em] text-subtle">
                 Membership
               </p>
-              <p className="mt-2 font-orbitron text-lg font-bold text-text">
+              <p className="mt-2 type-h3 font-bold text-text">
                 Membership
               </p>
-              <p className="mt-3 font-orbitron text-3xl font-bold text-text">
+              <p className="type-h3 mt-3 font-bold text-text">
                 {Number(price) > 0 ? price : "—"}
                 <span className="ml-1.5 text-sm font-medium text-subtle">
                   BDT
                 </span>
               </p>
-              <p className="mt-3 font-rajdhani text-sm text-subtle">
+              <p className="mt-3 type-body-sm text-subtle">
                 One-time fee, valid through the member&apos;s HSC years.
               </p>
-              <p className="mt-2 font-rajdhani text-xs text-faint">
+              <p className="mt-2 type-caption text-faint">
                 {canTest
                   ? "Members see the join button on their dashboard."
                   : "No live form link yet, so members see the closed state."}
               </p>
             </div>
-            <p className="mt-4 font-rajdhani text-xs leading-snug text-faint">
+            <p className="mt-4 type-caption leading-snug text-faint">
               Changing the price updates the dashboard membership card. It does
               not edit any responses already collected in the form.
             </p>
             <div className="mt-6 border-t border-line pt-4">
-              <p className="font-orbitron text-3xs uppercase tracking-[0.24em] text-faint">
+              <p className="type-overline uppercase tracking-[0.24em] text-faint">
                 Build
               </p>
-              <p className="mt-2 font-rajdhani text-sm text-subtle">
+              <p className="mt-2 type-body-sm text-subtle">
                 Version <span className="text-text">v{CLUB.VERSION}</span>
               </p>
             </div>

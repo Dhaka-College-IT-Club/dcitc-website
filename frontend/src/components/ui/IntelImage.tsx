@@ -52,9 +52,9 @@ function ImagePlaceholder({ alt }: { alt: string }) {
     <div
       role="img"
       aria-label={alt}
-      className="absolute inset-0 flex items-center justify-center bg-linear-to-br from-white/10 to-black"
+      className="absolute inset-0 flex items-center justify-center bg-linear-to-br from-white/10 to-bg"
     >
-      <span className="font-orbitron text-3xs uppercase tracking-[0.28em] text-faint">
+      <span className="type-overline uppercase tracking-[0.28em] text-faint">
         DCITC
       </span>
     </div>

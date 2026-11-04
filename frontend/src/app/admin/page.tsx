@@ -121,21 +121,21 @@ export default function AdminHome() {
                 />
               </div>
               <div className="mt-8">
-                <p className="font-orbitron text-3xl font-bold text-text">
+                <p className="type-h3 font-bold text-text">
                   {card.value.status === "loading" ? (
                     <span className="inline-block h-8 w-12 animate-pulse bg-surface-2 align-middle" />
                   ) : card.value.status === "error" ? (
-                    <span className="font-rajdhani text-base font-semibold uppercase tracking-[0.12em] text-faint">
+                    <span className="type-body font-semibold uppercase tracking-[0.12em] text-faint">
                       Unavailable
                     </span>
                   ) : (
                     card.value.value
                   )}
                 </p>
-                <p className="mt-1 font-orbitron text-3xs uppercase tracking-[0.18em] text-subtle">
+                <p className="mt-1 type-overline uppercase tracking-[0.18em] text-subtle">
                   {card.label}
                 </p>
-                <p className="mt-1 font-rajdhani text-xs leading-snug text-faint">
+                <p className="mt-1 type-caption leading-snug text-faint">
                   {card.note}
                 </p>
               </div>
@@ -146,7 +146,7 @@ export default function AdminHome() {
 
       {hasCountError ? (
         <div className="flex flex-wrap items-center gap-3">
-          <p className="font-rajdhani text-sm text-faint">
+          <p className="type-body-sm text-faint">
             Some counts could not be loaded.
           </p>
           <Button
@@ -169,7 +169,7 @@ export default function AdminHome() {
 
       <div className="grid gap-4 lg:grid-cols-5">
         <section className="border border-line bg-white/[0.02] p-5 sm:p-6 lg:col-span-3">
-          <p className="font-orbitron text-3xs uppercase tracking-[0.24em] text-faint">
+          <p className="type-overline uppercase tracking-[0.24em] text-faint">
             Quick actions
           </p>
           <div className="mt-4 grid gap-2 sm:grid-cols-2">
@@ -189,24 +189,24 @@ export default function AdminHome() {
         </section>
 
         <section className="border border-line bg-white/[0.02] p-5 sm:p-6 lg:col-span-2">
-          <p className="font-orbitron text-3xs uppercase tracking-[0.24em] text-faint">
+          <p className="type-overline uppercase tracking-[0.24em] text-faint">
             Session
           </p>
           <div className="mt-4 flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center border border-line-strong bg-surface-2 font-orbitron text-xs text-text">
+            <span className="flex h-10 w-10 items-center justify-center border border-line-strong bg-surface-2 type-overline text-text">
               {(admin?.name ?? "AD").slice(0, 2).toUpperCase()}
             </span>
             <div className="min-w-0">
-              <p className="truncate font-rajdhani text-base font-semibold text-text">
+              <p className="truncate type-body font-semibold text-text">
                 {admin?.name ?? "Operator"}
               </p>
-              <span className="mt-0.5 inline-flex items-center gap-1 border border-line-strong px-1.5 py-0.5 font-orbitron text-3xs uppercase tracking-[0.14em] text-subtle">
+              <span className="mt-0.5 inline-flex items-center gap-1 border border-line-strong px-1.5 py-0.5 type-overline uppercase tracking-[0.14em] text-subtle">
                 <Shield className="h-2.5 w-2.5" aria-hidden="true" />
                 {admin?.role === "super_admin" ? "Super admin" : "Admin"}
               </span>
             </div>
           </div>
-          <p className="mt-4 border-t border-line pt-4 font-rajdhani text-xs leading-snug text-faint">
+          <p className="mt-4 border-t border-line pt-4 type-caption leading-snug text-faint">
             {admin?.role === "super_admin"
               ? "You can also manage operator accounts and read the audit log."
               : "Operator accounts and audit history are managed by a super admin."}

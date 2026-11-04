@@ -24,8 +24,8 @@ export const metadata: Metadata = {
 
 export default function AboutPage() {
   return (
-    <div className="min-h-screen bg-bg pb-24 pt-32 text-muted">
-      <div className="mx-auto max-w-[768px] px-6">
+    <div className="min-h-screen bg-bg pb-16 pt-28 text-muted md:pb-24">
+      <div className="mx-auto w-full max-w-[720px] px-6">
         <Breadcrumbs
           items={[
             { name: "Home", path: "/" },
@@ -34,21 +34,21 @@ export default function AboutPage() {
         />
 
         <header className="mb-12">
-          <p className="mb-3 font-orbitron text-xs uppercase tracking-[0.3em] text-faint">
+          <p className="mb-3 type-overline uppercase tracking-[0.3em] text-faint">
             About the club
           </p>
-          <h1 className="mb-4 font-orbitron text-4xl font-bold leading-tight text-text md:text-5xl">
+          <h1 className="type-h1 mb-4">
             About Dhaka College IT Club (DCITC)
           </h1>
-          <p className="font-rajdhani text-lg leading-relaxed text-subtle">
+          <p className="type-body leading-relaxed text-subtle">
             A student technology club at Dhaka College in Dhaka, Bangladesh,
             building practical skills across six departments.
           </p>
         </header>
 
-        <div className="space-y-10 font-rajdhani text-lg leading-relaxed text-muted">
+        <div className="space-y-10 type-body leading-relaxed text-muted">
           <section>
-            <h2 className="mb-3 font-orbitron text-xl font-bold text-text">
+            <h2 className="mb-3 type-h3 font-bold text-text">
               Who we are
             </h2>
             <p>
@@ -63,7 +63,7 @@ export default function AboutPage() {
           </section>
 
           <section>
-            <h2 className="mb-3 font-orbitron text-xl font-bold text-text">
+            <h2 className="mb-3 type-h3 font-bold text-text">
               Who it is for
             </h2>
             <p>
@@ -75,7 +75,7 @@ export default function AboutPage() {
           </section>
 
           <section>
-            <h2 className="mb-3 font-orbitron text-xl font-bold text-text">
+            <h2 className="mb-3 type-h3 font-bold text-text">
               What members do
             </h2>
             <p>
@@ -96,7 +96,7 @@ export default function AboutPage() {
           </section>
 
           <section>
-            <h2 className="mb-3 font-orbitron text-xl font-bold text-text">
+            <h2 className="mb-3 type-h3 font-bold text-text">
               Get involved
             </h2>
             <p>

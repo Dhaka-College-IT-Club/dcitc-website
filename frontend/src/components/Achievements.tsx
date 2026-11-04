@@ -1,42 +1,49 @@
 import Link from "next/link";
 import AchievementCard from "./ui/AchievementCard";
+import Reveal from "./ui/Reveal";
+import { Container, Section } from "./ui/Section";
 import SectionTitle from "./ui/SectionTitle";
 import type { Achievement } from "@/lib/api-types";
 
 const Achievements = ({ items = [] }: { items?: Achievement[] }) => {
   return (
-    <section id="achievements" className="py-24 bg-bg relative">
-      <div className="max-w-7xl mx-auto px-6">
-        <SectionTitle
-          title="Achievements"
-          subtitle="Our Milestones and Victories"
-        />
+    <Section id="achievements" seam>
+      <Container>
+        <Reveal>
+          <SectionTitle
+            eyebrow="Track record"
+            title="Achievements"
+            subtitle="Our milestones and victories"
+          />
 
-        {items.length === 0 ? (
-          <div className="text-center py-10">
-            <p className="text-faint font-rajdhani text-lg">
+          {items.length === 0 ? (
+            <p className="type-body-sm mt-10 text-center text-subtle">
               No achievements recorded yet. Check back soon!
             </p>
-          </div>
-        ) : (
-          <>
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {items.map((achievement) => (
-                <AchievementCard key={achievement.id} achievement={achievement} />
-              ))}
-            </div>
-            <div className="text-center mt-16">
-              <Link
-                href="/achievements"
-                className="font-rajdhani text-sm font-semibold tracking-wide text-muted border-b border-line-strong pb-0.5 transition-colors hover:text-text hover:border-line-strong"
-              >
-                See all<span className="sr-only"> achievements</span> →
-              </Link>
-            </div>
-          </>
-        )}
-      </div>
-    </section>
+          ) : (
+            <>
+              <div className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {items.map((achievement) => (
+                  <AchievementCard
+                    key={achievement.id}
+                    achievement={achievement}
+                  />
+                ))}
+              </div>
+              <div className="mt-10 text-center">
+                <Link
+                  href="/achievements"
+                  className="type-body-sm inline-flex items-center gap-2 text-muted underline-offset-4 transition-colors hover:text-accent hover:underline"
+                >
+                  See all achievements
+                  <span aria-hidden="true">→</span>
+                </Link>
+              </div>
+            </>
+          )}
+        </Reveal>
+      </Container>
+    </Section>
   );
 };
 

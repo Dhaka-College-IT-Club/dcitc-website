@@ -38,7 +38,7 @@ export default function Alert({
     <div
       role={config.role}
       aria-live={variant === "error" ? "assertive" : "polite"}
-      className={`flex items-start gap-2.5 border-l-2 px-3.5 py-3 font-rajdhani text-sm leading-snug ${config.classes}`}
+      className={`flex items-start gap-2.5 border-l-2 px-3.5 py-3 type-body-sm leading-snug ${config.classes}`}
     >
       <Icon
         className={`mt-0.5 h-4 w-4 shrink-0 ${config.iconClasses}`}

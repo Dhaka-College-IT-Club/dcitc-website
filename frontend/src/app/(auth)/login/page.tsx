@@ -110,13 +110,13 @@ function LoginForm() {
       ) : null}
 
       <GoogleButton />
-      <p className="mb-4 mt-2 text-center font-rajdhani text-xs tracking-wide text-faint">
+      <p className="mb-4 mt-2 text-center type-caption tracking-wide text-faint">
         Google is fastest, but email works too.
       </p>
 
       <div className="my-5 flex items-center gap-3" aria-hidden="true">
         <span className="h-px flex-1 bg-surface-2" />
-        <span className="font-orbitron text-3xs uppercase tracking-[0.24em] text-faint">
+        <span className="type-overline uppercase tracking-[0.24em] text-faint">
           or
         </span>
         <span className="h-px flex-1 bg-surface-2" />
@@ -151,13 +151,13 @@ function LoginForm() {
           <div className="mt-2 flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
             <Link
               href="/forgot-password"
-              className="font-rajdhani text-sm text-subtle underline-offset-4 transition-colors hover:text-text hover:underline"
+              className="type-body-sm text-subtle underline-offset-4 transition-colors hover:text-text hover:underline"
             >
               Forgot password?
             </Link>
             <Link
               href="/forgot-email"
-              className="font-rajdhani text-sm text-subtle underline-offset-4 transition-colors hover:text-text hover:underline"
+              className="type-body-sm text-subtle underline-offset-4 transition-colors hover:text-text hover:underline"
             >
               Forgot email?
             </Link>
@@ -169,7 +169,7 @@ function LoginForm() {
         </Button>
       </form>
 
-      <p className="mt-6 border-t border-line pt-5 text-center font-rajdhani text-sm text-faint">
+      <p className="mt-6 border-t border-line pt-5 text-center type-body-sm text-faint">
         New here?{" "}
         <Link
           href="/signup"

@@ -57,7 +57,7 @@ function NavLinks({
     <nav className="flex-1 overflow-y-auto p-3">
       {groups.map((group) => (
         <div key={group.label} className="mb-5 last:mb-0">
-          <p className="mb-2 px-3 font-orbitron text-3xs uppercase tracking-[0.24em] text-faint">
+          <p className="mb-2 px-3 type-overline uppercase tracking-[0.24em] text-faint">
             {group.label}
           </p>
           <ul className="space-y-1">
@@ -73,7 +73,7 @@ function NavLinks({
                     href={link.href}
                     onClick={onNavigate}
                     aria-current={active ? "page" : undefined}
-                    className={`group relative flex items-center gap-2.5 px-3 py-2 font-rajdhani text-sm tracking-wide transition-colors ${
+                    className={`group relative flex items-center gap-2.5 px-3 py-2 type-body-sm tracking-wide transition-colors ${
                       active
                         ? "bg-surface-2 text-text"
                         : "text-subtle hover:bg-surface-2 hover:text-text"
@@ -132,14 +132,14 @@ export default function AdminShell({
           <NavLinks admin={admin} />
           <div className="border-t border-line p-3">
             <div className="flex items-center gap-2.5 px-2 py-2">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center border border-line-strong bg-surface-2 font-orbitron text-2xs text-text">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center border border-line-strong bg-surface-2 type-overline text-text">
                 {initials(admin.name)}
               </span>
               <div className="min-w-0">
-                <p className="truncate font-rajdhani text-sm font-semibold text-text">
+                <p className="truncate type-body-sm font-semibold text-text">
                   {admin.name}
                 </p>
-                <span className="mt-0.5 inline-flex items-center gap-1 border border-line-strong px-1.5 py-0.5 font-orbitron text-3xs uppercase tracking-[0.14em] text-subtle">
+                <span className="mt-0.5 inline-flex items-center gap-1 border border-line-strong px-1.5 py-0.5 type-overline uppercase tracking-[0.14em] text-subtle">
                   <Shield className="h-2.5 w-2.5" aria-hidden="true" />
                   {isSuper ? "Super admin" : "Admin"}
                 </span>
@@ -148,7 +148,7 @@ export default function AdminShell({
             <button
               type="button"
               onClick={requestLogout}
-              className="mt-1 flex w-full items-center gap-2.5 px-3 py-2 font-rajdhani text-sm text-faint transition-colors hover:bg-surface-2 hover:text-text"
+              className="mt-1 flex w-full items-center gap-2.5 px-3 py-2 type-body-sm text-faint transition-colors hover:bg-surface-2 hover:text-text"
             >
               <LogOut className="h-4 w-4" aria-hidden="true" />
               Log out
@@ -168,11 +168,11 @@ export default function AdminShell({
               <Menu className="h-4 w-4" aria-hidden="true" />
             </button>
             <Logo compact />
-            <span className="font-orbitron text-3xs uppercase tracking-[0.2em] text-faint">
+            <span className="type-overline uppercase tracking-[0.2em] text-faint">
               Admin
             </span>
           </div>
-          <span className="flex h-8 w-8 items-center justify-center border border-line-strong bg-surface-2 font-orbitron text-3xs text-text">
+          <span className="flex h-8 w-8 items-center justify-center border border-line-strong bg-surface-2 type-overline text-text">
             {initials(admin.name)}
           </span>
         </header>
@@ -197,14 +197,14 @@ export default function AdminShell({
             <NavLinks admin={admin} onNavigate={() => setMenuOpen(false)} />
             <div className="mt-auto border-t border-line p-3">
               <div className="flex items-center gap-2.5 px-2 py-2">
-                <span className="flex h-9 w-9 items-center justify-center border border-line-strong bg-surface-2 font-orbitron text-2xs text-text">
+                <span className="flex h-9 w-9 items-center justify-center border border-line-strong bg-surface-2 type-overline text-text">
                   {initials(admin.name)}
                 </span>
                 <div className="min-w-0">
-                  <p className="truncate font-rajdhani text-sm font-semibold text-text">
+                  <p className="truncate type-body-sm font-semibold text-text">
                     {admin.name}
                   </p>
-                  <p className="font-orbitron text-3xs uppercase tracking-[0.14em] text-faint">
+                  <p className="type-overline uppercase tracking-[0.14em] text-faint">
                     {isSuper ? "Super admin" : "Admin"}
                   </p>
                 </div>
@@ -212,7 +212,7 @@ export default function AdminShell({
               <button
                 type="button"
                 onClick={requestLogout}
-                className="mt-1 flex w-full items-center gap-2.5 px-3 py-2 font-rajdhani text-sm text-faint transition-colors hover:text-text"
+                className="mt-1 flex w-full items-center gap-2.5 px-3 py-2 type-body-sm text-faint transition-colors hover:text-text"
               >
                 <LogOut className="h-4 w-4" aria-hidden="true" />
                 Log out

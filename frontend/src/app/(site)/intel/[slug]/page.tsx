@@ -140,7 +140,7 @@ export default async function IntelDetailPage({
         <article className="mx-auto max-w-6xl px-5 sm:px-8">
           <Link
             href="/intel"
-            className="inline-flex items-center gap-2 font-orbitron text-2xs uppercase tracking-[0.2em] text-faint transition-colors hover:text-text"
+            className="inline-flex items-center gap-2 type-overline uppercase tracking-[0.2em] text-faint transition-colors hover:text-text"
           >
             <span aria-hidden="true">←</span> Back to Intel
           </Link>
@@ -154,16 +154,16 @@ export default async function IntelDetailPage({
               sizes="(min-width: 1280px) 1152px, 100vw"
               priority
             />
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-linear-to-t from-black to-transparent" />
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-linear-to-t from-bg to-transparent" />
           </div>
 
           <div className="mx-auto mt-8 max-w-[1000px]">
             <header className="max-w-[720px]">
               <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-                <span className="border border-line-strong bg-surface-2 px-2.5 py-1 font-orbitron text-3xs uppercase tracking-[0.2em] text-text">
+                <span className="border border-line-strong bg-surface-2 px-2.5 py-1 type-overline uppercase tracking-[0.2em] text-text">
                   {intel.tag}
                 </span>
-                <span className="font-rajdhani text-sm text-subtle">
+                <span className="type-body-sm text-subtle">
                   By {intel.author} ·{" "}
                   {publishedIso ? (
                     <time dateTime={publishedIso}>
@@ -176,11 +176,11 @@ export default async function IntelDetailPage({
                 </span>
               </div>
 
-              <h1 className="mt-4 text-balance font-orbitron text-3xl font-bold leading-tight text-text md:text-5xl">
+              <h1 className="type-h3 mt-4 text-balance font-bold leading-tight text-text md:text-5xl">
                 {title}
               </h1>
               {shouldShowStandfirst(intel.excerpt, intel.content) ? (
-                <p className="mt-4 font-rajdhani text-lg leading-relaxed text-muted md:text-xl">
+                <p className="mt-4 type-body leading-relaxed text-muted md:text-xl">
                   {intel.excerpt}
                 </p>
               ) : null}
@@ -194,7 +194,7 @@ export default async function IntelDetailPage({
 
                 {related.length > 0 ? (
                   <section className="mt-16 border-t border-line pt-8">
-                    <h2 className="font-orbitron text-xs uppercase tracking-[0.28em] text-faint">
+                    <h2 className="type-overline uppercase tracking-[0.28em] text-faint">
                       More Intel
                     </h2>
                     <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">

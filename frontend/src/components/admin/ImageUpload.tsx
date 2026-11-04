@@ -128,7 +128,7 @@ export default function ImageUpload({
               }}
               onMouseDown={(event) => event.preventDefault()}
               disabled={uploading}
-              className="inline-flex h-8 cursor-pointer items-center gap-2 border border-line-strong px-3 font-orbitron text-3xs uppercase tracking-[0.14em] text-muted transition-colors hover:border-line-strong/50 hover:text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              className="inline-flex h-8 cursor-pointer items-center gap-2 border border-line-strong px-3 type-overline uppercase tracking-[0.14em] text-muted transition-colors hover:border-line-strong/50 hover:text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
             >
               {uploading ? (
                 <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
@@ -144,23 +144,23 @@ export default function ImageUpload({
                   onChange("");
                   setUploadErrorState("");
                 }}
-                className="inline-flex h-8 items-center gap-1.5 border border-line px-2.5 font-orbitron text-3xs uppercase tracking-[0.14em] text-faint transition-colors hover:border-red-400/50 hover:text-red-300"
+                className="inline-flex h-8 items-center gap-1.5 border border-line px-2.5 type-overline uppercase tracking-[0.14em] text-faint transition-colors hover:border-red-400/50 hover:text-red-300"
               >
                 <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
                 Remove
               </button>
             ) : null}
           </div>
-          <p className="font-rajdhani text-xs leading-snug text-faint">
+          <p className="type-caption leading-snug text-faint">
             {uploading ? "Sending file to storage…" : hint}
           </p>
           {error ? (
-            <p role="alert" className="font-rajdhani text-xs text-red-300">
+            <p role="alert" className="type-caption text-red-300">
               {error}
             </p>
           ) : null}
           {uploadError ? (
-            <p role="alert" className="font-rajdhani text-xs text-red-300">
+            <p role="alert" className="type-caption text-red-300">
               {uploadError}
             </p>
           ) : null}

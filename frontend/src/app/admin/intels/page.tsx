@@ -269,11 +269,11 @@ export default function AdminIntelsPage() {
           <span className="min-w-0 flex-1">
             <span
               title={item.title}
-              className="line-clamp-2 font-rajdhani text-sm font-semibold leading-snug text-text"
+              className="line-clamp-2 type-body-sm font-semibold leading-snug text-text"
             >
               {item.title}
             </span>
-            <span className="mt-0.5 block truncate font-rajdhani text-xs text-faint">
+            <span className="mt-0.5 block truncate type-caption text-faint">
               /{item.slug}
             </span>
           </span>
@@ -286,7 +286,7 @@ export default function AdminIntelsPage() {
       className: "w-36",
       render: (item) => (
         <span className="block truncate">
-          <span className="inline-flex max-w-full border border-line px-1.5 py-0.5 font-orbitron text-3xs uppercase tracking-[0.1em] text-subtle">
+          <span className="inline-flex max-w-full border border-line px-1.5 py-0.5 type-overline uppercase tracking-[0.1em] text-subtle">
             {item.tag}
           </span>
         </span>
@@ -299,7 +299,7 @@ export default function AdminIntelsPage() {
       render: (item) => (
         <span
           title={item.author}
-          className="block truncate font-rajdhani text-sm text-subtle"
+          className="block truncate type-body-sm text-subtle"
         >
           {item.author}
         </span>
@@ -311,7 +311,7 @@ export default function AdminIntelsPage() {
       className: "w-28 whitespace-nowrap",
       render: (item) => (
         <span
-          className="whitespace-nowrap font-rajdhani text-sm text-subtle"
+          className="whitespace-nowrap type-body-sm text-subtle"
           title={item.date}
         >
           {formatShortDate(item.date)}
@@ -324,9 +324,9 @@ export default function AdminIntelsPage() {
       className: "hidden w-28 xl:table-cell",
       render: (item) =>
         item.featuredSlot === null ? (
-          <span className="font-rajdhani text-xs text-faint">Not featured</span>
+          <span className="type-caption text-faint">Not featured</span>
         ) : (
-          <span className="inline-flex items-center gap-1 whitespace-nowrap border border-line-strong bg-surface-2 px-1.5 py-0.5 font-orbitron text-3xs uppercase tracking-[0.12em] text-text">
+          <span className="inline-flex items-center gap-1 whitespace-nowrap border border-line-strong bg-surface-2 px-1.5 py-0.5 type-overline uppercase tracking-[0.12em] text-text">
             Slot {item.featuredSlot + 1}
           </span>
         ),
@@ -438,10 +438,10 @@ export default function AdminIntelsPage() {
           {editing ? (
             <div>
               <p className="dc-label">Slug</p>
-              <p className="mt-1.5 break-all font-rajdhani text-base text-muted">
+              <p className="mt-1.5 break-all type-body text-muted">
                 /intel/<span className="text-text">{editing.slug}</span>
               </p>
-              <p className="mt-1 font-rajdhani text-xs leading-relaxed text-faint">
+              <p className="mt-1 type-caption leading-relaxed text-faint">
                 The public URL cannot change after creation.
               </p>
             </div>
@@ -489,9 +489,9 @@ export default function AdminIntelsPage() {
                     role="tab"
                     aria-selected={contentTab === tab}
                     onClick={() => setContentTab(tab)}
-                    className={`h-7 px-3 font-orbitron text-3xs uppercase tracking-[0.16em] transition-colors ${
+                    className={`h-7 px-3 type-overline uppercase tracking-[0.16em] transition-colors ${
                       contentTab === tab
-                        ? "bg-white text-black"
+                        ? "bg-white text-bg"
                         : "text-subtle hover:text-text"
                     }`}
                   >
@@ -522,7 +522,7 @@ export default function AdminIntelsPage() {
                 {form.content.trim() ? (
                   <IntelMarkdown content={form.content} />
                 ) : (
-                  <p className="font-rajdhani text-sm text-faint">
+                  <p className="type-body-sm text-faint">
                     Nothing to preview yet. Write some markdown first.
                   </p>
                 )}
@@ -531,7 +531,7 @@ export default function AdminIntelsPage() {
 
             <p
               id="intel-content-hint"
-              className="mt-1.5 font-rajdhani text-xs leading-relaxed text-faint"
+              className="mt-1.5 type-caption leading-relaxed text-faint"
             >
               Markdown: <code>## Heading</code>, <code>**bold**</code>,{" "}
               <code>- list</code>, <code>[link](https://…)</code>,{" "}
@@ -543,7 +543,7 @@ export default function AdminIntelsPage() {
               <p
                 id="intel-content-error"
                 role="alert"
-                className="mt-1.5 font-rajdhani text-sm text-red-300"
+                className="mt-1.5 type-body-sm text-red-300"
               >
                 {fieldErrors.content}
               </p>

@@ -28,9 +28,9 @@ export default function StepIndicator({
                 }`}
               />
               <span
-                className={`mx-2 inline-flex h-7 w-7 shrink-0 items-center justify-center border font-orbitron text-3xs transition-colors ${
+                className={`mx-2 inline-flex h-7 w-7 shrink-0 items-center justify-center border type-overline transition-colors ${
                   complete
-                    ? "border-white bg-white text-black"
+                    ? "border-white bg-white text-bg"
                     : active
                       ? "border-white bg-bg text-text"
                       : "border-line-strong bg-bg text-faint"
@@ -54,7 +54,7 @@ export default function StepIndicator({
               />
             </div>
             <span
-              className={`mt-2 max-w-full truncate font-orbitron text-3xs uppercase tracking-[0.14em] sm:text-3xs ${
+              className={`mt-2 max-w-full truncate type-overline uppercase tracking-[0.14em] sm:text-3xs ${
                 active ? "text-text" : complete ? "text-muted" : "text-faint"
               }`}
             >

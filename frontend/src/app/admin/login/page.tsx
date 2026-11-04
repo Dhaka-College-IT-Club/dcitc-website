@@ -62,7 +62,7 @@ export default function AdminLoginPage() {
       >
         <div className="mb-5 flex items-start gap-2.5 border border-line bg-white/[0.02] px-3 py-2.5">
           <Lock className="mt-0.5 h-3.5 w-3.5 shrink-0 text-faint" aria-hidden="true" />
-          <p className="font-rajdhani text-xs leading-snug text-faint">
+          <p className="type-caption leading-snug text-faint">
             This area is not linked publicly. Every write action is attributed
             to your operator account.
           </p>
@@ -98,7 +98,7 @@ export default function AdminLoginPage() {
           </Button>
         </form>
 
-        <p className="mt-6 border-t border-line pt-5 text-center font-rajdhani text-sm text-faint">
+        <p className="mt-6 border-t border-line pt-5 text-center type-body-sm text-faint">
           <Link
             href="/"
             className="underline-offset-4 transition-colors hover:text-muted hover:underline"

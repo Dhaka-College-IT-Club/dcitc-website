@@ -53,18 +53,18 @@ export default function ConfirmDialog({
       className="dialog-surface m-auto w-[min(430px,calc(100vw-2rem))] border border-line-strong bg-surface p-0 text-muted shadow-elev-2"
     >
       <div className="p-5 sm:p-6">
-        <p className="font-orbitron text-3xs uppercase tracking-[0.28em] text-faint">
+        <p className="type-overline uppercase tracking-[0.28em] text-faint">
           {destructive ? "Confirm removal" : "Please confirm"}
         </p>
         <h2
           id={titleId}
-          className="mt-2 font-orbitron text-lg font-bold text-text"
+          className="mt-2 type-h3 font-bold text-text"
         >
           {title}
         </h2>
         <p
           id={descriptionId}
-          className="mt-2 font-rajdhani text-base leading-snug text-subtle"
+          className="mt-2 type-body leading-snug text-subtle"
         >
           {description}
         </p>

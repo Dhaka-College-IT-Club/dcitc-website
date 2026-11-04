@@ -194,7 +194,7 @@ export default function ForgotPasswordPage() {
           <Button type="submit" fullWidth loading={pending}>
             {pending ? "Sending code" : "Send reset code"}
           </Button>
-          <p className="text-center font-rajdhani text-sm text-faint">
+          <p className="text-center type-body-sm text-faint">
             Remembered it?{" "}
             <Link
               href="/login"
@@ -253,7 +253,7 @@ export default function ForgotPasswordPage() {
               type="button"
               onClick={resend}
               disabled={resendIn > 0 || pending}
-              className="font-rajdhani text-sm text-muted underline-offset-4 transition-colors hover:text-text hover:underline disabled:cursor-not-allowed disabled:text-faint disabled:no-underline"
+              className="type-body-sm text-muted underline-offset-4 transition-colors hover:text-text hover:underline disabled:cursor-not-allowed disabled:text-faint disabled:no-underline"
             >
               {resendIn > 0 ? `Resend code in ${resendIn}s` : "Resend code"}
             </button>
@@ -266,7 +266,7 @@ export default function ForgotPasswordPage() {
                 setError("");
                 setFieldErrors({});
               }}
-              className="font-rajdhani text-sm text-faint underline-offset-4 transition-colors hover:text-text hover:underline"
+              className="type-body-sm text-faint underline-offset-4 transition-colors hover:text-text hover:underline"
             >
               Use a different email
             </button>
