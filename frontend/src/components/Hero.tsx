@@ -34,7 +34,7 @@ export default function Hero() {
               Today
             </p>
 
-            <h1 className="type-body mt-5 max-w-md text-subtle md:mt-6">
+            <h1 className="type-body mt-5 max-w-[26rem] text-pretty text-subtle md:mt-6">
               <span className="sr-only">{CLUB.NAME}</span>
               <span aria-hidden="true">{CLUB.NAME}</span>
             </h1>
