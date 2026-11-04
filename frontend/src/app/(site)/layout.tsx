@@ -12,7 +12,7 @@ const SITE_JSON_LD = {
       "@id": `${SITE_URL}/#website`,
       url: `${SITE_URL}/`,
       name: "Dhaka College IT Club",
-      alternateName: ["DCITC"],
+      alternateName: ["DCITC", "DC ITC", "Dhaka College Information Technology Club"],
       description: SITE_DESCRIPTION,
       inLanguage: "en",
       publisher: { "@id": `${SITE_URL}/#organization` },
