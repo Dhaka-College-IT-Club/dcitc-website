@@ -23,7 +23,7 @@ function LeaderImage({ member }: { member: Leader }) {
         <span
           role="img"
           aria-label={member.name}
-          className="font-orbitron text-xl font-bold tracking-[0.2em] text-slate-400 md:text-2xl"
+          className="font-orbitron text-xl font-bold tracking-[0.2em] text-subtle md:text-2xl"
         >
           {initials(member.name)}
         </span>
@@ -101,7 +101,7 @@ const Leadership: React.FC<{ members?: Leader[] }> = ({ members = [] }) => {
       >
         <div className={`relative ${sizeClasses[size]} mb-4 overflow-hidden`}>
           <div
-            className="absolute inset-0 border border-white/10 group-hover:border-white/40 transition-all duration-500 bg-linear-to-br from-white/5 to-transparent"
+            className="absolute inset-0 border border-line group-hover:border-line-strong/40 transition-all duration-500 bg-linear-to-br from-white/5 to-transparent"
             style={{
               clipPath:
                 "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)",
@@ -122,7 +122,7 @@ const Leadership: React.FC<{ members?: Leader[] }> = ({ members = [] }) => {
                 <span
                   role="img"
                   aria-label={member.name}
-                  className="font-orbitron text-xl font-bold tracking-[0.2em] text-slate-400 md:text-2xl"
+                  className="font-orbitron text-xl font-bold tracking-[0.2em] text-subtle md:text-2xl"
                 >
                   {initials(member.name)}
                 </span>
@@ -131,15 +131,15 @@ const Leadership: React.FC<{ members?: Leader[] }> = ({ members = [] }) => {
             <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
           </div>
 
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-2 h-2 border-t border-l border-white/30 group-hover:border-white/60 transition-colors"></div>
-          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-2 h-2 border-b border-r border-white/30 group-hover:border-white/60 transition-colors"></div>
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-2 h-2 border-t border-l border-line-strong group-hover:border-line-strong/60 transition-colors"></div>
+          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-2 h-2 border-b border-r border-line-strong group-hover:border-line-strong/60 transition-colors"></div>
         </div>
 
         <div className="text-center flex flex-col items-center flex-1 w-full">
-          <h3 className="font-orbitron text-white text-sm md:text-base font-bold tracking-wider uppercase mb-1 min-h-[2.5rem] md:min-h-[2.75rem] flex items-end justify-center">
+          <h3 className="font-orbitron text-text text-sm md:text-base font-bold tracking-wider uppercase mb-1 min-h-[2.5rem] md:min-h-[2.75rem] flex items-end justify-center">
             {member.name}
           </h3>
-          <p className="font-rajdhani text-slate-400 text-sm md:text-base tracking-wide min-h-[1.5rem] flex items-start justify-center">
+          <p className="font-rajdhani text-subtle text-sm md:text-base tracking-wide min-h-[1.5rem] flex items-start justify-center">
             {member.role}
           </p>
           {(member.facebook || member.linkedin || member.github || member.portfolio) && (
@@ -149,7 +149,7 @@ const Leadership: React.FC<{ members?: Leader[] }> = ({ members = [] }) => {
                   href={member.facebook}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center w-9 h-9 rounded-full border border-white/15 bg-white/[0.04] text-slate-300 hover:text-white hover:border-white/40 hover:bg-white/[0.1] transition-all"
+                  className="inline-flex items-center justify-center w-9 h-9 rounded-full border border-line-strong bg-surface-2 text-muted hover:text-text hover:border-line-strong/40 hover:bg-surface-2 transition-all"
                   aria-label={`${member.name} Facebook`}
                 >
                   <Facebook className="w-5 h-5" />
@@ -160,7 +160,7 @@ const Leadership: React.FC<{ members?: Leader[] }> = ({ members = [] }) => {
                   href={member.linkedin}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center w-9 h-9 rounded-full border border-white/15 bg-white/[0.04] text-slate-300 hover:text-white hover:border-white/40 hover:bg-white/[0.1] transition-all"
+                  className="inline-flex items-center justify-center w-9 h-9 rounded-full border border-line-strong bg-surface-2 text-muted hover:text-text hover:border-line-strong/40 hover:bg-surface-2 transition-all"
                   aria-label={`${member.name} LinkedIn`}
                 >
                   <Linkedin className="w-5 h-5" />
@@ -171,7 +171,7 @@ const Leadership: React.FC<{ members?: Leader[] }> = ({ members = [] }) => {
                   href={member.github}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center w-9 h-9 rounded-full border border-white/15 bg-white/[0.04] text-slate-300 hover:text-white hover:border-white/40 hover:bg-white/[0.1] transition-all"
+                  className="inline-flex items-center justify-center w-9 h-9 rounded-full border border-line-strong bg-surface-2 text-muted hover:text-text hover:border-line-strong/40 hover:bg-surface-2 transition-all"
                   aria-label={`${member.name} GitHub`}
                 >
                   <Github className="w-5 h-5" />
@@ -182,7 +182,7 @@ const Leadership: React.FC<{ members?: Leader[] }> = ({ members = [] }) => {
                   href={member.portfolio}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center w-9 h-9 rounded-full border border-white/15 bg-white/[0.04] text-slate-300 hover:text-white hover:border-white/40 hover:bg-white/[0.1] transition-all"
+                  className="inline-flex items-center justify-center w-9 h-9 rounded-full border border-line-strong bg-surface-2 text-muted hover:text-text hover:border-line-strong/40 hover:bg-surface-2 transition-all"
                   aria-label={`${member.name} Portfolio`}
                 >
                   <Globe className="w-5 h-5" />
@@ -202,7 +202,7 @@ const Leadership: React.FC<{ members?: Leader[] }> = ({ members = [] }) => {
   return (
     <section
       id="leadership"
-      className="py-24 bg-black relative overflow-hidden"
+      className="py-24 bg-bg relative overflow-hidden"
     >
       <div className="absolute inset-0 opacity-5">
         <div
@@ -219,15 +219,15 @@ const Leadership: React.FC<{ members?: Leader[] }> = ({ members = [] }) => {
         <SectionTitle title="Leadership" subtitle={LEADERSHIP_SUBTITLE} />
 
         <div className="flex justify-center mb-12">
-          <div className="inline-flex items-center gap-1 p-1 rounded-full border border-white/10 bg-white/[0.03] backdrop-blur-sm">
+          <div className="inline-flex items-center gap-1 p-1 rounded-full border border-line bg-surface backdrop-blur-sm">
             {LEADERSHIP_BATCHES.map((batch) => (
               <button
                 key={batch}
                 onClick={() => setActiveBatch(batch)}
                 className={`px-5 py-2 font-orbitron text-xs tracking-widest uppercase rounded-full transition-all duration-300 ${
                   activeBatch === batch
-                    ? "bg-white text-black shadow-[0_0_20px_rgba(255,255,255,0.25)]"
-                    : "text-slate-400 hover:text-white"
+                    ? "bg-white text-black shadow-glow"
+                    : "text-subtle hover:text-text"
                 }`}
               >
                 {batch}
@@ -238,7 +238,7 @@ const Leadership: React.FC<{ members?: Leader[] }> = ({ members = [] }) => {
 
         {batchMembers.length === 0 ? (
           <div className="text-center py-20">
-            <p className="text-slate-500 font-rajdhani text-xl">
+            <p className="text-faint font-rajdhani text-xl">
               Panel coming soon
             </p>
           </div>
@@ -252,7 +252,7 @@ const Leadership: React.FC<{ members?: Leader[] }> = ({ members = [] }) => {
             className="flex justify-center items-center mb-8 text-center"
           >
             <div className="h-px w-8 sm:w-16 bg-linear-to-r from-transparent to-white/30"></div>
-            <span className="px-4 font-orbitron text-[10px] sm:text-xs tracking-[0.2em] sm:tracking-[0.3em] text-slate-500 uppercase">
+            <span className="px-4 font-orbitron text-3xs sm:text-xs tracking-[0.2em] sm:tracking-[0.3em] text-faint uppercase">
               {LEADERSHIP_EXEC_LABEL}
             </span>
             <div className="h-px w-8 sm:w-16 bg-linear-to-l from-transparent to-white/30"></div>
@@ -278,7 +278,7 @@ const Leadership: React.FC<{ members?: Leader[] }> = ({ members = [] }) => {
             className="flex justify-center items-center mb-8 text-center"
           >
             <div className="h-px w-8 sm:w-16 bg-linear-to-r from-transparent to-white/20"></div>
-            <span className="px-4 font-orbitron text-[10px] sm:text-xs tracking-[0.2em] sm:tracking-[0.3em] text-slate-600 uppercase">
+            <span className="px-4 font-orbitron text-3xs sm:text-xs tracking-[0.2em] sm:tracking-[0.3em] text-faint uppercase">
               {LEADERSHIP_CHIEF_LABEL}
             </span>
             <div className="h-px w-8 sm:w-16 bg-linear-to-l from-transparent to-white/20"></div>
@@ -305,7 +305,7 @@ const Leadership: React.FC<{ members?: Leader[] }> = ({ members = [] }) => {
               className="flex justify-center items-center mb-8 text-center"
             >
               <div className="h-px w-8 sm:w-16 bg-linear-to-r from-transparent to-white/10"></div>
-              <span className="px-4 font-orbitron text-[10px] sm:text-xs tracking-[0.2em] sm:tracking-[0.3em] text-slate-700 uppercase">
+              <span className="px-4 font-orbitron text-3xs sm:text-xs tracking-[0.2em] sm:tracking-[0.3em] text-faint uppercase">
                 {LEADERSHIP_JOINT_LABEL}
               </span>
               <div className="h-px w-8 sm:w-16 bg-linear-to-l from-transparent to-white/10"></div>

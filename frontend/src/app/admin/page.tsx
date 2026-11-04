@@ -109,33 +109,33 @@ export default function AdminHome() {
             <Link
               key={card.href}
               href={card.href}
-              className="group relative flex flex-col justify-between border border-white/10 bg-white/[0.02] p-5 transition-all hover:border-white/35 hover:bg-white/[0.05] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              className="group relative flex flex-col justify-between border border-line bg-white/[0.02] p-5 transition-all hover:border-line-strong/35 hover:bg-surface-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
             >
               <div className="flex items-start justify-between">
-                <span className="flex h-9 w-9 items-center justify-center border border-white/15 text-slate-400 transition-colors group-hover:border-white/40 group-hover:text-white">
+                <span className="flex h-9 w-9 items-center justify-center border border-line-strong text-subtle transition-colors group-hover:border-line-strong/40 group-hover:text-text">
                   <Icon className="h-4 w-4" aria-hidden="true" />
                 </span>
                 <ArrowUpRight
-                  className="h-4 w-4 text-slate-700 transition-all group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-white"
+                  className="h-4 w-4 text-faint transition-all group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-text"
                   aria-hidden="true"
                 />
               </div>
               <div className="mt-8">
-                <p className="font-orbitron text-3xl font-bold text-white">
+                <p className="font-orbitron text-3xl font-bold text-text">
                   {card.value.status === "loading" ? (
-                    <span className="inline-block h-8 w-12 animate-pulse bg-white/10 align-middle" />
+                    <span className="inline-block h-8 w-12 animate-pulse bg-surface-2 align-middle" />
                   ) : card.value.status === "error" ? (
-                    <span className="font-rajdhani text-base font-semibold uppercase tracking-[0.12em] text-slate-500">
+                    <span className="font-rajdhani text-base font-semibold uppercase tracking-[0.12em] text-faint">
                       Unavailable
                     </span>
                   ) : (
                     card.value.value
                   )}
                 </p>
-                <p className="mt-1 font-orbitron text-[10px] uppercase tracking-[0.18em] text-slate-400">
+                <p className="mt-1 font-orbitron text-3xs uppercase tracking-[0.18em] text-subtle">
                   {card.label}
                 </p>
-                <p className="mt-1 font-rajdhani text-xs leading-snug text-slate-500">
+                <p className="mt-1 font-rajdhani text-xs leading-snug text-faint">
                   {card.note}
                 </p>
               </div>
@@ -146,7 +146,7 @@ export default function AdminHome() {
 
       {hasCountError ? (
         <div className="flex flex-wrap items-center gap-3">
-          <p className="font-rajdhani text-sm text-slate-500">
+          <p className="font-rajdhani text-sm text-faint">
             Some counts could not be loaded.
           </p>
           <Button
@@ -168,8 +168,8 @@ export default function AdminHome() {
       ) : null}
 
       <div className="grid gap-4 lg:grid-cols-5">
-        <section className="border border-white/10 bg-white/[0.02] p-5 sm:p-6 lg:col-span-3">
-          <p className="font-orbitron text-[10px] uppercase tracking-[0.24em] text-slate-500">
+        <section className="border border-line bg-white/[0.02] p-5 sm:p-6 lg:col-span-3">
+          <p className="font-orbitron text-3xs uppercase tracking-[0.24em] text-faint">
             Quick actions
           </p>
           <div className="mt-4 grid gap-2 sm:grid-cols-2">
@@ -188,25 +188,25 @@ export default function AdminHome() {
           </div>
         </section>
 
-        <section className="border border-white/10 bg-white/[0.02] p-5 sm:p-6 lg:col-span-2">
-          <p className="font-orbitron text-[10px] uppercase tracking-[0.24em] text-slate-500">
+        <section className="border border-line bg-white/[0.02] p-5 sm:p-6 lg:col-span-2">
+          <p className="font-orbitron text-3xs uppercase tracking-[0.24em] text-faint">
             Session
           </p>
           <div className="mt-4 flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center border border-white/15 bg-white/[0.05] font-orbitron text-xs text-white">
+            <span className="flex h-10 w-10 items-center justify-center border border-line-strong bg-surface-2 font-orbitron text-xs text-text">
               {(admin?.name ?? "AD").slice(0, 2).toUpperCase()}
             </span>
             <div className="min-w-0">
-              <p className="truncate font-rajdhani text-base font-semibold text-white">
+              <p className="truncate font-rajdhani text-base font-semibold text-text">
                 {admin?.name ?? "Operator"}
               </p>
-              <span className="mt-0.5 inline-flex items-center gap-1 border border-white/15 px-1.5 py-0.5 font-orbitron text-[8px] uppercase tracking-[0.14em] text-slate-400">
+              <span className="mt-0.5 inline-flex items-center gap-1 border border-line-strong px-1.5 py-0.5 font-orbitron text-3xs uppercase tracking-[0.14em] text-subtle">
                 <Shield className="h-2.5 w-2.5" aria-hidden="true" />
                 {admin?.role === "super_admin" ? "Super admin" : "Admin"}
               </span>
             </div>
           </div>
-          <p className="mt-4 border-t border-white/5 pt-4 font-rajdhani text-xs leading-snug text-slate-500">
+          <p className="mt-4 border-t border-line pt-4 font-rajdhani text-xs leading-snug text-faint">
             {admin?.role === "super_admin"
               ? "You can also manage operator accounts and read the audit log."
               : "Operator accounts and audit history are managed by a super admin."}

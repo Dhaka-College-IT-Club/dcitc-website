@@ -87,10 +87,10 @@ export default function AdminAuditLogPage() {
       mobilePrimary: true,
       render: (entry) => (
         <span className="flex flex-col">
-          <span className="font-rajdhani text-sm font-semibold text-white">
+          <span className="font-rajdhani text-sm font-semibold text-text">
             {humanAction(entry.action)}
           </span>
-          <span className="mt-0.5 font-orbitron text-[9px] uppercase tracking-[0.12em] text-slate-500">
+          <span className="mt-0.5 font-orbitron text-3xs uppercase tracking-[0.12em] text-faint">
             {entry.action}
           </span>
         </span>
@@ -100,7 +100,7 @@ export default function AdminAuditLogPage() {
       key: "actor",
       header: "Actor",
       render: (entry) => (
-        <span className="font-rajdhani text-sm text-slate-300">
+        <span className="font-rajdhani text-sm text-muted">
           {entry.actorAdminId === null ? "System" : `Admin ${entry.actorAdminId.slice(0, 8)}`}
         </span>
       ),
@@ -110,19 +110,19 @@ export default function AdminAuditLogPage() {
       header: "Target",
       render: (entry) =>
         entry.targetType ? (
-          <span className="font-rajdhani text-sm text-slate-400">
+          <span className="font-rajdhani text-sm text-subtle">
             {entry.targetType}
             {entry.targetId !== null ? ` #${entry.targetId}` : ""}
           </span>
         ) : (
-          <span className="font-rajdhani text-sm text-slate-500">—</span>
+          <span className="font-rajdhani text-sm text-faint">—</span>
         ),
     },
     {
       key: "time",
       header: "When",
       render: (entry) => (
-        <span className="whitespace-nowrap font-rajdhani text-sm text-slate-400">
+        <span className="whitespace-nowrap font-rajdhani text-sm text-subtle">
           {formatStamp(entry.createdAt)}
         </span>
       ),
@@ -139,12 +139,12 @@ export default function AdminAuditLogPage() {
 
       {error ? <Alert variant="error">{error}</Alert> : null}
 
-      <div className="flex flex-wrap items-center justify-between gap-2 border border-white/10 bg-white/[0.02] px-4 py-2.5">
-        <p className="font-rajdhani text-sm text-slate-400">
-          <span className="font-orbitron text-xs text-white">{items.length}</span>{" "}
+      <div className="flex flex-wrap items-center justify-between gap-2 border border-line bg-white/[0.02] px-4 py-2.5">
+        <p className="font-rajdhani text-sm text-subtle">
+          <span className="font-orbitron text-xs text-text">{items.length}</span>{" "}
           recorded {items.length === 1 ? "entry" : "entries"}
         </p>
-        <p className="font-orbitron text-[9px] uppercase tracking-[0.16em] text-slate-500">
+        <p className="font-orbitron text-3xs uppercase tracking-[0.16em] text-faint">
           Read only
         </p>
       </div>

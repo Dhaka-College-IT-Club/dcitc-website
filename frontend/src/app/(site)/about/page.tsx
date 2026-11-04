@@ -24,7 +24,7 @@ export const metadata: Metadata = {
 
 export default function AboutPage() {
   return (
-    <div className="min-h-screen bg-black pb-24 pt-32 text-slate-200">
+    <div className="min-h-screen bg-bg pb-24 pt-32 text-muted">
       <div className="mx-auto max-w-[768px] px-6">
         <Breadcrumbs
           items={[
@@ -34,21 +34,21 @@ export default function AboutPage() {
         />
 
         <header className="mb-12">
-          <p className="mb-3 font-orbitron text-xs uppercase tracking-[0.3em] text-slate-500">
+          <p className="mb-3 font-orbitron text-xs uppercase tracking-[0.3em] text-faint">
             About the club
           </p>
-          <h1 className="mb-4 font-orbitron text-4xl font-bold leading-tight text-white md:text-5xl">
+          <h1 className="mb-4 font-orbitron text-4xl font-bold leading-tight text-text md:text-5xl">
             About Dhaka College IT Club (DCITC)
           </h1>
-          <p className="font-rajdhani text-lg leading-relaxed text-slate-400">
+          <p className="font-rajdhani text-lg leading-relaxed text-subtle">
             A student technology club at Dhaka College in Dhaka, Bangladesh,
             building practical skills across six departments.
           </p>
         </header>
 
-        <div className="space-y-10 font-rajdhani text-lg leading-relaxed text-slate-300">
+        <div className="space-y-10 font-rajdhani text-lg leading-relaxed text-muted">
           <section>
-            <h2 className="mb-3 font-orbitron text-xl font-bold text-white">
+            <h2 className="mb-3 font-orbitron text-xl font-bold text-text">
               Who we are
             </h2>
             <p>
@@ -63,7 +63,7 @@ export default function AboutPage() {
           </section>
 
           <section>
-            <h2 className="mb-3 font-orbitron text-xl font-bold text-white">
+            <h2 className="mb-3 font-orbitron text-xl font-bold text-text">
               Who it is for
             </h2>
             <p>
@@ -75,7 +75,7 @@ export default function AboutPage() {
           </section>
 
           <section>
-            <h2 className="mb-3 font-orbitron text-xl font-bold text-white">
+            <h2 className="mb-3 font-orbitron text-xl font-bold text-text">
               What members do
             </h2>
             <p>
@@ -87,7 +87,7 @@ export default function AboutPage() {
             <p className="mt-4">
               <Link
                 href="/departments"
-                className="text-white underline-offset-4 hover:underline"
+                className="text-text underline-offset-4 hover:underline"
               >
                 Explore the departments
               </Link>{" "}
@@ -96,20 +96,20 @@ export default function AboutPage() {
           </section>
 
           <section>
-            <h2 className="mb-3 font-orbitron text-xl font-bold text-white">
+            <h2 className="mb-3 font-orbitron text-xl font-bold text-text">
               Get involved
             </h2>
             <p>
               <Link
                 href="/signup"
-                className="text-white underline-offset-4 hover:underline"
+                className="text-text underline-offset-4 hover:underline"
               >
                 Join DCITC
               </Link>{" "}
               to create an account, or{" "}
               <Link
                 href="/leadership"
-                className="text-white underline-offset-4 hover:underline"
+                className="text-text underline-offset-4 hover:underline"
               >
                 meet the leadership
               </Link>{" "}
@@ -119,7 +119,7 @@ export default function AboutPage() {
               Questions about the club go to{" "}
               <a
                 href={`mailto:${LEGAL.CONTACT_EMAIL}`}
-                className="text-white underline-offset-4 hover:underline"
+                className="text-text underline-offset-4 hover:underline"
               >
                 {LEGAL.CONTACT_EMAIL}
               </a>

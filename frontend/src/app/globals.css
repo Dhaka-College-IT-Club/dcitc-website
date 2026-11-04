@@ -45,6 +45,12 @@
   --color-slate-900: #0e141b;
   --color-slate-950: #070b10;
 
+  /* --- micro type steps used by dense labels ---------------------------- */
+  --text-2xs: 0.6875rem;
+  --text-2xs--line-height: 1.45;
+  --text-3xs: 0.625rem;
+  --text-3xs--line-height: 1.4;
+
   /* --- elevation -------------------------------------------------------- */
   --shadow-elev-1: 0 8px 24px -12px rgba(0, 0, 0, 0.9);
   --shadow-elev-2: 0 24px 60px -20px rgba(0, 0, 0, 0.95);

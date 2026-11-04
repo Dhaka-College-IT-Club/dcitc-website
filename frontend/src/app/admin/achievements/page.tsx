@@ -238,7 +238,7 @@ export default function AdminAchievementsPage() {
       mobilePrimary: true,
       render: (item) => (
         <div className="flex min-w-0 items-center gap-3">
-          <span className="relative h-10 w-14 shrink-0 overflow-hidden border border-white/10 bg-white/[0.04]">
+          <span className="relative h-10 w-14 shrink-0 overflow-hidden border border-line bg-surface-2">
             {item.image ? (
               <IntelImage
                 src={item.image}
@@ -251,7 +251,7 @@ export default function AdminAchievementsPage() {
           </span>
           <span
             title={item.title}
-            className="line-clamp-2 min-w-0 flex-1 font-rajdhani text-sm font-semibold leading-snug text-white"
+            className="line-clamp-2 min-w-0 flex-1 font-rajdhani text-sm font-semibold leading-snug text-text"
           >
             {item.title}
           </span>
@@ -263,7 +263,7 @@ export default function AdminAchievementsPage() {
       header: "Year",
       className: "w-20 whitespace-nowrap",
       render: (item) => (
-        <span className="font-orbitron text-[10px] tracking-[0.1em] text-slate-400">
+        <span className="font-orbitron text-3xs tracking-[0.1em] text-subtle">
           {item.year}
         </span>
       ),
@@ -274,9 +274,9 @@ export default function AdminAchievementsPage() {
       className: "hidden w-28 xl:table-cell",
       render: (item) =>
         item.featuredSlot === null ? (
-          <span className="font-rajdhani text-xs text-slate-500">Not featured</span>
+          <span className="font-rajdhani text-xs text-faint">Not featured</span>
         ) : (
-          <span className="inline-flex items-center gap-1 whitespace-nowrap border border-white/30 bg-white/[0.06] px-1.5 py-0.5 font-orbitron text-[9px] uppercase tracking-[0.12em] text-white">
+          <span className="inline-flex items-center gap-1 whitespace-nowrap border border-line-strong bg-surface-2 px-1.5 py-0.5 font-orbitron text-3xs uppercase tracking-[0.12em] text-text">
             Slot {item.featuredSlot + 1}
           </span>
         ),
@@ -299,12 +299,12 @@ export default function AdminAchievementsPage() {
 
       {error ? <Alert variant="error">{error}</Alert> : null}
 
-      <div className="flex items-center justify-between gap-4 border border-white/10 bg-white/[0.03] p-4">
+      <div className="flex items-center justify-between gap-4 border border-line bg-surface p-4">
         <div className="min-w-0">
-          <p className="font-orbitron text-[10px] uppercase tracking-[0.2em] text-slate-500">
+          <p className="font-orbitron text-3xs uppercase tracking-[0.2em] text-faint">
             Landing page section
           </p>
-          <p className="mt-1 font-rajdhani text-sm leading-snug text-slate-300">
+          <p className="mt-1 font-rajdhani text-sm leading-snug text-muted">
             {visible
               ? "The Achievements section is visible on the public landing page."
               : "The Achievements section is hidden from the public landing page."}
@@ -320,7 +320,7 @@ export default function AdminAchievementsPage() {
           className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full border transition-colors disabled:opacity-50 ${
             visible
               ? "border-orange-400/60 bg-orange-600"
-              : "border-white/20 bg-white/[0.08]"
+              : "border-line-strong bg-surface-2"
           }`}
         >
           <span
@@ -441,7 +441,7 @@ export default function AdminAchievementsPage() {
             required
           />
 
-          <div className="border-t border-white/10 pt-5">
+          <div className="border-t border-line pt-5">
             <ImageUpload
               label="Main image"
               value={form.image}
@@ -457,8 +457,8 @@ export default function AdminAchievementsPage() {
             />
           </div>
 
-          <div className="border-t border-white/10 pt-5">
-            <p className="font-orbitron text-[10px] uppercase tracking-[0.2em] text-slate-500">
+          <div className="border-t border-line pt-5">
+            <p className="font-orbitron text-3xs uppercase tracking-[0.2em] text-faint">
               Gallery
             </p>
             <div className="mt-3 grid gap-4 sm:grid-cols-2">
@@ -479,7 +479,7 @@ export default function AdminAchievementsPage() {
             </div>
           </div>
 
-          <div className="flex flex-col-reverse gap-2 border-t border-white/10 pt-5 sm:flex-row sm:justify-end">
+          <div className="flex flex-col-reverse gap-2 border-t border-line pt-5 sm:flex-row sm:justify-end">
             <Button
               type="button"
               variant="secondary"

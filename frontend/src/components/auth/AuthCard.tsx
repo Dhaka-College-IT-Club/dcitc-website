@@ -11,22 +11,22 @@ export default function AuthCard({
 }) {
   return (
     <div className="enter-rise w-full max-w-[440px]">
-      <div className="clip-notch bg-white/15 p-px shadow-[0_24px_80px_-24px_rgba(0,0,0,0.9)]">
-        <div className="clip-notch relative bg-[#050505]/95 px-5 py-7 backdrop-blur-md sm:px-8 sm:py-9">
+      <div className=" bg-white/15 p-px shadow-elev-2">
+        <div className=" relative bg-surface/95 px-5 py-7 backdrop-blur-md sm:px-8 sm:py-9">
           <span
             aria-hidden="true"
             className="absolute left-0 top-9 h-10 w-px bg-white/40"
           />
           {eyebrow ? (
-            <p className="mb-3 font-orbitron text-[10px] uppercase tracking-[0.3em] text-slate-500">
+            <p className="mb-3 font-orbitron text-3xs uppercase tracking-[0.3em] text-faint">
               {eyebrow}
             </p>
           ) : null}
-          <h1 className="font-orbitron text-2xl font-bold leading-tight tracking-tight text-white sm:text-[27px]">
+          <h1 className="font-orbitron text-2xl font-bold leading-tight tracking-tight text-text sm:text-3xl">
             {title}
           </h1>
           {subtitle ? (
-            <p className="mt-2 font-rajdhani text-base leading-snug tracking-wide text-slate-400">
+            <p className="mt-2 font-rajdhani text-base leading-snug tracking-wide text-subtle">
               {subtitle}
             </p>
           ) : null}

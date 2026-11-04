@@ -50,21 +50,21 @@ export default function ConfirmDialog({
       onMouseDown={(event) => {
         if (event.target === ref.current && !pending) onCancel();
       }}
-      className="dialog-surface m-auto w-[min(430px,calc(100vw-2rem))] border border-white/15 bg-[#070707] p-0 text-slate-200 shadow-[0_30px_90px_-20px_rgba(0,0,0,1)]"
+      className="dialog-surface m-auto w-[min(430px,calc(100vw-2rem))] border border-line-strong bg-surface p-0 text-muted shadow-elev-2"
     >
       <div className="p-5 sm:p-6">
-        <p className="font-orbitron text-[10px] uppercase tracking-[0.28em] text-slate-500">
+        <p className="font-orbitron text-3xs uppercase tracking-[0.28em] text-faint">
           {destructive ? "Confirm removal" : "Please confirm"}
         </p>
         <h2
           id={titleId}
-          className="mt-2 font-orbitron text-lg font-bold text-white"
+          className="mt-2 font-orbitron text-lg font-bold text-text"
         >
           {title}
         </h2>
         <p
           id={descriptionId}
-          className="mt-2 font-rajdhani text-base leading-snug text-slate-400"
+          className="mt-2 font-rajdhani text-base leading-snug text-subtle"
         >
           {description}
         </p>

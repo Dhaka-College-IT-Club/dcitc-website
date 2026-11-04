@@ -23,28 +23,28 @@ export const metadata: Metadata = {
 
 export default function PrivacyPolicyPage() {
   return (
-    <div className="min-h-screen bg-black pb-24 pt-32 text-slate-200">
+    <div className="min-h-screen bg-bg pb-24 pt-32 text-muted">
       <div className="mx-auto max-w-[768px] px-6">
         <header className="mb-12">
-          <p className="mb-3 font-orbitron text-xs uppercase tracking-[0.3em] text-slate-500">
+          <p className="mb-3 font-orbitron text-xs uppercase tracking-[0.3em] text-faint">
             Legal / Privacy
           </p>
-          <h1 className="mb-4 font-orbitron text-4xl font-bold leading-tight text-white md:text-5xl">
+          <h1 className="mb-4 font-orbitron text-4xl font-bold leading-tight text-text md:text-5xl">
             Privacy Policy
           </h1>
-          <p className="font-rajdhani text-lg leading-relaxed text-slate-400">
+          <p className="font-rajdhani text-lg leading-relaxed text-subtle">
             What the club collects through this site, why we keep it, and how to
             have it corrected or removed.
           </p>
-          <p className="mt-6 font-orbitron text-[10px] uppercase tracking-[0.18em] text-slate-500 sm:text-[11px] sm:tracking-[0.2em]">
+          <p className="mt-6 font-orbitron text-3xs uppercase tracking-[0.18em] text-faint sm:text-2xs sm:tracking-[0.2em]">
             Last updated{" "}
-            <time dateTime={LEGAL.LAST_UPDATED_ISO} className="text-slate-300">
+            <time dateTime={LEGAL.LAST_UPDATED_ISO} className="text-muted">
               {LEGAL.LAST_UPDATED}
             </time>
           </p>
         </header>
 
-        <div className={`border-t border-white/10 pt-10 ${styles.text}`}>
+        <div className={`border-t border-line pt-10 ${styles.text}`}>
           <section>
             <h2>Who we are</h2>
             <p>

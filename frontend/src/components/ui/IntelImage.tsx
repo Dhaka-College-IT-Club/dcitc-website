@@ -54,7 +54,7 @@ function ImagePlaceholder({ alt }: { alt: string }) {
       aria-label={alt}
       className="absolute inset-0 flex items-center justify-center bg-linear-to-br from-white/10 to-black"
     >
-      <span className="font-orbitron text-[9px] uppercase tracking-[0.28em] text-slate-500">
+      <span className="font-orbitron text-3xs uppercase tracking-[0.28em] text-faint">
         DCITC
       </span>
     </div>

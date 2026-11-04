@@ -10,7 +10,7 @@ export default function IntelCard({ intel }: { intel: Intel }) {
   return (
     <Link
       href={`/intel/${intel.slug}`}
-      className="group flex h-full min-w-0 flex-col overflow-hidden border border-white/10 bg-white/[0.015] transition-colors duration-300 hover:border-white/30 hover:bg-white/[0.03]"
+      className="group flex h-full min-w-0 flex-col overflow-hidden border border-line bg-surface transition-colors duration-300 hover:border-line-strong hover:bg-surface"
     >
       <div className="relative aspect-video overflow-hidden">
         <IntelImage
@@ -23,22 +23,22 @@ export default function IntelCard({ intel }: { intel: Intel }) {
         />
         {/* Fades the image into the card so the two read as one surface. */}
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-linear-to-t from-black via-black/60 to-transparent" />
-        <span className="absolute bottom-3 left-4 inline-flex border border-white/20 bg-black/60 px-2.5 py-1 font-orbitron text-[10px] uppercase tracking-[0.2em] text-white backdrop-blur-sm">
+        <span className="absolute bottom-3 left-4 inline-flex border border-line-strong bg-bg/60 px-2.5 py-1 font-orbitron text-3xs uppercase tracking-[0.2em] text-text backdrop-blur-sm">
           {intel.tag}
         </span>
       </div>
 
       <div className="flex grow flex-col px-5 pb-5 pt-4">
-        <p className="font-rajdhani text-[13px] tracking-wide text-slate-400">
+        <p className="font-rajdhani text-sm tracking-wide text-subtle">
           By {intel.author} · {formatShortDate(intel.date)}
         </p>
-        <h3 className="mt-2 line-clamp-2 font-orbitron text-xl font-bold leading-snug text-white transition-colors group-hover:text-slate-200">
+        <h3 className="mt-2 line-clamp-2 font-orbitron text-xl font-bold leading-snug text-text transition-colors group-hover:text-muted">
           {title}
         </h3>
-        <p className="mt-2 line-clamp-2 font-rajdhani text-[15px] leading-relaxed text-slate-400">
+        <p className="mt-2 line-clamp-2 font-rajdhani text-base leading-relaxed text-subtle">
           {intel.excerpt}
         </p>
-        <span className="mt-4 inline-flex items-center gap-1.5 font-rajdhani text-sm font-semibold tracking-wide text-slate-300 transition-colors group-hover:text-white">
+        <span className="mt-4 inline-flex items-center gap-1.5 font-rajdhani text-sm font-semibold tracking-wide text-muted transition-colors group-hover:text-text">
           Read more
           <span className="sr-only">: {title}</span>
           <span

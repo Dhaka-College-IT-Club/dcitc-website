@@ -250,18 +250,18 @@ export default function AdminAdminsPage() {
           <span className="flex items-center gap-2">
             <span
               className={`font-rajdhani text-sm font-semibold ${
-                item.active ? "text-white" : "text-slate-500"
+                item.active ? "text-text" : "text-faint"
               }`}
             >
               {item.name}
             </span>
             {item.id === me?.id ? (
-              <span className="border border-white/20 px-1 py-0.5 font-orbitron text-[8px] uppercase tracking-[0.12em] text-slate-400">
+              <span className="border border-line-strong px-1 py-0.5 font-orbitron text-3xs uppercase tracking-[0.12em] text-subtle">
                 You
               </span>
             ) : null}
           </span>
-          <span className="font-rajdhani text-xs text-slate-500">
+          <span className="font-rajdhani text-xs text-faint">
             {item.email}
           </span>
         </span>
@@ -272,10 +272,10 @@ export default function AdminAdminsPage() {
       header: "Role",
       render: (item) => (
         <span
-          className={`inline-flex items-center gap-1 border px-1.5 py-0.5 font-orbitron text-[9px] uppercase tracking-[0.12em] ${
+          className={`inline-flex items-center gap-1 border px-1.5 py-0.5 font-orbitron text-3xs uppercase tracking-[0.12em] ${
             item.role === "super_admin"
-              ? "border-white/40 bg-white/[0.08] text-white"
-              : "border-white/10 text-slate-400"
+              ? "border-white/40 bg-surface-2 text-text"
+              : "border-line text-subtle"
           }`}
         >
           {item.role === "super_admin" ? (
@@ -291,7 +291,7 @@ export default function AdminAdminsPage() {
       render: (item) => (
         <span
           className={`inline-flex items-center gap-1.5 font-rajdhani text-xs ${
-            item.active ? "text-emerald-300" : "text-slate-500"
+            item.active ? "text-emerald-300" : "text-faint"
           }`}
         >
           <span
@@ -308,7 +308,7 @@ export default function AdminAdminsPage() {
       key: "created",
       header: "Created",
       render: (item) => (
-        <span className="font-rajdhani text-sm text-slate-400">
+        <span className="font-rajdhani text-sm text-subtle">
           {formatDate(item.createdAt)}
         </span>
       ),
@@ -397,7 +397,7 @@ export default function AdminAdminsPage() {
         }}
       />
 
-      <p className="font-rajdhani text-xs leading-snug text-slate-500">
+      <p className="font-rajdhani text-xs leading-snug text-faint">
         Your own row cannot be edited or deactivated, so at least one active
         super admin always remains. Ask another super admin to change your
         access.
@@ -457,7 +457,7 @@ export default function AdminAdminsPage() {
               <option value="super_admin">Super admin</option>
             </select>
           </div>
-          <div className="flex flex-col-reverse gap-2 border-t border-white/10 pt-5 sm:flex-row sm:justify-end">
+          <div className="flex flex-col-reverse gap-2 border-t border-line pt-5 sm:flex-row sm:justify-end">
             <Button
               type="button"
               variant="secondary"
@@ -506,7 +506,7 @@ export default function AdminAdminsPage() {
             hint="Changing the email changes the sign-in address."
             required
           />
-          <div className="flex flex-col-reverse gap-2 border-t border-white/10 pt-5 sm:flex-row sm:justify-end">
+          <div className="flex flex-col-reverse gap-2 border-t border-line pt-5 sm:flex-row sm:justify-end">
             <Button
               type="button"
               variant="secondary"
@@ -552,7 +552,7 @@ export default function AdminAdminsPage() {
             error={rotateErrors.confirm}
             required
           />
-          <div className="flex flex-col-reverse gap-2 border-t border-white/10 pt-5 sm:flex-row sm:justify-end">
+          <div className="flex flex-col-reverse gap-2 border-t border-line pt-5 sm:flex-row sm:justify-end">
             <Button
               type="button"
               variant="secondary"

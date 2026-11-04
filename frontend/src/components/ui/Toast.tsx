@@ -22,7 +22,7 @@ const styles: Record<ToastVariant, { icon: typeof Info; classes: string }> = {
     classes: "border-emerald-500/50 text-emerald-200",
   },
   error: { icon: AlertCircle, classes: "border-red-500/50 text-red-200" },
-  info: { icon: Info, classes: "border-white/25 text-slate-200" },
+  info: { icon: Info, classes: "border-line-strong text-muted" },
 };
 
 let nextToastId = 0;
@@ -57,7 +57,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
             <div
               key={toast.id}
               role={toast.variant === "error" ? "alert" : "status"}
-              className={`pointer-events-auto flex items-start gap-2.5 border border-white/10 border-l-2 bg-[#080808]/95 px-3.5 py-3 shadow-[0_18px_50px_-18px_rgba(0,0,0,0.9)] backdrop-blur ${config.classes}`}
+              className={`pointer-events-auto flex items-start gap-2.5 border border-line border-l-2 bg-surface/95 px-3.5 py-3 shadow-elev-1 backdrop-blur ${config.classes}`}
             >
               <Icon className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
               <p className="flex-1 font-rajdhani text-sm leading-snug">

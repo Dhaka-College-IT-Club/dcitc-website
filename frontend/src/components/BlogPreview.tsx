@@ -9,11 +9,11 @@ const BlogPreview = ({ items = [] }: { items?: Intel[] }) => {
       id="intel"
       title="Intel"
       subtitle="Latest Insights from the DCITC"
-      className="py-24 bg-black relative"
+      className="py-24 bg-bg relative"
     >
       {items.length === 0 ? (
         <div className="text-center py-10">
-          <p className="text-slate-500 font-rajdhani text-lg">
+          <p className="text-faint font-rajdhani text-lg">
             No intelligence reports available at this time.
           </p>
         </div>
@@ -28,7 +28,7 @@ const BlogPreview = ({ items = [] }: { items?: Intel[] }) => {
           <div className="text-center mt-16">
             <Link
               href="/intel"
-              className="px-8 py-3 border-2 border-white/30 text-white font-orbitron font-bold tracking-wider hover:bg-white/10 transition-colors duration-300 -skew-x-12 inline-flex"
+              className="px-8 py-3 border-2 border-line-strong text-text font-orbitron font-bold tracking-wider hover:bg-surface-2 transition-colors duration-300 -skew-x-12 inline-flex"
             >
               View All Intel<span className="sr-only"> articles</span>
             </Link>

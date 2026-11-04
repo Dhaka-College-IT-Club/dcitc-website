@@ -68,21 +68,21 @@ const GetInTouch: React.FC = () => {
   ];
 
   const inputClass =
-    "w-full bg-white/[0.03] border border-white/10 px-4 py-3 text-white font-rajdhani text-base placeholder:text-slate-600 focus:outline-none focus:border-white/40 transition-colors";
+    "w-full bg-surface border border-line px-4 py-3 text-text font-rajdhani text-base placeholder:text-faint focus:outline-none focus:border-white/40 transition-colors";
   const errorClass = "border-red-500/60 focus:border-red-500/80";
 
   return (
-    <section id="contact" className="py-24 bg-black relative overflow-hidden border-t border-white/10">
+    <section id="contact" className="py-24 bg-bg relative overflow-hidden border-t border-line">
       {success && (
-        <div className="fixed top-6 left-6 z-[100] flex max-w-sm items-start gap-3 border border-white/20 bg-black/90 px-5 py-4 backdrop-blur-sm shadow-[0_0_20px_rgba(255,255,255,0.1)]">
-          <p className="font-rajdhani text-white text-base tracking-wide">
+        <div className="fixed top-6 left-6 z-[100] flex max-w-sm items-start gap-3 border border-line-strong bg-bg/90 px-5 py-4 backdrop-blur-sm shadow-glow">
+          <p className="font-rajdhani text-text text-base tracking-wide">
             Your message is sent to the DCITC team
           </p>
           <button
             type="button"
             onClick={() => setSuccess(false)}
             aria-label="Dismiss confirmation"
-            className="-mr-1 -mt-1 inline-flex h-6 w-6 shrink-0 items-center justify-center text-slate-400 transition-colors hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            className="-mr-1 -mt-1 inline-flex h-6 w-6 shrink-0 items-center justify-center text-subtle transition-colors hover:text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
           >
             <X className="h-4 w-4" aria-hidden="true" />
           </button>
@@ -107,15 +107,15 @@ const GetInTouch: React.FC = () => {
           <div className="space-y-8">
             <div className="space-y-4">
               {contacts.map(({ icon: Icon, label, value }) => (
-                <div key={label} className="flex items-start gap-4 p-4 border border-white/10 bg-white/[0.02]">
-                  <div className="w-10 h-10 flex items-center justify-center border border-white/20 text-slate-300 shrink-0">
+                <div key={label} className="flex items-start gap-4 p-4 border border-line bg-white/[0.02]">
+                  <div className="w-10 h-10 flex items-center justify-center border border-line-strong text-muted shrink-0">
                     <Icon className="w-5 h-5" />
                   </div>
                   <div>
-                    <p className="font-orbitron text-xs tracking-widest text-slate-500 uppercase mb-1">
+                    <p className="font-orbitron text-xs tracking-widest text-faint uppercase mb-1">
                       {label}
                     </p>
-                    <p className="font-rajdhani text-white text-base tracking-wide break-all">
+                    <p className="font-rajdhani text-text text-base tracking-wide break-all">
                       {value}
                     </p>
                   </div>
@@ -187,7 +187,7 @@ const GetInTouch: React.FC = () => {
             </form>
           </div>
 
-          <div className="w-full border border-white/10 overflow-hidden bg-white/[0.02]">
+          <div className="w-full border border-line overflow-hidden bg-white/[0.02]">
             <div className="relative w-full aspect-[4/3] lg:aspect-auto lg:h-[520px]">
               <iframe
                 src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d6441.9394693764025!2d90.38087734965688!3d23.734180404014626!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3755b8c8e1ea9fd1%3A0xa6e274882fdbce53!2sDhaka%20College!5e0!3m2!1sen!2sbd!4v1793377737693!5m2!1sen!2sbd"

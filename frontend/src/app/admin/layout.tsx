@@ -48,9 +48,9 @@ export default function AdminLayout({
 
   if (error) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-black px-4 text-slate-200">
-        <div className="w-full max-w-lg border border-white/10 bg-white/[0.02] p-6">
-          <p className="font-orbitron text-[10px] uppercase tracking-[0.24em] text-slate-500">
+      <div className="flex min-h-screen items-center justify-center bg-bg px-4 text-muted">
+        <div className="w-full max-w-lg border border-line bg-white/[0.02] p-6">
+          <p className="font-orbitron text-3xs uppercase tracking-[0.24em] text-faint">
             Admin console
           </p>
           <div className="mt-4">
@@ -75,29 +75,29 @@ export default function AdminLayout({
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black" aria-busy="true">
-        <div className="fixed inset-y-0 left-0 hidden w-64 border-r border-white/10 p-5 lg:block">
-          <span className="block h-10 w-28 animate-pulse bg-white/10" />
+      <div className="min-h-screen bg-bg" aria-busy="true">
+        <div className="fixed inset-y-0 left-0 hidden w-64 border-r border-line p-5 lg:block">
+          <span className="block h-10 w-28 animate-pulse bg-surface-2" />
           <div className="mt-12 space-y-2">
             {Array.from({ length: 5 }).map((_, index) => (
               <span
                 key={index}
-                className="block h-8 animate-pulse bg-white/[0.05]"
+                className="block h-8 animate-pulse bg-surface-2"
               />
             ))}
           </div>
         </div>
-        <div className="border-b border-white/10 p-4 lg:hidden">
-          <span className="block h-8 w-32 animate-pulse bg-white/10" />
+        <div className="border-b border-line p-4 lg:hidden">
+          <span className="block h-8 w-32 animate-pulse bg-surface-2" />
         </div>
         <div className="space-y-4 p-6 lg:pl-72">
-          <span className="block h-3 w-24 animate-pulse bg-white/10" />
-          <span className="block h-8 w-56 animate-pulse bg-white/10" />
+          <span className="block h-3 w-24 animate-pulse bg-surface-2" />
+          <span className="block h-8 w-56 animate-pulse bg-surface-2" />
           <div className="grid gap-3 sm:grid-cols-3">
             {Array.from({ length: 3 }).map((_, index) => (
               <span
                 key={index}
-                className="h-28 animate-pulse bg-white/[0.05]"
+                className="h-28 animate-pulse bg-surface-2"
               />
             ))}
           </div>

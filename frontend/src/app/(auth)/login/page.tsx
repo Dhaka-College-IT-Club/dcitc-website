@@ -110,16 +110,16 @@ function LoginForm() {
       ) : null}
 
       <GoogleButton />
-      <p className="mb-4 mt-2 text-center font-rajdhani text-xs tracking-wide text-slate-500">
+      <p className="mb-4 mt-2 text-center font-rajdhani text-xs tracking-wide text-faint">
         Google is fastest, but email works too.
       </p>
 
       <div className="my-5 flex items-center gap-3" aria-hidden="true">
-        <span className="h-px flex-1 bg-white/10" />
-        <span className="font-orbitron text-[9px] uppercase tracking-[0.24em] text-slate-500">
+        <span className="h-px flex-1 bg-surface-2" />
+        <span className="font-orbitron text-3xs uppercase tracking-[0.24em] text-faint">
           or
         </span>
-        <span className="h-px flex-1 bg-white/10" />
+        <span className="h-px flex-1 bg-surface-2" />
       </div>
 
       <form onSubmit={submit} className="space-y-4" noValidate>
@@ -151,13 +151,13 @@ function LoginForm() {
           <div className="mt-2 flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
             <Link
               href="/forgot-password"
-              className="font-rajdhani text-sm text-slate-400 underline-offset-4 transition-colors hover:text-white hover:underline"
+              className="font-rajdhani text-sm text-subtle underline-offset-4 transition-colors hover:text-text hover:underline"
             >
               Forgot password?
             </Link>
             <Link
               href="/forgot-email"
-              className="font-rajdhani text-sm text-slate-400 underline-offset-4 transition-colors hover:text-white hover:underline"
+              className="font-rajdhani text-sm text-subtle underline-offset-4 transition-colors hover:text-text hover:underline"
             >
               Forgot email?
             </Link>
@@ -169,11 +169,11 @@ function LoginForm() {
         </Button>
       </form>
 
-      <p className="mt-6 border-t border-white/10 pt-5 text-center font-rajdhani text-sm text-slate-500">
+      <p className="mt-6 border-t border-line pt-5 text-center font-rajdhani text-sm text-faint">
         New here?{" "}
         <Link
           href="/signup"
-          className="font-semibold text-white underline-offset-4 transition-colors hover:underline"
+          className="font-semibold text-text underline-offset-4 transition-colors hover:underline"
         >
           Join DCITC
         </Link>
@@ -187,7 +187,7 @@ export default function LoginPage() {
     <Suspense
       fallback={
         <div className="w-full max-w-[440px]">
-          <div className="h-96 animate-pulse border border-white/10 bg-white/[0.02]" />
+          <div className="h-96 animate-pulse border border-line bg-white/[0.02]" />
         </div>
       }
     >

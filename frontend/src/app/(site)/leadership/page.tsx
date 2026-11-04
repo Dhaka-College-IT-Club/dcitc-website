@@ -57,7 +57,7 @@ export default async function LeadershipPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black pb-24 pt-32 text-slate-200">
+    <div className="min-h-screen bg-bg pb-24 pt-32 text-muted">
       <JsonLd data={peopleJsonLd} />
       <div className="mx-auto max-w-5xl px-6">
         <Breadcrumbs
@@ -68,27 +68,27 @@ export default async function LeadershipPage() {
         />
 
         <header className="mb-12">
-          <p className="mb-3 font-orbitron text-xs uppercase tracking-[0.3em] text-slate-500">
+          <p className="mb-3 font-orbitron text-xs uppercase tracking-[0.3em] text-faint">
             The panel
           </p>
-          <h1 className="mb-4 font-orbitron text-4xl font-bold leading-tight text-white md:text-5xl">
+          <h1 className="mb-4 font-orbitron text-4xl font-bold leading-tight text-text md:text-5xl">
             Leadership
           </h1>
-          <p className="max-w-2xl font-rajdhani text-lg leading-relaxed text-slate-400">
+          <p className="max-w-2xl font-rajdhani text-lg leading-relaxed text-subtle">
             The commanding officers steering Dhaka College IT Club (DCITC)
             towards innovation.
           </p>
         </header>
 
         {batches.length === 0 ? (
-          <p className="font-rajdhani text-xl text-slate-500">
+          <p className="font-rajdhani text-xl text-faint">
             Panel coming soon
           </p>
         ) : (
           <div className="space-y-12">
             {batches.map((batch) => (
               <section key={batch}>
-                <h2 className="mb-5 border-b border-white/10 pb-3 font-orbitron text-sm uppercase tracking-[0.28em] text-slate-500">
+                <h2 className="mb-5 border-b border-line pb-3 font-orbitron text-sm uppercase tracking-[0.28em] text-faint">
                   {batch}
                 </h2>
                 <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -97,12 +97,12 @@ export default async function LeadershipPage() {
                     .map((member) => (
                       <li
                         key={`${member.batch}-${member.name}`}
-                        className="border border-white/10 bg-white/[0.02] p-5"
+                        className="border border-line bg-white/[0.02] p-5"
                       >
-                        <h3 className="font-orbitron text-base font-bold tracking-wider text-white">
+                        <h3 className="font-orbitron text-base font-bold tracking-wider text-text">
                           {member.name}
                         </h3>
-                        <p className="mt-2 font-rajdhani text-base text-slate-400">
+                        <p className="mt-2 font-rajdhani text-base text-subtle">
                           {member.role}
                         </p>
                       </li>
@@ -113,18 +113,18 @@ export default async function LeadershipPage() {
           </div>
         )}
 
-        <p className="mt-12 font-rajdhani text-lg text-slate-400">
+        <p className="mt-12 font-rajdhani text-lg text-subtle">
           Want to be on this list?{" "}
           <Link
             href="/signup"
-            className="text-white underline-offset-4 hover:underline"
+            className="text-text underline-offset-4 hover:underline"
           >
             Join DCITC
           </Link>{" "}
           or{" "}
           <Link
             href="/about"
-            className="text-white underline-offset-4 hover:underline"
+            className="text-text underline-offset-4 hover:underline"
           >
             learn about the club
           </Link>

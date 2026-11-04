@@ -17,7 +17,7 @@ const MotionSection: React.FC<MotionSectionProps> = ({
   title,
   subtitle,
   children,
-  className = "py-24 bg-black relative",
+  className = "py-24 bg-bg relative",
 }) => {
   return (
     <motion.section

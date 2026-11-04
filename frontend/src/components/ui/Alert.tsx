@@ -17,8 +17,8 @@ const variants = {
   info: {
     role: "status" as const,
     icon: Info,
-    classes: "border-white/15 bg-white/[0.04] text-slate-300",
-    iconClasses: "text-slate-400",
+    classes: "border-line-strong bg-surface-2 text-muted",
+    iconClasses: "text-subtle",
   },
 };
 

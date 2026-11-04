@@ -12,7 +12,7 @@ const Hero: React.FC = () => {
   return (
     <section
       id="hero"
-      className="relative min-h-screen sm:pb-10 flex items-center justify-center overflow-hidden bg-black pt-16 sm:pt-20"
+      className="relative min-h-screen sm:pb-10 flex items-center justify-center overflow-hidden bg-bg pt-16 sm:pt-20"
     >
       <div className="absolute inset-0 bg-size-[50px_50px] bg-tech-grid opacity-20 pointer-events-none"></div>
       <div className="absolute inset-0 bg-linear-to-b from-transparent via-transparent to-black pointer-events-none"></div>
@@ -62,7 +62,7 @@ const Hero: React.FC = () => {
           >
 
 
-            <p className="text-4xl sm:text-5xl font-bold font-orbitron text-white leading-tight mb-4">
+            <p className="text-4xl sm:text-5xl font-bold font-orbitron text-text leading-tight mb-4">
               SHAPING <br />
               <span className="text-transparent bg-clip-text bg-linear-to-r from-white via-slate-300 to-slate-500">
                 TOMORROW
@@ -71,7 +71,7 @@ const Hero: React.FC = () => {
               TODAY
             </p>
 
-            <h1 className="text-slate-400 font-rajdhani text-base sm:text-lg mb-6 tracking-wide max-w-lg mx-auto px-2">
+            <h1 className="text-subtle font-rajdhani text-base sm:text-lg mb-6 tracking-wide max-w-lg mx-auto px-2">
               <span className="sr-only">Dhaka College IT Club</span>
               <span aria-hidden="true">{CLUB_NAME}</span>
             </h1>
@@ -89,7 +89,7 @@ const Hero: React.FC = () => {
             >
 
 
-              <p className="text-5xl lg:text-7xl font-bold font-orbitron text-white leading-tight mb-6">
+              <p className="text-5xl lg:text-7xl font-bold font-orbitron text-text leading-tight mb-6">
                 SHAPING <br />
                 <span className="text-transparent bg-clip-text bg-linear-to-r from-white via-slate-300 to-slate-500">
                   TOMORROW
@@ -98,7 +98,7 @@ const Hero: React.FC = () => {
                 TODAY
               </p>
 
-              <p className="text-slate-400 font-rajdhani text-xl lg:text-2xl mb-8 tracking-wide max-w-xl mx-auto lg:mx-0">
+              <p className="text-subtle font-rajdhani text-xl lg:text-2xl mb-8 tracking-wide max-w-xl mx-auto lg:mx-0">
                 {CLUB_NAME}
               </p>
 
@@ -142,11 +142,11 @@ const Hero: React.FC = () => {
       </div>
 
       <motion.div
-        className="absolute bottom-4 sm:bottom-2 left-1/2 -translate-x-1/2 text-slate-500 hidden sm:flex flex-col items-center gap-2 z-30"
+        className="absolute bottom-4 sm:bottom-2 left-1/2 -translate-x-1/2 text-faint hidden sm:flex flex-col items-center gap-2 z-30"
         animate={{ y: [0, 10, 0] }}
         transition={{ duration: 2, repeat: Infinity }}
       >
-        <span className="text-[10px] font-orbitron tracking-[0.3em] uppercase">
+        <span className="text-3xs font-orbitron tracking-[0.3em] uppercase">
           Scroll to Initialize
         </span>
         <ChevronDown className="w-5 h-5" />

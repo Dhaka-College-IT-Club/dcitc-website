@@ -15,11 +15,11 @@ const benefits = [
 
 const WhyJoin: React.FC = () => {
   return (
-    <section id="why-join" className="py-24 bg-black relative overflow-hidden border-t border-white/5">
+    <section id="why-join" className="py-24 bg-bg relative overflow-hidden border-t border-line">
       <div className="max-w-7xl mx-auto px-6 relative z-10">
         <SectionTitle title="Why Join DCITC" subtitle="What you gain by being part of the club" />
 
-        <p className="mx-auto mb-12 max-w-3xl text-center font-rajdhani text-lg leading-relaxed tracking-wide text-slate-400">
+        <p className="mx-auto mb-12 max-w-3xl text-center font-rajdhani text-lg leading-relaxed tracking-wide text-subtle">
           Dhaka College IT Club (DCITC) is a student technology club at Dhaka
           College in Dhaka, Bangladesh. Also known as the Dhaka College
           Information Technology Club, its mission is clear: {CLUB.MISSION.STATEMENT}{" "}
@@ -30,15 +30,15 @@ const WhyJoin: React.FC = () => {
           {benefits.map(({ icon: Icon, title, desc }) => (
             <div
               key={title}
-              className="group border border-white/10 bg-white/[0.02] p-6 hover:border-white/30 hover:bg-white/[0.05] transition-all duration-300"
+              className="group border border-line bg-white/[0.02] p-6 hover:border-line-strong hover:bg-surface-2 transition-all duration-300"
             >
-              <div className="w-12 h-12 flex items-center justify-center border border-white/20 text-slate-300 mb-4 group-hover:text-white group-hover:border-white/40 transition-colors">
+              <div className="w-12 h-12 flex items-center justify-center border border-line-strong text-muted mb-4 group-hover:text-text group-hover:border-line-strong/40 transition-colors">
                 <Icon className="w-6 h-6" />
               </div>
-              <h3 className="font-orbitron text-white text-sm md:text-base font-bold tracking-wider uppercase mb-2">
+              <h3 className="font-orbitron text-text text-sm md:text-base font-bold tracking-wider uppercase mb-2">
                 {title}
               </h3>
-              <p className="font-rajdhani text-slate-400 text-base tracking-wide">
+              <p className="font-rajdhani text-subtle text-base tracking-wide">
                 {desc}
               </p>
             </div>

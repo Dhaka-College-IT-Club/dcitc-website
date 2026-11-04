@@ -104,15 +104,15 @@ export default function AdminSettingsPage() {
 
       {loading ? (
         <div className="grid gap-4 lg:grid-cols-5">
-          <span className="h-72 animate-pulse border border-white/10 bg-white/[0.03] lg:col-span-3" />
-          <span className="h-72 animate-pulse border border-white/10 bg-white/[0.02] lg:col-span-2" />
+          <span className="h-72 animate-pulse border border-line bg-surface lg:col-span-3" />
+          <span className="h-72 animate-pulse border border-line bg-white/[0.02] lg:col-span-2" />
         </div>
       ) : (
         <div className="grid gap-4 lg:grid-cols-5">
           <form
             onSubmit={submit}
             noValidate
-            className="border border-white/10 bg-white/[0.02] p-5 sm:p-6 lg:col-span-3"
+            className="border border-line bg-white/[0.02] p-5 sm:p-6 lg:col-span-3"
           >
             <div className="space-y-5">
               {error ? <Alert variant="error">{error}</Alert> : null}
@@ -137,7 +137,7 @@ export default function AdminSettingsPage() {
                     onClick={() =>
                       window.open(formUrl.trim(), "_blank", "noopener,noreferrer")
                     }
-                    className="inline-flex items-center gap-1.5 font-orbitron text-[10px] uppercase tracking-[0.14em] text-slate-400 transition-colors hover:text-white disabled:cursor-not-allowed disabled:text-slate-700"
+                    className="inline-flex items-center gap-1.5 font-orbitron text-3xs uppercase tracking-[0.14em] text-subtle transition-colors hover:text-text disabled:cursor-not-allowed disabled:text-faint"
                   >
                     <ExternalLink className="h-3 w-3" aria-hidden="true" />
                     Test link
@@ -159,49 +159,49 @@ export default function AdminSettingsPage() {
               />
             </div>
 
-            <div className="mt-6 flex flex-wrap gap-2 border-t border-white/10 pt-5">
+            <div className="mt-6 flex flex-wrap gap-2 border-t border-line pt-5">
               <Button type="submit" loading={pending}>
                 {pending ? "Saving" : "Save settings"}
               </Button>
             </div>
           </form>
 
-          <aside className="border border-white/10 bg-white/[0.02] p-5 sm:p-6 lg:col-span-2">
-            <p className="font-orbitron text-[10px] uppercase tracking-[0.24em] text-slate-500">
+          <aside className="border border-line bg-white/[0.02] p-5 sm:p-6 lg:col-span-2">
+            <p className="font-orbitron text-3xs uppercase tracking-[0.24em] text-faint">
               Member preview
             </p>
-            <div className="clip-notch mt-4 border border-white/25 bg-white/[0.05] p-4">
-              <p className="font-orbitron text-[9px] uppercase tracking-[0.2em] text-slate-400">
+            <div className=" mt-4 border border-line-strong bg-surface-2 p-4">
+              <p className="font-orbitron text-3xs uppercase tracking-[0.2em] text-subtle">
                 Membership
               </p>
-              <p className="mt-2 font-orbitron text-lg font-bold text-white">
+              <p className="mt-2 font-orbitron text-lg font-bold text-text">
                 Membership
               </p>
-              <p className="mt-3 font-orbitron text-3xl font-bold text-white">
+              <p className="mt-3 font-orbitron text-3xl font-bold text-text">
                 {Number(price) > 0 ? price : "—"}
-                <span className="ml-1.5 text-sm font-medium text-slate-400">
+                <span className="ml-1.5 text-sm font-medium text-subtle">
                   BDT
                 </span>
               </p>
-              <p className="mt-3 font-rajdhani text-sm text-slate-400">
+              <p className="mt-3 font-rajdhani text-sm text-subtle">
                 One-time fee, valid through the member&apos;s HSC years.
               </p>
-              <p className="mt-2 font-rajdhani text-xs text-slate-500">
+              <p className="mt-2 font-rajdhani text-xs text-faint">
                 {canTest
                   ? "Members see the join button on their dashboard."
                   : "No live form link yet, so members see the closed state."}
               </p>
             </div>
-            <p className="mt-4 font-rajdhani text-xs leading-snug text-slate-500">
+            <p className="mt-4 font-rajdhani text-xs leading-snug text-faint">
               Changing the price updates the dashboard membership card. It does
               not edit any responses already collected in the form.
             </p>
-            <div className="mt-6 border-t border-white/10 pt-4">
-              <p className="font-orbitron text-[10px] uppercase tracking-[0.24em] text-slate-500">
+            <div className="mt-6 border-t border-line pt-4">
+              <p className="font-orbitron text-3xs uppercase tracking-[0.24em] text-faint">
                 Build
               </p>
-              <p className="mt-2 font-rajdhani text-sm text-slate-400">
-                Version <span className="text-white">v{CLUB.VERSION}</span>
+              <p className="mt-2 font-rajdhani text-sm text-subtle">
+                Version <span className="text-text">v{CLUB.VERSION}</span>
               </p>
             </div>
           </aside>

@@ -37,7 +37,7 @@ export default function TextField({
         {counter ? (
           <span
             className={`font-rajdhani text-xs tabular-nums ${
-              counter.over ? "text-red-300" : "text-slate-500"
+              counter.over ? "text-red-300" : "text-faint"
             }`}
           >
             {counter.text}
@@ -72,7 +72,7 @@ export default function TextField({
       {hint && !error ? (
         <p
           id={hintId}
-          className="mt-1.5 font-rajdhani text-sm text-slate-500"
+          className="mt-1.5 font-rajdhani text-sm text-faint"
         >
           {hint}
         </p>

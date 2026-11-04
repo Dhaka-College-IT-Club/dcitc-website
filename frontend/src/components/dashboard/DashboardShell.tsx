@@ -22,8 +22,8 @@ export default function DashboardShell({
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-black text-slate-200">
-      <header className="sticky top-0 z-30 border-b border-white/10 bg-black/90 backdrop-blur">
+    <div className="min-h-screen bg-bg text-muted">
+      <header className="sticky top-0 z-30 border-b border-line bg-bg/90 backdrop-blur">
         <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
           <span className="sm:hidden">
             <Logo compact />
@@ -34,12 +34,12 @@ export default function DashboardShell({
           <div className="flex items-center gap-2.5 sm:gap-4">
             <Link
               href="/"
-              className="whitespace-nowrap font-orbitron text-[9px] uppercase tracking-[0.14em] text-slate-400 transition-colors hover:text-white"
+              className="whitespace-nowrap font-orbitron text-3xs uppercase tracking-[0.14em] text-subtle transition-colors hover:text-text"
             >
               Back to site
             </Link>
             <span
-              className="flex h-9 w-9 items-center justify-center border border-white/20 bg-white/[0.06] font-orbitron text-[11px] text-white"
+              className="flex h-9 w-9 items-center justify-center border border-line-strong bg-surface-2 font-orbitron text-2xs text-text"
               title={user.name}
             >
               <span aria-hidden="true">{initials(user.name)}</span>
@@ -49,7 +49,7 @@ export default function DashboardShell({
               type="button"
               onClick={() => setConfirmOpen(true)}
               disabled={signingOut}
-              className="inline-flex h-9 items-center gap-1.5 border border-white/15 px-2.5 font-orbitron text-[9px] uppercase tracking-[0.14em] text-slate-400 transition-colors hover:border-white/40 hover:text-white disabled:opacity-50 sm:px-3 sm:text-[10px]"
+              className="inline-flex h-9 items-center gap-1.5 border border-line-strong px-2.5 font-orbitron text-3xs uppercase tracking-[0.14em] text-subtle transition-colors hover:border-line-strong/40 hover:text-text disabled:opacity-50 sm:px-3 sm:text-3xs"
             >
               <LogOut className="h-3.5 w-3.5" aria-hidden="true" />
               <span className="hidden sm:inline">Log out</span>

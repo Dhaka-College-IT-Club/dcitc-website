@@ -54,7 +54,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="scroll-smooth">
       <body
-        className={`${inter.variable} ${orbitron.variable} ${rajdhani.variable} font-sans antialiased bg-black text-slate-200 selection:bg-white selection:text-black min-h-screen flex flex-col`}
+        className={`${inter.variable} ${orbitron.variable} ${rajdhani.variable} font-sans antialiased bg-bg text-muted selection:bg-white selection:text-black min-h-screen flex flex-col`}
       >
         {children}
       </body>

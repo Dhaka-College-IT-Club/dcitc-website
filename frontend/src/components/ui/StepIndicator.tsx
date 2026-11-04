@@ -24,16 +24,16 @@ export default function StepIndicator({
               <span
                 aria-hidden="true"
                 className={`h-px flex-1 ${
-                  index === 0 ? "bg-transparent" : complete || active ? "bg-white/40" : "bg-white/10"
+                  index === 0 ? "bg-transparent" : complete || active ? "bg-white/40" : "bg-surface-2"
                 }`}
               />
               <span
-                className={`mx-2 inline-flex h-7 w-7 shrink-0 items-center justify-center border font-orbitron text-[10px] transition-colors ${
+                className={`mx-2 inline-flex h-7 w-7 shrink-0 items-center justify-center border font-orbitron text-3xs transition-colors ${
                   complete
                     ? "border-white bg-white text-black"
                     : active
-                      ? "border-white bg-black text-white"
-                      : "border-white/15 bg-black text-slate-500"
+                      ? "border-white bg-bg text-text"
+                      : "border-line-strong bg-bg text-faint"
                 }`}
               >
                 {complete ? (
@@ -49,13 +49,13 @@ export default function StepIndicator({
                     ? "bg-transparent"
                     : complete
                       ? "bg-white/40"
-                      : "bg-white/10"
+                      : "bg-surface-2"
                 }`}
               />
             </div>
             <span
-              className={`mt-2 max-w-full truncate font-orbitron text-[9px] uppercase tracking-[0.14em] sm:text-[10px] ${
-                active ? "text-white" : complete ? "text-slate-300" : "text-slate-500"
+              className={`mt-2 max-w-full truncate font-orbitron text-3xs uppercase tracking-[0.14em] sm:text-3xs ${
+                active ? "text-text" : complete ? "text-muted" : "text-faint"
               }`}
             >
               {step}
