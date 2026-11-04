@@ -3,22 +3,18 @@ import Link from "next/link";
 import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ReactNode } from "react";
 
 const variants = {
-  primary:
-    "bg-white text-black hover:bg-slate-200 hover:shadow-[0_0_22px_rgba(255,255,255,0.28)]",
+  primary: "bg-white text-black hover:bg-slate-200 hover:shadow-glow",
   secondary:
-    "border border-white/25 bg-white/[0.02] text-white hover:border-white/60 hover:bg-white/[0.07]",
-  ghost: "text-slate-300 hover:bg-white/[0.06] hover:text-white",
+    "border border-line-strong bg-surface text-text hover:border-accent/60 hover:bg-surface-2",
+  ghost: "text-subtle hover:text-text hover:bg-surface",
   danger:
-    "border border-red-500/40 bg-red-500/[0.06] text-red-300 hover:border-red-400/70 hover:bg-red-500/[0.12]",
+    "border border-danger/40 bg-danger/10 text-danger hover:border-danger/60 hover:bg-danger/15",
 };
 
 const sizes = {
-  sm: "h-9 px-3.5 text-[10px] tracking-[0.16em]",
-  md: "h-11 px-6 text-[11px] tracking-[0.18em]",
-  lg: "h-12 px-8 text-xs tracking-[0.2em]",
+  sm: "h-10 px-4",
+  md: "h-12 px-6",
 };
-
-const skewed = new Set(["primary", "secondary"]);
 
 type ButtonProps = {
   variant?: keyof typeof variants;
@@ -33,12 +29,16 @@ type ButtonProps = {
   children: ReactNode;
 } & Omit<ButtonHTMLAttributes<HTMLButtonElement>, "className" | "children">;
 
+/**
+ * The only button in the system. Parallelogram edge at a single angle, label
+ * counter-skewed, one accent focus ring inherited from globals.css.
+ */
 export default function Button({
   variant = "primary",
   size = "md",
   loading = false,
   fullWidth = false,
-  skew,
+  skew = true,
   href,
   target,
   rel,
@@ -47,26 +47,21 @@ export default function Button({
   disabled,
   ...props
 }: ButtonProps) {
-  const isSkewed = skew ?? skewed.has(variant);
   const classes = [
-    "group relative inline-flex items-center justify-center border border-transparent font-orbitron font-bold uppercase",
-    "transition-all duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white",
+    "inline-flex items-center justify-center type-button whitespace-nowrap",
+    "transition-[background-color,border-color,color,box-shadow] duration-200",
     "disabled:cursor-not-allowed disabled:opacity-45",
     variants[variant],
     sizes[size],
     fullWidth ? "w-full" : "",
-    isSkewed ? "-skew-x-10" : "",
+    skew ? "edge-skew" : "",
     className,
   ]
     .filter(Boolean)
     .join(" ");
 
   const content = (
-    <span
-      className={`inline-flex items-center justify-center gap-2 ${
-        isSkewed ? "skew-x-10" : ""
-      }`}
-    >
+    <span className="inline-flex items-center justify-center gap-2">
       {loading ? (
         <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
       ) : null}
@@ -75,7 +70,6 @@ export default function Button({
   );
 
   if (href) {
-    // Link keeps internal routes client-side and hands external URLs to the browser.
     return (
       <Link
         href={href}

@@ -198,13 +198,13 @@ export default function DashboardPage() {
 
         <div className="mt-6">
           {formUrl ? (
-            <Button href={formUrl} target="_blank" rel="noopener noreferrer" size="lg">
+            <Button href={formUrl} target="_blank" rel="noopener noreferrer" size="md">
               Become a Member
               <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
             </Button>
           ) : (
             <>
-              <Button type="button" size="lg" disabled>
+              <Button type="button" size="md" disabled>
                 Membership closed
               </Button>
               <p className="mt-3 max-w-xl font-rajdhani text-sm text-slate-400">

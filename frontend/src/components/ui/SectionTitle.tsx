@@ -1,39 +1,39 @@
-"use client";
-import React from 'react';
-import { motion } from 'framer-motion';
-
 interface SectionTitleProps {
   title: string;
   subtitle?: string;
-  align?: 'left' | 'center' | 'right';
+  eyebrow?: string;
+  align?: "left" | "center" | "right";
+  className?: string;
 }
 
-const SectionTitle: React.FC<SectionTitleProps> = ({ title, subtitle, align = 'center' }) => {
-  const alignmentClass = align === 'left' ? 'text-left items-start' : align === 'right' ? 'text-right items-end' : 'text-center items-center';
+/** Section heading: eyebrow, h2, accent rule, subtitle. Nothing else. */
+export default function SectionTitle({
+  title,
+  subtitle,
+  eyebrow,
+  align = "center",
+  className = "",
+}: SectionTitleProps) {
+  const alignment =
+    align === "left"
+      ? "text-left items-start"
+      : align === "right"
+        ? "text-right items-end"
+        : "text-center items-center";
 
   return (
-    <div className={`flex flex-col ${alignmentClass} mb-16 relative z-10`}>
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.6 }}
-      >
-        <h2
-          data-ghost={title}
-          className="section-title-ghost text-2xl sm:text-4xl md:text-5xl font-orbitron font-bold text-white tracking-widest uppercase mb-4 relative inline-block"
-        >
-          <span className="relative z-10">{title}</span>
-          <span className="absolute -bottom-2 left-0 w-full h-1 bg-linear-to-r from-transparent via-slate-500 to-transparent"></span>
-        </h2>
-        {subtitle && (
-          <p className="text-slate-400 font-rajdhani text-xl tracking-wide max-w-2xl mt-4">
-            {subtitle}
-          </p>
-        )}
-      </motion.div>
+    <div className={`flex flex-col ${alignment} ${className}`}>
+      {eyebrow ? (
+        <p className="type-overline mb-3 text-accent">{eyebrow}</p>
+      ) : null}
+      <h2 className="type-h2 uppercase tracking-wide">{title}</h2>
+      <span
+        aria-hidden="true"
+        className="mt-4 block h-px w-16 bg-accent/60"
+      />
+      {subtitle ? (
+        <p className="type-body mt-4 max-w-2xl text-subtle">{subtitle}</p>
+      ) : null}
     </div>
   );
-};
-
-export default SectionTitle;
+}
