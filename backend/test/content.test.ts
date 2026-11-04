@@ -232,10 +232,15 @@ describe("public reads", () => {
     assert.ok(batch.body.data.every((row: { batch: string }) => row.batch === "DC-26"));
   });
 
-  dbIt("exposes only the two public settings", async () => {
+  dbIt("exposes only the three public settings", async () => {
     const response = await new Client(baseUrl).req("/api/v2/settings/public");
     assert.equal(response.status, 200);
-    assert.deepEqual(Object.keys(response.body.data).sort(), ["membershipFormUrl", "membershipPriceBdt"]);
+    assert.deepEqual(Object.keys(response.body.data).sort(), [
+      "achievementsVisible",
+      "membershipFormUrl",
+      "membershipPriceBdt",
+    ]);
+    assert.equal(typeof response.body.data.achievementsVisible, "boolean");
     assert.equal(typeof response.body.data.membershipPriceBdt, "number");
   });
 });
@@ -790,6 +795,43 @@ describe("settings administration", () => {
     });
     assert.equal(badPrice.status, 400);
     assert.ok(badPrice.body.error.fields.membershipPriceBdt);
+  });
+
+  dbIt("toggles landing-page achievements visibility and defaults to hidden", async () => {
+    // Missing row = OFF.
+    await db.delete(settings).where(eq(settings.key, "achievements_visible"));
+    let current = await new Client(baseUrl).req("/api/v2/settings/public");
+    assert.equal(current.body.data.achievementsVisible, false);
+
+    const on = await admin.req("/api/v2/admin/settings", {
+      method: "PUT",
+      body: { achievementsVisible: true },
+    });
+    assert.equal(on.status, 200);
+    assert.equal(on.body.data.achievementsVisible, true);
+    current = await new Client(baseUrl).req("/api/v2/settings/public");
+    assert.equal(current.body.data.achievementsVisible, true);
+
+    const off = await admin.req("/api/v2/admin/settings", {
+      method: "PUT",
+      body: { achievementsVisible: false },
+    });
+    assert.equal(off.status, 200);
+    assert.equal(off.body.data.achievementsVisible, false);
+
+    // Anything non-"true" stored directly publishes OFF. Upserts so stale rows
+    // from an aborted earlier run cannot break this test.
+    await db
+      .insert(settings)
+      .values({ key: "achievements_visible", value: "banana" })
+      .onConflictDoUpdate({
+        target: settings.key,
+        set: { value: "banana" },
+      });
+    current = await new Client(baseUrl).req("/api/v2/settings/public");
+    assert.equal(current.body.data.achievementsVisible, false);
+
+    await db.delete(settings).where(eq(settings.key, "achievements_visible"));
   });
 });
 

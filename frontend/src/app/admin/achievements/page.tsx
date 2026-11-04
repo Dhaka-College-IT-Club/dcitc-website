@@ -14,7 +14,7 @@ import TextField from "@/components/ui/TextField";
 import { useToast } from "@/components/ui/Toast";
 import IntelImage from "@/components/ui/IntelImage";
 import { apiFetch } from "@/lib/api";
-import type { Achievement } from "@/lib/api-types";
+import type { Achievement, PublicSettings } from "@/lib/api-types";
 
 type FormState = {
   title: string;
@@ -50,11 +50,17 @@ export default function AdminAchievementsPage() {
   const [slotBusy, setSlotBusy] = useState(false);
   const [deleting, setDeleting] = useState<Achievement | null>(null);
   const [deletePending, setDeletePending] = useState(false);
+  const [visible, setVisible] = useState(false);
+  const [visibleBusy, setVisibleBusy] = useState(false);
 
   async function load() {
     try {
-      const data = await apiFetch<Achievement[]>("/admin/achievements");
+      const [data, settings] = await Promise.all([
+        apiFetch<Achievement[]>("/admin/achievements"),
+        apiFetch<PublicSettings>("/settings/public").catch(() => null),
+      ]);
       setItems(data);
+      if (settings) setVisible(settings.achievementsVisible);
       setError("");
     } catch (err) {
       const apiError = err as { message?: string; status?: number };
@@ -203,6 +209,28 @@ export default function AdminAchievementsPage() {
     }
   }
 
+  async function toggleVisibility(next: boolean) {
+    if (visibleBusy) return;
+    setVisibleBusy(true);
+    try {
+      const settings = await apiFetch<PublicSettings>("/admin/settings", {
+        method: "PUT",
+        body: { achievementsVisible: next },
+      });
+      setVisible(settings.achievementsVisible);
+      toast.push(
+        next
+          ? "Achievements section is visible on the landing page."
+          : "Achievements section is hidden from the landing page."
+      );
+    } catch (err) {
+      const apiError = err as { message?: string };
+      toast.push(apiError?.message || "Could not update the visibility.", "error");
+    } finally {
+      setVisibleBusy(false);
+    }
+  }
+
   const columns: Column<Achievement>[] = [
     {
       key: "title",
@@ -270,6 +298,38 @@ export default function AdminAchievementsPage() {
       />
 
       {error ? <Alert variant="error">{error}</Alert> : null}
+
+      <div className="flex items-center justify-between gap-4 border border-white/10 bg-white/[0.03] p-4">
+        <div className="min-w-0">
+          <p className="font-orbitron text-[10px] uppercase tracking-[0.2em] text-slate-500">
+            Landing page section
+          </p>
+          <p className="mt-1 font-rajdhani text-sm leading-snug text-slate-300">
+            {visible
+              ? "The Achievements section is visible on the public landing page."
+              : "The Achievements section is hidden from the public landing page."}
+          </p>
+        </div>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={visible}
+          aria-label="Show achievements on the landing page"
+          disabled={visibleBusy || loading}
+          onClick={() => void toggleVisibility(!visible)}
+          className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full border transition-colors disabled:opacity-50 ${
+            visible
+              ? "border-orange-400/60 bg-orange-600"
+              : "border-white/20 bg-white/[0.08]"
+          }`}
+        >
+          <span
+            className={`ml-0.5 inline-block h-5 w-5 rounded-full bg-white transition-transform ${
+              visible ? "translate-x-5" : "translate-x-0"
+            }`}
+          />
+        </button>
+      </div>
 
       <SlotGrid
         count={5}
