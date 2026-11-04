@@ -68,7 +68,7 @@ export default function FocalPointPicker({
           />
           <span
             aria-hidden="true"
-            className="pointer-events-none absolute h-6 w-6 -translate-x-1/2 -translate-y-1/2 text-accent drop-shadow-[0_0_4px_rgba(0,0,0,0.9)]"
+            className="pointer-events-none absolute h-6 w-6 -translate-x-1/2 -translate-y-1/2 text-accent drop-shadow-lg"
             style={{ left: `${focalX}%`, top: `${focalY}%` }}
           >
             <Crosshair className="h-full w-full" />
