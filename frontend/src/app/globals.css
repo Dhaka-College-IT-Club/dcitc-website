@@ -1,111 +1,363 @@
 @import "tailwindcss";
 
-:root {
-  color-scheme: dark;
-  --background: #000000;
-  --foreground: #ffffff;
-  --font-orbitron: 'Orbitron', monospace;
-  --font-rajdhani: 'Rajdhani', sans-serif;
+/* ==========================================================================
+   DCITC design system
+   One source of truth for colour, type, spacing, elevation and edges.
+   Spec: openspec/changes/ui-design-system-redesign/
+   ========================================================================== */
+
+@theme {
+  /* --- colour tokens ---------------------------------------------------- */
+  --color-bg: #05070a;
+  --color-surface: #0b0f14;
+  --color-surface-2: #121821;
+  --color-line: rgba(255, 255, 255, 0.08);
+  --color-line-strong: rgba(255, 255, 255, 0.16);
+
+  --color-text: #f8fafc;
+  --color-muted: #cbd5e1;
+  --color-subtle: #94a3b8;
+  --color-faint: #7c8aa0;
+
+  --color-accent: #22d3ee;
+  --color-accent-soft: rgba(34, 211, 238, 0.12);
+  --color-success: #34d399;
+  --color-warning: #fbbf24;
+  --color-danger: #f87171;
+
+  /* --- legacy vocabulary remap ------------------------------------------
+     Existing utilities (bg-black, text-slate-400, border-white/10) keep
+     working but resolve to the system palette. slate-500..700 are lifted
+     so every text value clears WCAG AA on --color-bg.
+     -------------------------------------------------------------------- */
+  --color-black: #05070a;
+  --color-white: #f8fafc;
+
+  --color-slate-50: #f8fafc;
+  --color-slate-100: #f1f5f9;
+  --color-slate-200: #e2e8f0;
+  --color-slate-300: #cbd5e1;
+  --color-slate-400: #a9b6c6;
+  --color-slate-500: #8b9aae;
+  --color-slate-600: #7c8aa0;
+  --color-slate-700: #6e7e94;
+  --color-slate-800: #1b232d;
+  --color-slate-900: #0e141b;
+  --color-slate-950: #070b10;
+
+  /* --- elevation -------------------------------------------------------- */
+  --shadow-elev-1: 0 8px 24px -12px rgba(0, 0, 0, 0.9);
+  --shadow-elev-2: 0 24px 60px -20px rgba(0, 0, 0, 0.95);
+  --shadow-glow: 0 0 22px rgba(248, 250, 252, 0.28);
+  --shadow-glow-accent: 0 0 0 1px rgba(34, 211, 238, 0.35),
+    0 0 24px rgba(34, 211, 238, 0.16);
 }
 
-
-html, body {
-  overflow-x: hidden;
-  max-width: 100vw;
+/* Fonts come from next/font on <html>, so the family must stay inline. */
+@theme inline {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-orbitron), ui-monospace, monospace;
+  --font-condensed: var(--font-rajdhani), ui-sans-serif, sans-serif;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-inter), Arial, Helvetica, sans-serif;
+/* ==========================================================================
+   Base
+   ========================================================================== */
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  html,
+  body {
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+
+  /* The family lives here and only here; layout.tsx sets the variables. */
+  body {
+    background: var(--color-bg);
+    color: var(--color-muted);
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  }
+
+  ::selection {
+    background: var(--color-accent);
+    color: var(--color-bg);
+  }
+
+  /* One focus ring for every interactive element. */
+  :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
 }
 
+/* Legacy font helpers, still used by hand-written class lists. */
 .font-orbitron {
-  font-family: var(--font-orbitron);
+  font-family: var(--font-orbitron), ui-monospace, monospace;
 }
 
 .font-rajdhani {
-  font-family: var(--font-rajdhani);
+  font-family: var(--font-rajdhani), ui-sans-serif, sans-serif;
 }
 
-/* Decorative duplicate of a section title, drawn without adding DOM text. */
-.section-title-ghost::before {
-  content: attr(data-ghost);
-  position: absolute;
-  top: -1.5rem;
-  left: -1.5rem;
-  z-index: 1;
-  font-size: 3rem;
-  line-height: 1;
-  color: var(--color-slate-800, #1e293b);
-  opacity: 0.2;
-  filter: blur(4px);
-  user-select: none;
-  pointer-events: none;
+/* ==========================================================================
+   Type scale — family, size, weight and tracking travel together
+   ========================================================================== */
+
+.type-display,
+.type-h1,
+.type-h2,
+.type-h3,
+.type-h4 {
+  font-family: var(--font-orbitron), ui-monospace, monospace;
+  font-weight: 700;
+  color: var(--color-text);
+  text-wrap: balance;
 }
 
-@media (min-width: 640px) {
-  .section-title-ghost::before {
-    font-size: 3.75rem;
+.type-display {
+  font-size: 2.5rem;
+  line-height: 1.1;
+}
+
+.type-h1 {
+  font-size: 2rem;
+  line-height: 1.15;
+}
+
+.type-h2 {
+  font-size: 1.625rem;
+  line-height: 1.23;
+}
+
+.type-h3 {
+  font-size: 1.25rem;
+  line-height: 1.4;
+}
+
+.type-h4 {
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+@media (min-width: 768px) {
+  .type-display {
+    font-size: 3.5rem;
+    line-height: 1.06;
+  }
+
+  .type-h1 {
+    font-size: 2.75rem;
+    line-height: 1.1;
+  }
+
+  .type-h2 {
+    font-size: 2rem;
+    line-height: 1.2;
   }
 }
 
-section {
-  overflow-x: hidden;
+.type-body,
+.type-body-sm,
+.type-caption {
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  font-weight: 400;
 }
 
-@keyframes scan {
-  0% {
-    transform: translateY(-100%);
-  }
-  100% {
-    transform: translateY(100vh);
-  }
+.type-body {
+  font-size: 1rem;
+  line-height: 1.69;
 }
 
-/* ---- Shared design language extracted from the landing page ---- */
-
-:root {
-  --dc-line: rgba(255, 255, 255, 0.1);
-  --dc-line-strong: rgba(255, 255, 255, 0.22);
-  --dc-panel: rgba(255, 255, 255, 0.025);
-  --dc-panel-raised: rgba(255, 255, 255, 0.045);
+.type-body-sm {
+  font-size: 0.875rem;
+  line-height: 1.64;
 }
 
+.type-caption {
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+
+/* 20px and up only: Rajdhani is a display-condensed face. */
+.type-subhead {
+  font-family: var(--font-rajdhani), ui-sans-serif, sans-serif;
+  font-size: 1.25rem;
+  line-height: 1.5;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+.type-overline,
+.type-button {
+  font-family: var(--font-orbitron), ui-monospace, monospace;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.type-overline {
+  font-size: 0.6875rem;
+  line-height: 1.45;
+  letter-spacing: 0.18em;
+}
+
+.type-button {
+  font-size: 0.8125rem;
+  line-height: 1.23;
+  letter-spacing: 0.12em;
+  font-weight: 700;
+}
+
+/* ==========================================================================
+   Surfaces, edges, backgrounds
+   ========================================================================== */
+
+/* The single grid background. Opacity is set by the consumer. */
 .tech-grid {
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+  background-image: linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
   background-size: 48px 48px;
 }
 
-.panel-surface {
-  border: 1px solid var(--dc-line);
-  background-color: var(--dc-panel);
+/* Edge language: the parallelogram. Container skews, contents counter-skew. */
+.edge-skew {
+  transform: skewX(-10deg);
 }
 
-/* Angular cut on the top-right and bottom-left, matching the skewed CTAs. */
-.clip-notch {
-  clip-path: polygon(
-    0 0,
-    calc(100% - 18px) 0,
-    100% 18px,
-    100% 100%,
-    18px 100%,
-    0 calc(100% - 18px)
+.edge-skew > * {
+  transform: skewX(10deg);
+}
+
+/* Section separator: one hairline, so stacked sections do not read as a
+   single black field. */
+.section-seam {
+  position: relative;
+}
+
+.section-seam::before {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--color-line-strong),
+    transparent
   );
 }
 
-.clip-notch-sm {
-  clip-path: polygon(
-    0 0,
-    calc(100% - 10px) 0,
-    100% 10px,
-    100% 100%,
-    10px 100%,
-    0 calc(100% - 10px)
-  );
+/* ==========================================================================
+   Forms
+   ========================================================================== */
+
+.dc-label {
+  display: block;
+  font-family: var(--font-orbitron), ui-monospace, monospace;
+  font-size: 0.6875rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-subtle);
+  margin-bottom: 0.45rem;
 }
+
+.dc-input {
+  width: 100%;
+  min-height: 2.75rem;
+  border: 1px solid var(--color-line);
+  background-color: rgba(0, 0, 0, 0.35);
+  padding: 0.6rem 0.85rem;
+  color: var(--color-text);
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  font-size: 1rem;
+  line-height: 1.4;
+  transition: border-color 150ms ease, background-color 150ms ease;
+}
+
+.dc-input::placeholder {
+  color: var(--color-faint);
+}
+
+.dc-input:hover:not(:disabled) {
+  border-color: var(--color-line-strong);
+}
+
+.dc-input:focus-visible {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 1px var(--color-accent);
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+.dc-input[aria-invalid="true"] {
+  border-color: var(--color-danger);
+}
+
+.dc-input[aria-invalid="true"]:focus-visible {
+  box-shadow: 0 0 0 1px var(--color-danger);
+}
+
+.dc-input:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.dc-input:-webkit-autofill,
+.dc-input:-webkit-autofill:hover,
+.dc-input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--color-text);
+  -webkit-box-shadow: 0 0 0 1000px #0b0f14 inset;
+  transition: background-color 9999s ease-in-out 0s;
+}
+
+select.dc-input {
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, var(--color-subtle) 50%),
+    linear-gradient(135deg, var(--color-subtle) 50%, transparent 50%);
+  background-position: calc(100% - 18px) 50%, calc(100% - 12px) 50%;
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+  padding-right: 2.25rem;
+}
+
+/* Compact size for dense surfaces such as the featured-slot cards. */
+.dc-input.dc-input-sm {
+  min-height: 2rem;
+  padding: 0.2rem 1.75rem 0.2rem 0.5rem;
+  font-size: 0.75rem;
+}
+
+/* Native option lists need an explicit background on Chromium and Firefox. */
+select option,
+select optgroup {
+  background-color: var(--color-surface);
+  color: var(--color-text);
+}
+
+select option:disabled {
+  background-color: var(--color-surface);
+  color: var(--color-faint);
+}
+
+textarea.dc-input {
+  min-height: 7rem;
+  resize: vertical;
+}
+
+/* Thin scrollbars inside panels */
+.dc-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-line-strong) transparent;
+  overflow-anchor: none;
+}
+
+/* ==========================================================================
+   Motion
+   ========================================================================== */
 
 @keyframes enter-rise {
   from {
@@ -140,110 +392,6 @@ section {
 .dialog-surface::backdrop {
   background: rgba(0, 0, 0, 0.72);
   backdrop-filter: blur(4px);
-}
-
-/* Form controls */
-
-.dc-label {
-  display: block;
-  font-family: var(--font-orbitron), monospace;
-  font-size: 0.6875rem;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: #94a3b8;
-  margin-bottom: 0.45rem;
-}
-
-.dc-input {
-  width: 100%;
-  min-height: 2.75rem;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background-color: rgba(0, 0, 0, 0.45);
-  padding: 0.6rem 0.85rem;
-  color: #f8fafc;
-  font-family: var(--font-rajdhani), sans-serif;
-  font-size: 1rem;
-  line-height: 1.4;
-  transition: border-color 150ms ease, box-shadow 150ms ease,
-    background-color 150ms ease;
-}
-
-.dc-input::placeholder {
-  color: #64748b;
-}
-
-.dc-input:hover:not(:disabled) {
-  border-color: rgba(255, 255, 255, 0.24);
-}
-
-.dc-input:focus-visible {
-  outline: none;
-  border-color: rgba(255, 255, 255, 0.55);
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.35);
-  background-color: rgba(255, 255, 255, 0.04);
-}
-
-.dc-input[aria-invalid="true"] {
-  border-color: rgba(248, 113, 113, 0.65);
-}
-
-.dc-input[aria-invalid="true"]:focus-visible {
-  box-shadow: 0 0 0 1px rgba(248, 113, 113, 0.55);
-}
-
-.dc-input:disabled {
-  opacity: 0.55;
-  cursor: not-allowed;
-}
-
-.dc-input:-webkit-autofill,
-.dc-input:-webkit-autofill:hover,
-.dc-input:-webkit-autofill:focus {
-  -webkit-text-fill-color: #f8fafc;
-  -webkit-box-shadow: 0 0 0 1000px #0a0a0a inset;
-  transition: background-color 9999s ease-in-out 0s;
-}
-
-select.dc-input {
-  appearance: none;
-  background-image: linear-gradient(45deg, transparent 50%, #94a3b8 50%),
-    linear-gradient(135deg, #94a3b8 50%, transparent 50%);
-  background-position: calc(100% - 18px) 50%, calc(100% - 12px) 50%;
-  background-size: 6px 6px, 6px 6px;
-  background-repeat: no-repeat;
-  padding-right: 2.25rem;
-}
-
-/* Compact size for dense surfaces such as the featured-slot cards. */
-.dc-input.dc-input-sm {
-  min-height: 2rem;
-  padding: 0.2rem 1.75rem 0.2rem 0.5rem;
-  font-size: 0.75rem;
-}
-
-/* Native option lists: color-scheme does most of it, but Chromium and Firefox
-   respect an explicit background/color on <option>, so set it for consistency. */
-select option,
-select optgroup {
-  background-color: #0a0a0a;
-  color: #f8fafc;
-}
-
-select option:disabled {
-  background-color: #0a0a0a;
-  color: #64748b;
-}
-
-textarea.dc-input {
-  min-height: 7rem;
-  resize: vertical;
-}
-
-/* Thin scrollbars inside panels */
-.dc-scroll {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
-  overflow-anchor: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
