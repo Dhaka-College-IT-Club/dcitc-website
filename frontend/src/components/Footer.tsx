@@ -3,7 +3,7 @@ import React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Facebook, Instagram, Linkedin, Mail, Youtube } from "lucide-react";
-import { CLUB, FOOTER_LINKS, SOCIAL_URLS } from "../constants";
+import { FOOTER_LINKS, SOCIAL_URLS } from "../constants";
 
 const Footer: React.FC = () => {
   const socialLinks = [
@@ -101,7 +101,6 @@ const Footer: React.FC = () => {
         <div className="flex flex-col items-center justify-between gap-4 border-t border-line pt-8 text-center type-caption text-faint md:flex-row md:text-left">
           <p>
             &copy; {new Date().getFullYear()} Dhaka College Information & Technology Club. All rights reserved.
-            <span className="ml-2 text-faint">v{CLUB.VERSION}</span>
           </p>
           <nav aria-label="Legal" className="flex flex-wrap items-center gap-4">
             <Link
