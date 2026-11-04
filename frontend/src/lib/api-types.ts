@@ -70,6 +70,7 @@ export type AuditEntry = {
 };
 
 export type PublicSettings = {
+  achievementsVisible: boolean;
   membershipFormUrl: string | null;
   membershipPriceBdt: number;
 };

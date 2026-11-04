@@ -3,11 +3,12 @@ import { db } from "../db/pool.js";
 import { settings } from "../db/schema.js";
 
 export type PublicSettings = {
+  achievementsVisible: boolean;
   membershipFormUrl: string | null;
   membershipPriceBdt: number;
 };
 
-const PUBLIC_KEYS = ["membership_form_url", "membership_price_bdt"] as const;
+const PUBLIC_KEYS = ["achievements_visible", "membership_form_url", "membership_price_bdt"] as const;
 
 /** Seeded price, and the value published when the stored one is unusable. */
 export const DEFAULT_MEMBERSHIP_PRICE_BDT = 100;
@@ -18,10 +19,13 @@ async function readWith(executor: SettingsExecutor): Promise<PublicSettings> {
   const rows = await executor
     .select()
     .from(settings)
-    .where(sql`${settings.key} in ('membership_form_url', 'membership_price_bdt')`);
+    .where(sql`${settings.key} in ('achievements_visible', 'membership_form_url', 'membership_price_bdt')`);
   const map = new Map(rows.map((row) => [row.key, row.value]));
   const parsed = Number.parseInt(map.get("membership_price_bdt") ?? "", 10);
   return {
+    // Default (and anything non-"true") keeps the section hidden; OFF is the
+    // safe state for a new club with no achievements yet.
+    achievementsVisible: map.get("achievements_visible") === "true",
     membershipFormUrl: map.get("membership_form_url") ?? null,
     // Never publish zero or a corrupt value: the fallback is deterministic and
     // the stored row is left untouched.
@@ -36,6 +40,7 @@ export function readPublicSettings(): Promise<PublicSettings> {
 
 export async function updateSettings(
   input: {
+    achievementsVisible?: boolean;
     membershipFormUrl?: string | null;
     membershipPriceBdt?: number;
   },
@@ -43,6 +48,9 @@ export async function updateSettings(
 ): Promise<PublicSettings> {
   const now = new Date();
   const writes: Array<{ key: string; value: string | null }> = [];
+  if (input.achievementsVisible !== undefined) {
+    writes.push({ key: "achievements_visible", value: input.achievementsVisible ? "true" : "false" });
+  }
   if (input.membershipFormUrl !== undefined) {
     writes.push({ key: "membership_form_url", value: input.membershipFormUrl });
   }

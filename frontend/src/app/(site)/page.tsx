@@ -9,7 +9,7 @@ import CTASection from "@/components/CTASection";
 import GetInTouch from "@/components/GetInTouch";
 import { apiServer } from "@/lib/api";
 import { DEFAULT_OG_IMAGE, SITE_DESCRIPTION, SITE_URL } from "@/lib/site";
-import type { Leader, Achievement, Intel } from "@/lib/api-types";
+import type { Leader, Achievement, Intel, PublicSettings } from "@/lib/api-types";
 import type { Metadata } from "next";
 
 export const revalidate = 60;
@@ -38,6 +38,7 @@ export const metadata: Metadata = {
 export default async function Home() {
   let leaders: Leader[] = [];
   let featuredAchievements: Achievement[] = [];
+  let achievementsVisible = false;
   let featuredIntels: Intel[] = [];
   try {
     leaders = await apiServer<Leader[]>("/leadership");
@@ -45,7 +46,11 @@ export default async function Home() {
     leaders = [];
   }
   try {
-    featuredAchievements = await apiServer<Achievement[]>("/achievements?featured=true");
+    // Hidden (toggle OFF) ships no section and skips the featured fetch too.
+    achievementsVisible = (await apiServer<PublicSettings>("/settings/public")).achievementsVisible;
+    if (achievementsVisible) {
+      featuredAchievements = await apiServer<Achievement[]>("/achievements?featured=true");
+    }
   } catch {
     featuredAchievements = [];
   }
@@ -60,7 +65,7 @@ export default async function Home() {
       <WhyJoin />
       <Departments />
       <Leadership members={leaders} />
-      <Achievements items={featuredAchievements} />
+      {achievementsVisible ? <Achievements items={featuredAchievements} /> : null}
       <BlogPreview items={featuredIntels} />
       <GetInTouch />
       <CTASection />

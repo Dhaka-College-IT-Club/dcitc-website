@@ -469,6 +469,7 @@ adminRouter.delete("/leadership/:id", async (req, res, next) => {
 // --- settings and uploads ---------------------------------------------------
 
 const settingsBody = z.object({
+  achievementsVisible: z.boolean().optional(),
   membershipFormUrl: z
     .union([z.string().trim().url("Enter a full URL.").regex(/^https?:\/\//i, "Enter a full URL."), z.null()])
     .optional(),
