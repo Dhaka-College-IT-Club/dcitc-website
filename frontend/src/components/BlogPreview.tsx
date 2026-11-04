@@ -7,14 +7,10 @@ import type { Intel } from "@/lib/api-types";
 
 const BlogPreview = ({ items = [] }: { items?: Intel[] }) => {
   return (
-    <Section id="intel">
+    <Section id="intel" seam>
       <Container>
         <Reveal>
-          <SectionTitle
-            eyebrow="Intel"
-            title="Intel"
-            subtitle="Latest insights from the DCITC"
-          />
+          <SectionTitle title="Intel" subtitle="Latest insights from the DCITC" />
 
           {items.length === 0 ? (
             <p className="type-body-sm mt-10 text-center text-subtle">

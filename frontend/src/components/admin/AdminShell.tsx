@@ -82,7 +82,7 @@ function NavLinks({
                     <span
                       aria-hidden="true"
                       className={`absolute inset-y-1 left-0 w-0.5 ${
-                        active ? "bg-white" : "bg-transparent"
+                        active ? "bg-accent" : "bg-transparent"
                       }`}
                     />
                     <Icon

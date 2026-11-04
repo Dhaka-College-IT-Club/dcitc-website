@@ -24,13 +24,13 @@ export default function StepIndicator({
               <span
                 aria-hidden="true"
                 className={`h-px flex-1 ${
-                  index === 0 ? "bg-transparent" : complete || active ? "bg-white/40" : "bg-surface-2"
+                  index === 0 ? "bg-transparent" : complete || active ? "bg-accent/40" : "bg-surface-2"
                 }`}
               />
               <span
                 className={`mx-2 inline-flex h-7 w-7 shrink-0 items-center justify-center border type-overline transition-colors ${
                   complete
-                    ? "border-white bg-white text-bg"
+                    ? "border-accent bg-accent text-bg"
                     : active
                       ? "border-white bg-bg text-text"
                       : "border-line-strong bg-bg text-faint"
@@ -48,7 +48,7 @@ export default function StepIndicator({
                   index === steps.length - 1
                     ? "bg-transparent"
                     : complete
-                      ? "bg-white/40"
+                      ? "bg-accent/40"
                       : "bg-surface-2"
                 }`}
               />

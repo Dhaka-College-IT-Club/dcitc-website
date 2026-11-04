@@ -105,14 +105,14 @@ export default function AdminSettingsPage() {
       {loading ? (
         <div className="grid gap-4 lg:grid-cols-5">
           <span className="h-72 animate-pulse border border-line bg-surface lg:col-span-3" />
-          <span className="h-72 animate-pulse border border-line bg-white/[0.02] lg:col-span-2" />
+          <span className="h-72 animate-pulse border border-line bg-surface lg:col-span-2" />
         </div>
       ) : (
         <div className="grid gap-4 lg:grid-cols-5">
           <form
             onSubmit={submit}
             noValidate
-            className="border border-line bg-white/[0.02] p-5 sm:p-6 lg:col-span-3"
+            className="border border-line bg-surface p-5 sm:p-6 lg:col-span-3"
           >
             <div className="space-y-5">
               {error ? <Alert variant="error">{error}</Alert> : null}
@@ -166,7 +166,7 @@ export default function AdminSettingsPage() {
             </div>
           </form>
 
-          <aside className="border border-line bg-white/[0.02] p-5 sm:p-6 lg:col-span-2">
+          <aside className="border border-line bg-surface p-5 sm:p-6 lg:col-span-2">
             <p className="type-overline uppercase tracking-[0.24em] text-faint">
               Member preview
             </p>

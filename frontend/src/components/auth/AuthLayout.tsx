@@ -23,24 +23,24 @@ export default function AuthLayout({
         </div>
 
         <div className="relative z-10 max-w-md">
-          <p className="mb-5 type-overline uppercase tracking-[0.34em] text-faint">
+          <p className="type-overline mb-5 text-accent">
             {panelEyebrow}
           </p>
           <h2 className="type-display">
             SHAPING
             <br />
-            <span className="text-transparent bg-clip-text bg-linear-to-r from-white via-slate-300 to-slate-600">
+            <span className="text-accent">
               TOMORROW
             </span>
             <br />
             TODAY
           </h2>
-          <p className="mt-6 max-w-sm type-body leading-relaxed tracking-wide text-subtle">
+          <p className="type-body mt-6 max-w-sm text-subtle">
             {panelNote}
           </p>
         </div>
 
-        <div className="relative z-10 type-caption tracking-wide text-faint">
+        <div className="type-caption relative z-10 text-faint">
           <span>Dhaka College Information &amp; Technology Club</span>
         </div>
       </aside>
@@ -50,7 +50,7 @@ export default function AuthLayout({
           <Logo />
           <Link
             href="/"
-            className="type-overline uppercase tracking-[0.18em] text-subtle transition-colors hover:text-text"
+            className="type-overline text-subtle transition-colors hover:text-accent"
           >
             Home
           </Link>
@@ -59,7 +59,7 @@ export default function AuthLayout({
         <div className="hidden justify-end px-8 pt-8 lg:flex">
           <Link
             href="/"
-            className="group inline-flex items-center gap-2 type-body-sm tracking-wide text-faint transition-colors hover:text-text"
+            className="group inline-flex items-center gap-2 type-body-sm text-subtle transition-colors hover:text-accent"
           >
             <span aria-hidden="true" className="transition-transform group-hover:-translate-x-0.5">
               &larr;

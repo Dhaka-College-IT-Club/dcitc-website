@@ -43,7 +43,7 @@ export default function DataTable<T>({
   const secondary = columns.filter((column) => column !== primary);
 
   return (
-    <div className="border border-line bg-white/[0.02]">
+    <div className="border border-line bg-surface">
       {onSearch ? (
         <div className="flex items-center gap-2 border-b border-line px-3 py-2.5">
           <Search className="h-4 w-4 shrink-0 text-faint" aria-hidden="true" />
@@ -73,7 +73,7 @@ export default function DataTable<T>({
               </div>
             ))}
           </div>
-          <div className="divide-y divide-white/5 lg:hidden">
+          <div className="divide-y divide-line lg:hidden">
             {Array.from({ length: 3 }).map((_, index) => (
               <div key={index} className="space-y-3 p-4">
                 <span className="block h-3.5 w-2/3 animate-pulse bg-surface-2" />
@@ -158,7 +158,7 @@ export default function DataTable<T>({
             </tbody>
           </table>
 
-          <ul className="divide-y divide-white/5 lg:hidden">
+          <ul className="divide-y divide-line lg:hidden">
             {rows.map((row) => (
               <li key={getKey(row)} className="min-w-0 space-y-3 p-4">
                 <div className="min-w-0 type-body text-text">

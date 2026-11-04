@@ -187,7 +187,7 @@ export default function LoginPage() {
     <Suspense
       fallback={
         <div className="w-full max-w-[440px]">
-          <div className="h-96 animate-pulse border border-line bg-white/[0.02]" />
+          <div className="h-96 animate-pulse border border-line bg-surface" />
         </div>
       }
     >

@@ -97,7 +97,7 @@ export default async function LeadershipPage() {
                     .map((member) => (
                       <li
                         key={`${member.batch}-${member.name}`}
-                        className="border border-line bg-white/[0.02] p-5"
+                        className="border border-line bg-surface p-5"
                       >
                         <h3 className="type-h4 font-bold tracking-wider text-text">
                           {member.name}

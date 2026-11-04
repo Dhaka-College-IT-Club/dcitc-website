@@ -59,7 +59,7 @@ export default async function IntelsPage() {
         </header>
 
         {failed ? (
-          <div className="border border-line bg-white/[0.02] px-6 py-16 text-center">
+          <div className="border border-line bg-surface px-6 py-16 text-center">
             <p className="type-overline uppercase tracking-[0.24em] text-faint">
               Content unavailable
             </p>

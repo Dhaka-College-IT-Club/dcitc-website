@@ -314,7 +314,7 @@ export default function AdminLeadershipPage() {
             aria-pressed={activeBatch === "all"}
             className={`rounded-full px-4 py-1.5 type-overline uppercase tracking-[0.16em] transition-all sm:px-5 sm:py-2 ${
               activeBatch === "all"
-                ? "bg-white text-bg shadow-glow"
+                ? "bg-accent text-bg"
                 : "text-subtle hover:text-text"
             }`}
           >
@@ -328,7 +328,7 @@ export default function AdminLeadershipPage() {
               aria-pressed={activeBatch === batch}
               className={`rounded-full px-4 py-1.5 type-overline uppercase tracking-[0.16em] transition-all sm:px-5 sm:py-2 ${
                 activeBatch === batch
-                  ? "bg-white text-bg shadow-glow"
+                  ? "bg-accent text-bg"
                   : "text-subtle hover:text-text"
               }`}
             >

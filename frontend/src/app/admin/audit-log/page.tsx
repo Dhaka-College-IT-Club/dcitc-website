@@ -139,7 +139,7 @@ export default function AdminAuditLogPage() {
 
       {error ? <Alert variant="error">{error}</Alert> : null}
 
-      <div className="flex flex-wrap items-center justify-between gap-2 border border-line bg-white/[0.02] px-4 py-2.5">
+      <div className="flex flex-wrap items-center justify-between gap-2 border border-line bg-surface px-4 py-2.5">
         <p className="type-body-sm text-subtle">
           <span className="type-overline text-text">{items.length}</span>{" "}
           recorded {items.length === 1 ? "entry" : "entries"}

@@ -6,7 +6,7 @@ import SectionTitle from "../ui/SectionTitle";
 
 export default function Departments() {
   return (
-    <Section id="departments">
+    <Section id="departments" seam>
       <Container>
         <Reveal>
           <SectionTitle

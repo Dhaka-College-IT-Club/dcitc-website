@@ -50,7 +50,7 @@ export default function DepartmentsPage() {
           {DEPARTMENTS.map((department) => (
             <section
               key={department.title}
-              className="border border-line bg-white/[0.02] p-6"
+              className="border border-line bg-surface p-6"
             >
               <h2 className="mb-3 type-h3 font-bold text-text">
                 {department.title}

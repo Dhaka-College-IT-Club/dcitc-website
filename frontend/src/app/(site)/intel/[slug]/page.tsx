@@ -176,11 +176,11 @@ export default async function IntelDetailPage({
                 </span>
               </div>
 
-              <h1 className="type-h3 mt-4 text-balance font-bold leading-tight text-text md:text-5xl">
+              <h1 className="type-h3 mt-4 text-balance font-bold leading-tight text-text">
                 {title}
               </h1>
               {shouldShowStandfirst(intel.excerpt, intel.content) ? (
-                <p className="mt-4 type-body leading-relaxed text-muted md:text-xl">
+                <p className="mt-4 type-body leading-relaxed text-muted">
                   {intel.excerpt}
                 </p>
               ) : null}

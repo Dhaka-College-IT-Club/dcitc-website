@@ -11,8 +11,8 @@
   --color-bg: #05070a;
   --color-surface: #0b0f14;
   --color-surface-2: #121821;
-  --color-line: rgba(255, 255, 255, 0.08);
-  --color-line-strong: rgba(255, 255, 255, 0.16);
+  --color-line: rgba(255, 255, 255, 0.10);
+  --color-line-strong: rgba(255, 255, 255, 0.20);
 
   --color-text: #f8fafc;
   --color-muted: #cbd5e1;

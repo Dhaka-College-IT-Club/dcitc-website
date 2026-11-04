@@ -491,7 +491,7 @@ export default function AdminIntelsPage() {
                     onClick={() => setContentTab(tab)}
                     className={`h-7 px-3 type-overline uppercase tracking-[0.16em] transition-colors ${
                       contentTab === tab
-                        ? "bg-white text-bg"
+                        ? "bg-accent text-bg"
                         : "text-subtle hover:text-text"
                     }`}
                   >

@@ -93,7 +93,7 @@ export default function DashboardPage() {
   if (error && !user) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-bg px-4 text-muted">
-        <div className="w-full max-w-lg border border-line bg-white/[0.02] p-6">
+        <div className="w-full max-w-lg border border-line bg-surface p-6">
           <p className="type-overline uppercase tracking-[0.28em] text-faint">
             Member portal
           </p>
@@ -132,7 +132,7 @@ export default function DashboardPage() {
         <p className="type-overline uppercase tracking-[0.28em] text-faint">
           Member portal
         </p>
-        <h1 className="type-h3 mt-2 font-bold leading-tight tracking-tight text-text sm:text-4xl md:text-5xl">
+        <h1 className="type-h1 mt-2">
           Welcome, <span className="break-words text-text">{user.name}</span>
         </h1>
         <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 type-body-sm text-subtle">
@@ -153,7 +153,7 @@ export default function DashboardPage() {
 
       <section
         aria-label="Account"
-        className="mb-4 border border-line bg-white/[0.02] px-5 py-4"
+        className="mb-4 border border-line bg-surface px-5 py-4"
       >
         <p className="type-overline uppercase tracking-[0.2em] text-faint">
           Account
@@ -181,11 +181,11 @@ export default function DashboardPage() {
       >
         <h2
           id="membership-title"
-          className="type-h3 font-bold tracking-tight text-text sm:text-2xl"
+          className="type-h3 font-bold tracking-tight text-text"
         >
           Membership
         </h2>
-        <p className="type-h3 mt-4 font-bold leading-none text-text sm:text-4xl">
+        <p className="type-h3 mt-4 font-bold leading-none text-text">
           {price}
           <span className="ml-2 type-h4 font-medium tracking-[0.16em] text-subtle">
             BDT

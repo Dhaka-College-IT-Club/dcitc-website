@@ -49,7 +49,7 @@ export default function Alert({
         <button
           type="button"
           onClick={onDismiss}
-          className="-mr-1 -mt-0.5 inline-flex h-6 w-6 items-center justify-center text-current opacity-60 transition-opacity hover:opacity-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+          className="-mr-1 -mt-0.5 inline-flex h-6 w-6 items-center justify-center text-current opacity-60 transition-opacity hover:opacity-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
           aria-label="Dismiss message"
         >
           <X className="h-3.5 w-3.5" aria-hidden="true" />

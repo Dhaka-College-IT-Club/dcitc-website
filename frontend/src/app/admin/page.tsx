@@ -109,7 +109,7 @@ export default function AdminHome() {
             <Link
               key={card.href}
               href={card.href}
-              className="group relative flex flex-col justify-between border border-line bg-white/[0.02] p-5 transition-all hover:border-line-strong/35 hover:bg-surface-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              className="group relative flex flex-col justify-between border border-line bg-surface p-5 transition-all hover:border-line-strong/35 hover:bg-surface-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
             >
               <div className="flex items-start justify-between">
                 <span className="flex h-9 w-9 items-center justify-center border border-line-strong text-subtle transition-colors group-hover:border-line-strong/40 group-hover:text-text">
@@ -168,7 +168,7 @@ export default function AdminHome() {
       ) : null}
 
       <div className="grid gap-4 lg:grid-cols-5">
-        <section className="border border-line bg-white/[0.02] p-5 sm:p-6 lg:col-span-3">
+        <section className="border border-line bg-surface p-5 sm:p-6 lg:col-span-3">
           <p className="type-overline uppercase tracking-[0.24em] text-faint">
             Quick actions
           </p>
@@ -188,7 +188,7 @@ export default function AdminHome() {
           </div>
         </section>
 
-        <section className="border border-line bg-white/[0.02] p-5 sm:p-6 lg:col-span-2">
+        <section className="border border-line bg-surface p-5 sm:p-6 lg:col-span-2">
           <p className="type-overline uppercase tracking-[0.24em] text-faint">
             Session
           </p>

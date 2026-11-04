@@ -77,7 +77,7 @@ export default function Drawer({
           <button
             type="button"
             onClick={onClose}
-            className="-mr-1 inline-flex h-9 w-9 shrink-0 items-center justify-center border border-line text-subtle transition-colors hover:border-line-strong hover:text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            className="-mr-1 inline-flex h-9 w-9 shrink-0 items-center justify-center border border-line text-subtle transition-colors hover:border-line-strong hover:text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
             aria-label="Close panel"
           >
             <X className="h-4 w-4" aria-hidden="true" />

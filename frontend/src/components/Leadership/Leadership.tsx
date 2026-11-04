@@ -23,7 +23,7 @@ function LeaderImage({ member }: { member: Leader }) {
         <span
           role="img"
           aria-label={member.name}
-          className="type-h3 font-bold tracking-[0.2em] text-subtle md:text-2xl"
+          className="type-h3 font-bold tracking-[0.2em] text-subtle"
         >
           {initials(member.name)}
         </span>
@@ -100,7 +100,7 @@ const Leadership: React.FC<{ members?: Leader[] }> = ({ members = [] }) => {
                 <span
                   role="img"
                   aria-label={member.name}
-                  className="type-h3 font-bold tracking-[0.2em] text-subtle md:text-2xl"
+                  className="type-h3 font-bold tracking-[0.2em] text-subtle"
                 >
                   {initials(member.name)}
                 </span>

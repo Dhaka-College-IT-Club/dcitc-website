@@ -87,7 +87,7 @@ const GetInTouch: React.FC = () => {
             type="button"
             onClick={() => setSuccess(false)}
             aria-label="Dismiss confirmation"
-            className="-mr-1 -mt-1 inline-flex h-6 w-6 shrink-0 items-center justify-center text-subtle transition-colors hover:text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            className="-mr-1 -mt-1 inline-flex h-6 w-6 shrink-0 items-center justify-center text-subtle transition-colors hover:text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
           >
             <X className="h-4 w-4" aria-hidden="true" />
           </button>
@@ -207,7 +207,7 @@ const GetInTouch: React.FC = () => {
         </div>
       </div>
 
-      <div className="absolute top-1/4 right-0 w-32 h-32 bg-white/5 blur-3xl rounded-full pointer-events-none" />
+      <div aria-hidden="true" className="pointer-events-none absolute right-0 top-1/4 h-32 w-32 rounded-full bg-accent-soft blur-3xl" />
     </section>
   );
 };

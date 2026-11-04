@@ -57,7 +57,7 @@ export default function FocalPointPicker({
             event.preventDefault();
             onChange(clamp(focalX + move[0]), clamp(focalY + move[1]));
           }}
-          className="relative mt-1.5 aspect-video w-full cursor-crosshair overflow-hidden border border-line-strong bg-bg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+          className="relative mt-1.5 aspect-video w-full cursor-crosshair overflow-hidden border border-line-strong bg-bg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img

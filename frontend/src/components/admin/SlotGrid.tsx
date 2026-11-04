@@ -57,7 +57,7 @@ export default function SlotGrid({
                   Slot {String(slot + 1).padStart(2, "0")}
                 </span>
                 {occupant ? (
-                  <span className="flex h-4 w-4 items-center justify-center bg-white text-bg">
+                  <span className="flex h-4 w-4 items-center justify-center bg-accent text-bg">
                     <Check className="h-2.5 w-2.5" aria-hidden="true" />
                   </span>
                 ) : (

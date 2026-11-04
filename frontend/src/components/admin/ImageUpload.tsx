@@ -128,7 +128,7 @@ export default function ImageUpload({
               }}
               onMouseDown={(event) => event.preventDefault()}
               disabled={uploading}
-              className="inline-flex h-8 cursor-pointer items-center gap-2 border border-line-strong px-3 type-overline uppercase tracking-[0.14em] text-muted transition-colors hover:border-line-strong/50 hover:text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              className="inline-flex h-8 cursor-pointer items-center gap-2 border border-line-strong px-3 type-overline uppercase tracking-[0.14em] text-muted transition-colors hover:border-line-strong/50 hover:text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
             >
               {uploading ? (
                 <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />

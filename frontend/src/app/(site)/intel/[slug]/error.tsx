@@ -6,7 +6,7 @@ import Button from "@/components/ui/Button";
 export default function IntelError({ retry }: { error: unknown; retry: () => void }) {
   return (
     <div className="flex min-h-[70vh] items-center justify-center bg-bg px-5 text-muted">
-      <div className="w-full max-w-lg border border-line bg-white/[0.02] p-6">
+      <div className="w-full max-w-lg border border-line bg-surface p-6">
         <p className="type-overline uppercase tracking-[0.28em] text-faint">
           Intel
         </p>

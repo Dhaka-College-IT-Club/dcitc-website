@@ -436,10 +436,10 @@ export default function SignupPage() {
                     className={`h-1 flex-1 transition-colors ${
                       index < score
                         ? score >= 4
-                          ? "bg-white"
+                          ? "bg-success"
                           : score >= 3
-                            ? "bg-slate-300"
-                            : "bg-slate-500"
+                            ? "bg-warning"
+                            : "bg-danger"
                         : "bg-surface-2"
                     }`}
                   />
