@@ -475,8 +475,29 @@ function GlyphBackgroundContent({
       }
     };
 
+    // A gesture that starts on a control, or that turns into a scroll, is not
+    // a tap: the wave waits for pointerup and only fires when the press stayed
+    // still, ended fast, and the page did not move under it.
+    let press: {
+      id: number;
+      x: number;
+      y: number;
+      at: number;
+      moved: boolean;
+      scrolled: boolean;
+    } | null = null;
+    const CONTROL = "a,button,input,textarea,select,label,.hwf-root";
+    const TAP_SLOP = 12;
+    const TAP_MS = 700;
+
     const onMove = (event: PointerEvent) => {
+      if (press && event.pointerId === press.id) {
+        const [mx, my] = toLocal(event);
+        if (Math.hypot(mx - press.x, my - press.y) > TAP_SLOP) press.moved = true;
+      }
       if (!latestRef.current.interactive || latestRef.current.reduce) return;
+      // The warm trail is a cursor effect; on touch it would smear on drags.
+      if (event.pointerType === "touch") return;
       const [x, y] = toLocal(event);
       if (!inside(x, y)) return;
       const now = timeRef.current;
@@ -500,17 +521,47 @@ function GlyphBackgroundContent({
     };
 
     const onDown = (event: PointerEvent) => {
+      press = null;
       if (!latestRef.current.interactive || latestRef.current.reduce) return;
       const target = event.target as HTMLElement | null;
-      // A wave behind a link or a control is noise, not feedback.
-      if (target?.closest?.("a,button,input,textarea,select,label")) return;
+      if (target?.closest?.(CONTROL)) return;
+      const [x, y] = toLocal(event);
+      if (!inside(x, y)) return;
+      press = {
+        id: event.pointerId,
+        x,
+        y,
+        at: performance.now(),
+        moved: false,
+        scrolled: false,
+      };
+    };
+
+    const onUp = (event: PointerEvent) => {
+      if (!press || event.pointerId !== press.id) return;
+      const held = press;
+      press = null;
+      if (held.moved || held.scrolled) return;
+      if (performance.now() - held.at > TAP_MS) return;
+      if (!latestRef.current.interactive || latestRef.current.reduce) return;
       const [x, y] = toLocal(event);
       if (!inside(x, y)) return;
       spawnWave(x, y);
     };
 
+    // The browser claims the gesture when it turns into a scroll.
+    const onCancel = () => {
+      press = null;
+    };
+    const onScroll = () => {
+      if (press) press.scrolled = true;
+    };
+
     window.addEventListener("pointermove", onMove, { passive: true });
     window.addEventListener("pointerdown", onDown, { passive: true });
+    window.addEventListener("pointerup", onUp, { passive: true });
+    window.addEventListener("pointercancel", onCancel, { passive: true });
+    window.addEventListener("scroll", onScroll, { passive: true, capture: true });
 
     drawRef.current = draw;
     resizeRef.current = resize;
@@ -524,6 +575,9 @@ function GlyphBackgroundContent({
     return () => {
       window.removeEventListener("pointermove", onMove);
       window.removeEventListener("pointerdown", onDown);
+      window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("pointercancel", onCancel);
+      window.removeEventListener("scroll", onScroll, { capture: true });
       observer.disconnect();
       drawRef.current = () => {};
       resizeRef.current = () => {};
