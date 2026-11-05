@@ -51,6 +51,27 @@ const LEADERSHIP_EXEC_LABEL: string = LEADERSHIP.LABELS.EXECUTIVE;
 const LEADERSHIP_CHIEF_LABEL: string = LEADERSHIP.LABELS.CHIEF;
 const LEADERSHIP_JOINT_LABEL: string = LEADERSHIP.LABELS.JOINT;
 
+/**
+ * Split a tier into centred rows without leaving a lone item behind: a group
+ * of 5 becomes 3+2, a group of 9 becomes 3+3+3, and anything that divides
+ * evenly keeps the widest row that fits.
+ */
+function balancedRows<T>(items: T[], capacity: number): T[][] {
+  const total = items.length;
+  if (total === 0) return [];
+  let perRow = Math.min(capacity, total);
+  let rowCount = Math.ceil(total / perRow);
+  while (perRow > 1 && total - (rowCount - 1) * perRow < 2) {
+    perRow -= 1;
+    rowCount = Math.ceil(total / perRow);
+  }
+  const rows: T[][] = [];
+  for (let index = 0; index < total; index += perRow) {
+    rows.push(items.slice(index, index + perRow));
+  }
+  return rows;
+}
+
 const Leadership: React.FC<{ members?: Leader[] }> = ({ members = [] }) => {
   const LEADERSHIP_BATCHES: string[] = Array.from(
     new Set(members.map((m) => m.batch))
@@ -71,9 +92,9 @@ const Leadership: React.FC<{ members?: Leader[] }> = ({ members = [] }) => {
     size?: "large" | "normal" | "small";
   }) => {
     const sizeClasses: Record<"large" | "normal" | "small", string> = {
-      large: "w-48 h-48 md:w-56 md:h-56",
-      normal: "w-40 h-40 md:w-48 md:h-48",
-      small: "w-36 h-36 md:w-40 md:h-40",
+      large: "w-40 h-40 sm:w-48 sm:h-48 md:w-56 md:h-56",
+      normal: "w-36 h-36 sm:w-40 sm:h-40 md:w-48 md:h-48",
+      small: "w-32 h-32 sm:w-36 sm:h-36 md:w-40 md:h-40",
     };
 
     return (
@@ -109,20 +130,17 @@ const Leadership: React.FC<{ members?: Leader[] }> = ({ members = [] }) => {
             )}
             <div aria-hidden="true" className="absolute inset-0 bg-linear-to-t from-bg/70 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
           </div>
-
-          <span aria-hidden="true" className="absolute left-1/2 top-0 h-2 w-2 -translate-x-1/2 border-l border-t border-accent/40" />
-          <span aria-hidden="true" className="absolute bottom-0 left-1/2 h-2 w-2 -translate-x-1/2 border-b border-r border-accent/40" />
         </div>
 
         <div className="text-center flex flex-col items-center flex-1 w-full">
-          <h3 className="type-h4 mb-1 flex min-h-[2.5rem] items-end justify-center text-center uppercase tracking-wide md:min-h-[2.75rem]">
+          <h3 className="type-h4 mb-0.5 flex items-end justify-center text-center uppercase tracking-wide md:mb-1 md:min-h-[2.75rem]">
             {member.name}
           </h3>
-          <p className="type-caption flex min-h-[1.5rem] items-start justify-center text-center text-subtle">
+          <p className="type-caption flex items-start justify-center text-center text-subtle md:min-h-[1.5rem]">
             {member.role}
           </p>
           {(member.facebook || member.linkedin || member.github || member.portfolio) && (
-            <div className="flex justify-center gap-3 mt-auto pt-4">
+            <div className="flex justify-center gap-3 mt-auto pt-2 md:pt-4">
               {member.facebook && (
                 <a
                   href={member.facebook}
@@ -217,12 +235,12 @@ const Leadership: React.FC<{ members?: Leader[] }> = ({ members = [] }) => {
           </div>
         ) : (
           <>
-        <div className="mb-16">
+        <div className="mb-10 md:mb-16">
           <motion.div
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
-            className="flex justify-center items-center mb-8 text-center"
+            className="flex justify-center items-center mb-5 text-center md:mb-8"
           >
             <div className="h-px w-8 bg-linear-to-r from-transparent to-line-strong sm:w-16" />
             <span className="type-overline px-4 text-faint">
@@ -231,23 +249,28 @@ const Leadership: React.FC<{ members?: Leader[] }> = ({ members = [] }) => {
             <div className="h-px w-8 bg-linear-to-l from-transparent to-line-strong sm:w-16" />
           </motion.div>
 
-          <div className="flex flex-wrap justify-center gap-8 md:gap-16">
-            {executives.map((member) => (
-              <LeaderCard
-                key={member.batch + '-' + member.name}
-                member={member}
-                size="large"
-              />
-            ))}
-          </div>
+          {balancedRows(executives, 4).map((row, rowIndex) => (
+            <div
+              key={`exec-${rowIndex}`}
+              className="flex flex-wrap justify-center gap-6 md:gap-16"
+            >
+              {row.map((member) => (
+                <LeaderCard
+                  key={member.batch + '-' + member.name}
+                  member={member}
+                  size="large"
+                />
+              ))}
+            </div>
+          ))}
         </div>
 
-        <div className="mb-16">
+        <div className="mb-10 md:mb-16">
           <motion.div
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
-            className="flex justify-center items-center mb-8 text-center"
+            className="flex justify-center items-center mb-5 text-center md:mb-8"
           >
             <div className="h-px w-8 bg-linear-to-r from-transparent to-line-strong sm:w-16" />
             <span className="type-overline px-4 text-faint">
@@ -256,15 +279,20 @@ const Leadership: React.FC<{ members?: Leader[] }> = ({ members = [] }) => {
             <div className="h-px w-8 bg-linear-to-l from-transparent to-line-strong sm:w-16" />
           </motion.div>
 
-          <div className="flex flex-wrap justify-center gap-6 md:gap-10">
-            {chiefs.map((member) => (
-              <LeaderCard
-                key={member.batch + '-' + member.name}
-                member={member}
-                size="normal"
-              />
-            ))}
-          </div>
+          {balancedRows(chiefs, 4).map((row, rowIndex) => (
+            <div
+              key={`chief-${rowIndex}`}
+              className="flex flex-wrap justify-center gap-5 md:gap-10"
+            >
+              {row.map((member) => (
+                <LeaderCard
+                  key={member.batch + '-' + member.name}
+                  member={member}
+                  size="normal"
+                />
+              ))}
+            </div>
+          ))}
         </div>
 
         {joints.length > 0 && (
@@ -273,7 +301,7 @@ const Leadership: React.FC<{ members?: Leader[] }> = ({ members = [] }) => {
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
-              className="flex justify-center items-center mb-8 text-center"
+              className="flex justify-center items-center mb-5 text-center md:mb-8"
             >
               <div className="h-px w-8 bg-linear-to-r from-transparent to-line-strong sm:w-16" />
               <span className="type-overline px-4 text-faint">
@@ -282,15 +310,20 @@ const Leadership: React.FC<{ members?: Leader[] }> = ({ members = [] }) => {
               <div className="h-px w-8 bg-linear-to-l from-transparent to-line-strong sm:w-16" />
             </motion.div>
 
-            <div className="flex flex-wrap justify-center gap-6 md:gap-10">
-              {joints.map((member) => (
-                <LeaderCard
-                  key={member.batch + '-' + member.name}
-                  member={member}
-                  size="small"
-                />
-              ))}
-            </div>
+            {balancedRows(joints, 5).map((row, rowIndex) => (
+              <div
+                key={`joint-${rowIndex}`}
+                className="flex flex-wrap justify-center gap-5 md:gap-10"
+              >
+                {row.map((member) => (
+                  <LeaderCard
+                    key={member.batch + '-' + member.name}
+                    member={member}
+                    size="small"
+                  />
+                ))}
+              </div>
+            ))}
           </div>
         )}
           </>
