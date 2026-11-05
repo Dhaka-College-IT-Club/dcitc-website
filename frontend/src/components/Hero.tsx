@@ -14,7 +14,7 @@ export default function Hero() {
       id="hero"
       className={[
         "relative flex min-h-[100svh] items-center overflow-hidden",
-        "pt-24 pb-16 sm:pt-20 sm:pb-14 md:pt-28 md:pb-20",
+        "pt-24 pb-16 sm:pt-20 sm:pb-14 md:pt-36 md:pb-20",
         "[@media(max-height:600px)]:pt-[4.5rem] [@media(max-height:600px)]:pb-0",
       ].join(" ")}
     >
@@ -51,7 +51,7 @@ export default function Hero() {
           <div
             className={[
               "relative mx-auto flex h-52 w-52 items-center justify-center",
-              "sm:h-64 sm:w-64 md:mx-0 md:ml-auto md:-translate-y-10 lg:h-[24rem] lg:w-[24rem]",
+              "sm:h-64 sm:w-64 md:mx-0 md:ml-auto md:-translate-y-10 lg:h-[26rem] lg:w-[26rem]",
               "[@media(max-height:600px)]:h-44 [@media(max-height:600px)]:w-44",
             ].join(" ")}
           >
@@ -70,7 +70,7 @@ export default function Hero() {
 
             <div
               className={[
-                "relative h-40 w-40 sm:h-52 sm:w-52 lg:h-80 lg:w-80",
+                "relative h-40 w-40 sm:h-52 sm:w-52 lg:h-[22rem] lg:w-[22rem]",
                 "[@media(max-height:600px)]:h-36 [@media(max-height:600px)]:w-36",
               ].join(" ")}
             >
@@ -79,7 +79,7 @@ export default function Hero() {
                 alt="Dhaka College IT Club crest"
                 fill
                 priority
-                sizes="(min-width: 1024px) 320px, (min-width: 640px) 256px, 192px"
+                sizes="(min-width: 1024px) 352px, (min-width: 640px) 256px, 192px"
                 className="object-contain"
               />
             </div>
