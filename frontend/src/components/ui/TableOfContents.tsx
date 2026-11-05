@@ -18,18 +18,29 @@ export default function TableOfContents({ headings }: { headings: Heading[] }) {
 
     if (targets.length === 0) return;
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
-        if (visible[0]) setActiveId(visible[0].target.id);
-      },
-      { rootMargin: "-20% 0px -70% 0px" }
-    );
+    let frame = 0;
 
-    targets.forEach((target) => observer.observe(target));
-    return () => observer.disconnect();
+    // The active section is the last heading that has crossed the reading line.
+    const update = () => {
+      frame = 0;
+      const line = window.innerHeight * 0.3;
+      let current = "";
+      for (const target of targets) {
+        if (target.getBoundingClientRect().top <= line) current = target.id;
+      }
+      setActiveId(current);
+    };
+
+    const onScroll = () => {
+      if (frame === 0) frame = window.requestAnimationFrame(update);
+    };
+
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (frame !== 0) window.cancelAnimationFrame(frame);
+    };
   }, [headings]);
 
   if (headings.length < 2) return null;
