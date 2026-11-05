@@ -31,10 +31,6 @@ export default function Hero() {
         aria-hidden="true"
         className="haze-glow pointer-events-none absolute inset-0 opacity-80 md:hidden"
       />
-      <div
-        aria-hidden="true"
-        className="scanlines pointer-events-none absolute inset-y-0 right-0 hidden w-1/2 md:block"
-      />
 
       <Container>
         <div className="grid items-center gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,0.8fr)] md:gap-12">
