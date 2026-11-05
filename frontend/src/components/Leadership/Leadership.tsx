@@ -4,6 +4,7 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { Facebook, Linkedin, Github, Globe } from "lucide-react";
 import SectionTitle from "../ui/SectionTitle";
+import Card from "../ui/Card";
 import { LEADERSHIP } from "../../constants";
 import type { Leader } from "../../lib/api-types";
 import { isOptimizableImage, resolveImageUrl } from "../../lib/images";
@@ -191,7 +192,7 @@ const Leadership: React.FC<{ members?: Leader[] }> = ({ members = [] }) => {
         />
 
         <div className="flex justify-center mb-12">
-          <div className="inline-flex items-center gap-1 border border-line bg-surface p-1">
+          <Card padding="p-1" className="inline-flex items-center gap-1">
             {LEADERSHIP_BATCHES.map((batch) => (
               <button
                 key={batch}
@@ -205,7 +206,7 @@ const Leadership: React.FC<{ members?: Leader[] }> = ({ members = [] }) => {
                 {batch}
               </button>
             ))}
-          </div>
+          </Card>
         </div>
 
         {batchMembers.length === 0 ? (

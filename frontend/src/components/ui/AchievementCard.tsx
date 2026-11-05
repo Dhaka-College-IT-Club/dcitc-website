@@ -1,4 +1,5 @@
 import IntelImage from "./IntelImage";
+import Card from "./Card";
 import type { Achievement } from "@/lib/api-types";
 
 /**
@@ -11,7 +12,7 @@ export default function AchievementCard({
   achievement: Achievement;
 }) {
   return (
-    <article className="flex h-full flex-col overflow-hidden border border-line bg-surface">
+    <Card as="article" padding="" className="flex h-full flex-col overflow-hidden">
       <div className="relative aspect-video overflow-hidden">
         <IntelImage
           src={achievement.image}
@@ -35,6 +36,6 @@ export default function AchievementCard({
           {achievement.detail}
         </p>
       </div>
-    </article>
+    </Card>
   );
 }

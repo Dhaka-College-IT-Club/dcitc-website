@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { Badge } from "./Eyebrow";
+import Card from "./Card";
 import IntelImage from "./IntelImage";
 import { cleanTitle, formatShortDate } from "@/lib/intel";
 import type { Intel } from "@/lib/api-types";
@@ -9,9 +9,10 @@ export default function IntelCard({ intel }: { intel: Intel }) {
   const title = cleanTitle(intel.title);
 
   return (
-    <Link
+    <Card
       href={`/intel/${intel.slug}`}
-      className="group flex h-full min-w-0 flex-col overflow-hidden border border-line bg-surface transition-colors duration-200 hover:border-line-strong hover:bg-surface-2"
+      padding=""
+      className="group flex h-full min-w-0 flex-col overflow-hidden transition-colors duration-200 hover:border-line-strong hover:bg-surface-2"
     >
       <div className="relative aspect-video overflow-hidden">
         <IntelImage
@@ -52,6 +53,6 @@ export default function IntelCard({ intel }: { intel: Intel }) {
           </span>
         </span>
       </div>
-    </Link>
+    </Card>
   );
 }

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Breadcrumbs from "@/components/seo/Breadcrumbs";
+import Card from "@/components/ui/Card";
 import { DEPARTMENTS } from "@/constants";
 import { DEFAULT_OG_IMAGE } from "@/lib/site";
 
@@ -48,17 +49,14 @@ export default function DepartmentsPage() {
 
         <div className="grid gap-6 md:grid-cols-2">
           {DEPARTMENTS.map((department) => (
-            <section
-              key={department.title}
-              className="border border-line bg-surface p-6"
-            >
+            <Card as="section" key={department.title}>
               <h2 className="mb-3 type-h3 font-bold text-text">
                 {department.title}
               </h2>
               <p className="type-body leading-relaxed text-subtle">
                 {department.description}
               </p>
-            </section>
+            </Card>
           ))}
         </div>
 

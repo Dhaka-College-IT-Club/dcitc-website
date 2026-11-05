@@ -7,10 +7,10 @@ import {
   Trophy,
   Users,
 } from "lucide-react";
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import PageHeader from "@/components/admin/PageHeader";
 import Button from "@/components/ui/Button";
+import Card from "@/components/ui/Card";
 import { apiFetch } from "@/lib/api";
 import type { Achievement, Admin, Intel, Leader } from "@/lib/api-types";
 
@@ -106,10 +106,11 @@ export default function AdminHome() {
         {cards.map((card) => {
           const Icon = card.icon;
           return (
-            <Link
+            <Card
               key={card.href}
               href={card.href}
-              className="group relative flex flex-col justify-between border border-line bg-surface p-5 transition-all hover:border-line-strong/35 hover:bg-surface-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+              padding="p-5"
+              className="group flex flex-col justify-between transition-all hover:border-line-strong/35 hover:bg-surface-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
             >
               <div className="flex items-start justify-between">
                 <span className="flex h-9 w-9 items-center justify-center border border-line-strong text-subtle transition-colors group-hover:border-line-strong/40 group-hover:text-text">
@@ -139,7 +140,7 @@ export default function AdminHome() {
                   {card.note}
                 </p>
               </div>
-            </Link>
+            </Card>
           );
         })}
       </div>
@@ -168,7 +169,7 @@ export default function AdminHome() {
       ) : null}
 
       <div className="grid gap-4 lg:grid-cols-5">
-        <section className="border border-line bg-surface p-5 sm:p-6 lg:col-span-3">
+        <Card as="section" padding="p-5 sm:p-6" className="lg:col-span-3">
           <p className="type-overline uppercase tracking-[0.24em] text-faint">
             Quick actions
           </p>
@@ -186,9 +187,9 @@ export default function AdminHome() {
               Edit membership link
             </Button>
           </div>
-        </section>
+        </Card>
 
-        <section className="border border-line bg-surface p-5 sm:p-6 lg:col-span-2">
+        <Card as="section" padding="p-5 sm:p-6" className="lg:col-span-2">
           <p className="type-overline uppercase tracking-[0.24em] text-faint">
             Session
           </p>
@@ -211,7 +212,7 @@ export default function AdminHome() {
               ? "You can also manage operator accounts and read the audit log."
               : "Operator accounts and audit history are managed by a super admin."}
           </p>
-        </section>
+        </Card>
       </div>
     </div>
   );

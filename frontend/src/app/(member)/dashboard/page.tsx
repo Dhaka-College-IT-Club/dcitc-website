@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import DashboardShell from "@/components/dashboard/DashboardShell";
 import Alert from "@/components/ui/Alert";
 import Button from "@/components/ui/Button";
+import Card from "@/components/ui/Card";
 import { apiFetch } from "@/lib/api";
 import type { PublicSettings, User } from "@/lib/api-types";
 
@@ -93,7 +94,7 @@ export default function DashboardPage() {
   if (error && !user) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-bg px-4 text-muted">
-        <div className="w-full max-w-lg border border-line bg-surface p-6">
+        <Card className="w-full max-w-lg">
           <p className="type-overline uppercase tracking-[0.28em] text-faint">
             Member portal
           </p>
@@ -112,7 +113,7 @@ export default function DashboardPage() {
               Retry
             </Button>
           </div>
-        </div>
+        </Card>
       </div>
     );
   }
@@ -151,9 +152,11 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      <section
+      <Card
+        as="section"
         aria-label="Account"
-        className="mb-4 border border-line bg-surface px-5 py-4"
+        padding="px-5 py-4"
+        className="mb-4"
       >
         <p className="type-overline uppercase tracking-[0.2em] text-faint">
           Account
@@ -173,7 +176,7 @@ export default function DashboardPage() {
             .
           </p>
         </div>
-      </section>
+      </Card>
 
       <section
         aria-labelledby="membership-title"

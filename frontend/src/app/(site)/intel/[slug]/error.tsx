@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import Button from "@/components/ui/Button";
+import Card from "@/components/ui/Card";
 
 export default function IntelError({ retry }: { error: unknown; retry: () => void }) {
   return (
     <div className="flex min-h-[70vh] items-center justify-center bg-bg px-5 text-muted">
-      <div className="w-full max-w-lg border border-line bg-surface p-6">
+      <Card className="w-full max-w-lg">
         <p className="type-overline uppercase tracking-[0.28em] text-faint">
           Intel
         </p>
@@ -31,7 +32,7 @@ export default function IntelError({ retry }: { error: unknown; retry: () => voi
           </Link>
           .
         </p>
-      </div>
+      </Card>
     </div>
   );
 }

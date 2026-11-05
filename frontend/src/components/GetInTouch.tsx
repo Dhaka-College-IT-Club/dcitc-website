@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { MapPin, Mail, Send, X } from "lucide-react";
 import SectionTitle from "./ui/SectionTitle";
 import Button from "./ui/Button";
+import Card from "./ui/Card";
 
 const CONFIRMATION_MS = 6000;
 
@@ -110,9 +111,10 @@ const GetInTouch: React.FC = () => {
           <div className="space-y-8">
             <div className="space-y-4">
               {contacts.map(({ icon: Icon, label, value }) => (
-                <div
+                <Card
                   key={label}
-                  className="flex items-start gap-4 border border-line bg-surface p-4"
+                  padding="p-4"
+                  className="flex items-start gap-4"
                 >
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center border border-line-strong text-accent">
                     <Icon className="h-5 w-5" aria-hidden="true" />
@@ -121,7 +123,7 @@ const GetInTouch: React.FC = () => {
                     <p className="type-overline mb-1 text-faint">{label}</p>
                     <p className="type-body break-all text-text">{value}</p>
                   </div>
-                </div>
+                </Card>
               ))}
             </div>
 
@@ -189,7 +191,7 @@ const GetInTouch: React.FC = () => {
             </form>
           </div>
 
-          <div className="w-full overflow-hidden border border-line bg-surface">
+          <Card padding="" className="w-full overflow-hidden">
             <div className="relative w-full aspect-[4/3] lg:aspect-auto lg:h-[520px]">
               <iframe
                 src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d6441.9394693764025!2d90.38087734965688!3d23.734180404014626!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3755b8c8e1ea9fd1%3A0xa6e274882fdbce53!2sDhaka%20College!5e0!3m2!1sen!2sbd!4v1793377737693!5m2!1sen!2sbd"
@@ -203,7 +205,7 @@ const GetInTouch: React.FC = () => {
                 title="DCITC Location - Dhaka College"
               />
             </div>
-          </div>
+          </Card>
         </div>
       </div>
 

@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import DataTable, { type Column } from "@/components/admin/DataTable";
 import PageHeader from "@/components/admin/PageHeader";
 import Alert from "@/components/ui/Alert";
+import Card from "@/components/ui/Card";
 import { apiFetch } from "@/lib/api";
 import type { AuditEntry } from "@/lib/api-types";
 
@@ -139,7 +140,7 @@ export default function AdminAuditLogPage() {
 
       {error ? <Alert variant="error">{error}</Alert> : null}
 
-      <div className="flex flex-wrap items-center justify-between gap-2 border border-line bg-surface px-4 py-2.5">
+      <Card padding="px-4 py-2.5" className="flex flex-wrap items-center justify-between gap-2">
         <p className="type-body-sm text-subtle">
           <span className="type-overline text-text">{items.length}</span>{" "}
           recorded {items.length === 1 ? "entry" : "entries"}
@@ -147,7 +148,7 @@ export default function AdminAuditLogPage() {
         <p className="type-overline uppercase tracking-[0.16em] text-faint">
           Read only
         </p>
-      </div>
+      </Card>
 
       <DataTable
         columns={columns}

@@ -8,6 +8,7 @@ import Button from "@/components/ui/Button";
 import TextField from "@/components/ui/TextField";
 import { useToast } from "@/components/ui/Toast";
 import { CLUB } from "@/constants";
+import Card from "@/components/ui/Card";
 import { apiFetch } from "@/lib/api";
 import type { PublicSettings } from "@/lib/api-types";
 
@@ -166,7 +167,7 @@ export default function AdminSettingsPage() {
             </div>
           </form>
 
-          <aside className="border border-line bg-surface p-5 sm:p-6 lg:col-span-2">
+          <Card as="aside" padding="p-5 sm:p-6" className="lg:col-span-2">
             <p className="type-overline uppercase tracking-[0.24em] text-faint">
               Member preview
             </p>
@@ -204,7 +205,7 @@ export default function AdminSettingsPage() {
                 Version <span className="text-text">v{CLUB.VERSION}</span>
               </p>
             </div>
-          </aside>
+          </Card>
         </div>
       )}
     </div>

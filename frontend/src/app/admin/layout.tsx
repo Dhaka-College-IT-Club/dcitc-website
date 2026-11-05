@@ -4,6 +4,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import AdminShell from "@/components/admin/AdminShell";
 import Alert from "@/components/ui/Alert";
+import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import { apiFetch } from "@/lib/api";
 import type { Admin } from "@/lib/api-types";
@@ -49,7 +50,7 @@ export default function AdminLayout({
   if (error) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-bg px-4 text-muted">
-        <div className="w-full max-w-lg border border-line bg-surface p-6">
+        <Card className="w-full max-w-lg">
           <p className="type-overline uppercase tracking-[0.24em] text-faint">
             Admin console
           </p>
@@ -68,7 +69,7 @@ export default function AdminLayout({
               Retry
             </Button>
           </div>
-        </div>
+        </Card>
       </div>
     );
   }

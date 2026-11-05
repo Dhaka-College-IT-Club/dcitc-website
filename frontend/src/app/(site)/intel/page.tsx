@@ -5,6 +5,7 @@ import { DEFAULT_OG_IMAGE } from "@/lib/site";
 import { breadcrumbList } from "@/lib/structured-data";
 import JsonLd from "@/components/seo/JsonLd";
 import IntelCard from "@/components/ui/IntelCard";
+import Card from "@/components/ui/Card";
 import type { Intel } from "@/lib/api-types";
 
 export const revalidate = 60;
@@ -59,7 +60,7 @@ export default async function IntelsPage() {
         </header>
 
         {failed ? (
-          <div className="border border-line bg-surface px-6 py-16 text-center">
+          <Card padding="px-6 py-16" className="text-center">
             <p className="type-overline uppercase tracking-[0.24em] text-faint">
               Content unavailable
             </p>
@@ -73,7 +74,7 @@ export default async function IntelsPage() {
             >
               Try again
             </Link>
-          </div>
+          </Card>
         ) : intels.length === 0 ? (
           <div className="text-center py-20">
             <p className="text-faint type-subhead">

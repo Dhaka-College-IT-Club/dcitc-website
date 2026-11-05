@@ -2,6 +2,7 @@
 
 import { Inbox, Search } from "lucide-react";
 import type { ReactNode } from "react";
+import Card from "../ui/Card";
 
 export type Column<T> = {
   key: string;
@@ -43,7 +44,7 @@ export default function DataTable<T>({
   const secondary = columns.filter((column) => column !== primary);
 
   return (
-    <div className="border border-line bg-surface">
+    <Card padding="">
       {onSearch ? (
         <div className="flex items-center gap-2 border-b border-line px-3 py-2.5">
           <Search className="h-4 w-4 shrink-0 text-faint" aria-hidden="true" />
@@ -188,6 +189,6 @@ export default function DataTable<T>({
           </ul>
         </>
       )}
-    </div>
+    </Card>
   );
 }

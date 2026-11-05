@@ -4,6 +4,7 @@ import Breadcrumbs from "@/components/seo/Breadcrumbs";
 import JsonLd from "@/components/seo/JsonLd";
 import { LEADERSHIP } from "@/constants";
 import { getLeadership } from "@/lib/public-content";
+import Card from "@/components/ui/Card";
 import { DEFAULT_OG_IMAGE } from "@/lib/site";
 import type { Leader } from "@/lib/api-types";
 
@@ -95,9 +96,10 @@ export default async function LeadershipPage() {
                   {members
                     .filter((member) => member.batch === batch)
                     .map((member) => (
-                      <li
+                      <Card
+                        as="li"
                         key={`${member.batch}-${member.name}`}
-                        className="border border-line bg-surface p-5"
+                        padding="p-5"
                       >
                         <h3 className="type-h4 font-bold tracking-wider text-text">
                           {member.name}
@@ -105,7 +107,7 @@ export default async function LeadershipPage() {
                         <p className="mt-2 type-body text-subtle">
                           {member.role}
                         </p>
-                      </li>
+                      </Card>
                     ))}
                 </ul>
               </section>

@@ -13,6 +13,7 @@ import Drawer from "@/components/ui/Drawer";
 import TextField from "@/components/ui/TextField";
 import { useToast } from "@/components/ui/Toast";
 import IntelImage from "@/components/ui/IntelImage";
+import Card from "@/components/ui/Card";
 import { apiFetch } from "@/lib/api";
 import type { Achievement, PublicSettings } from "@/lib/api-types";
 
@@ -299,7 +300,7 @@ export default function AdminAchievementsPage() {
 
       {error ? <Alert variant="error">{error}</Alert> : null}
 
-      <div className="flex items-center justify-between gap-4 border border-line bg-surface p-4">
+      <Card padding="p-4" className="flex items-center justify-between gap-4">
         <div className="min-w-0">
           <p className="type-overline uppercase tracking-[0.2em] text-faint">
             Landing page section
@@ -329,7 +330,7 @@ export default function AdminAchievementsPage() {
             }`}
           />
         </button>
-      </div>
+      </Card>
 
       <SlotGrid
         count={5}
