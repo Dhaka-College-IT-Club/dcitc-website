@@ -21,7 +21,7 @@ const Footer: React.FC = () => {
         className="tech-grid grid-fade pointer-events-none absolute inset-0 opacity-[0.04]"
       />
 
-      <div className="max-w-7xl mx-auto px-6 py-16 relative z-10">
+      <div className="mx-auto w-full max-w-[1200px] px-6 py-16 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
           <div className="space-y-4">
             <div className="flex items-center gap-3">
@@ -70,7 +70,7 @@ const Footer: React.FC = () => {
             <ul className="type-body-sm space-y-2 text-subtle">
               <li>Dhaka College, Dhaka, Bangladesh</li>
               <li>
-                <a href="mailto:dhakacollegeitclubofficial@gmail.com" className="hover:text-text transition-colors break-all">
+                <a href="mailto:dhakacollegeitclubofficial@gmail.com" className="hover:text-text transition-colors break-words [overflow-wrap:anywhere]">
                   dhakacollegeitclubofficial@gmail.com
                 </a>
               </li>

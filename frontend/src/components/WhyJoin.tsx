@@ -25,7 +25,7 @@ export default function WhyJoin() {
             subtitle="What you gain by being part of the club"
           />
 
-          <p className="type-body mx-auto mt-8 max-w-3xl text-center text-subtle">
+          <p className="type-body mt-8 max-w-3xl text-center text-subtle max-md:mx-0 max-md:max-w-[34rem] max-md:text-left md:mx-auto">
             Dhaka College IT Club (DCITC) is a student technology club at Dhaka
             College in Dhaka, Bangladesh. Also known as the Dhaka College
             Information Technology Club, its mission is clear:{" "}
