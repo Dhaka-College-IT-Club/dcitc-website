@@ -274,12 +274,46 @@
     radial-gradient(42% 38% at 10% 84%, var(--color-haze-cyan), transparent 72%);
 }
 
-/* Hero only, desktop only, decoration only. No text may sit inside it. */
+/* Phones: one centred glow behind the crest instead of two patches. */
+.haze-glow {
+  background-image: radial-gradient(
+    62% 42% at 50% 58%,
+    var(--color-haze-cyan),
+    transparent 72%
+  );
+}
+
+/* For short sections: the gradient dissolves instead of ending on a band. */
+.haze-fade {
+  -webkit-mask-image: radial-gradient(
+    72% 72% at 50% 45%,
+    #000 28%,
+    transparent 100%
+  );
+  mask-image: radial-gradient(72% 72% at 50% 45%, #000 28%, transparent 100%);
+}
+
+/* Hero only, desktop only, decoration only. No text may sit inside it.
+   Alpha is 2% and both ends fade out, so no stripe and no visible cut. */
 .scanlines {
   background-image: repeating-linear-gradient(
     to bottom,
-    rgba(248, 250, 252, 0.03) 0 1px,
+    rgba(248, 250, 252, 0.02) 0 1px,
     transparent 1px 3px
+  );
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent,
+    #000 22%,
+    #000 78%,
+    transparent
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent,
+    #000 22%,
+    #000 78%,
+    transparent
   );
   animation: var(--animate-scan);
   animation-direction: alternate;
@@ -396,6 +430,12 @@
 
 .edge-skew > * {
   transform: skewX(10deg);
+}
+
+/* The skew pushes a box's optical left edge out by half its height * tan(10deg).
+   Nudge it back so it lines up with the text edge above it. */
+.edge-skew-optical {
+  margin-left: calc(var(--skew-height, 3rem) * 0.088);
 }
 
 /* Section separator: one hairline, so stacked sections do not read as a

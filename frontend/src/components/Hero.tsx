@@ -4,18 +4,19 @@ import { Container } from "./ui/Section";
 import { CLUB } from "../constants";
 
 /**
- * Server-rendered hero. One viewport minus the 4rem navbar, so the next section
- * never peeks and nothing spills below the fold. The crest sits inside the
- * orbit rings at its own aspect ratio — no cropping, no photo in a circle.
+ * Server-rendered hero. On phones the stack is natural height, tucked up to
+ * the navbar so heading, button and crest fit one screen; from md it fills the
+ * viewport. One hairline ring and one static glow carry the crest — nothing
+ * more, and never a filter on the artwork itself.
  */
 export default function Hero() {
   return (
     <section
       id="hero"
       className={[
-        "relative flex min-h-[100svh] items-center overflow-hidden",
-        "pt-24 pb-16 sm:pt-20 sm:pb-14 md:pt-36 md:pb-20",
-        "[@media(max-height:600px)]:pt-[4.5rem] [@media(max-height:600px)]:pb-0",
+        "relative flex items-center overflow-hidden",
+        "pt-[6.5rem] pb-10",
+        "md:min-h-[100svh] md:pt-28 md:pb-16 lg:pt-32",
       ].join(" ")}
     >
       <div
@@ -24,15 +25,19 @@ export default function Hero() {
       />
       <div
         aria-hidden="true"
-        className="haze-layer pointer-events-none absolute inset-0"
+        className="haze-layer pointer-events-none absolute inset-0 hidden md:block"
       />
       <div
         aria-hidden="true"
-        className="scanlines pointer-events-none absolute inset-0 hidden md:block"
+        className="haze-glow pointer-events-none absolute inset-0 opacity-80 md:hidden"
+      />
+      <div
+        aria-hidden="true"
+        className="scanlines pointer-events-none absolute inset-y-0 right-0 hidden w-1/2 md:block"
       />
 
       <Container>
-        <div className="grid items-center gap-4 sm:gap-8 md:grid-cols-[minmax(0,1fr)_minmax(0,0.8fr)] md:gap-12">
+        <div className="grid items-center gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,0.8fr)] md:gap-12">
           <div className="enter-rise">
             <p className="type-display uppercase">
               Shaping
@@ -42,40 +47,37 @@ export default function Hero() {
               Today
             </p>
 
-            <h1 className="type-body mt-5 max-w-[26rem] text-pretty text-subtle md:mt-6">
+            <h1 className="type-body mt-4 max-w-[26rem] text-pretty text-subtle md:mt-6">
               <span className="sr-only">{CLUB.NAME}</span>
               <span aria-hidden="true">{CLUB.NAME}</span>
             </h1>
 
-            <div className="mt-7 md:mt-8">
+            <div className="mt-6 md:mt-8">
               <Button href="/signup">Join DCITC</Button>
             </div>
           </div>
 
           <div
             className={[
-              "relative mx-auto flex h-52 w-52 items-center justify-center",
-              "sm:h-64 sm:w-64 md:mx-0 md:ml-auto md:-translate-y-10 lg:h-[26rem] lg:w-[26rem]",
-              "[@media(max-height:600px)]:h-44 [@media(max-height:600px)]:w-44",
+              "relative mx-auto flex items-center justify-center",
+              "h-48 w-48 sm:h-60 sm:w-60 md:mx-0 md:ml-auto md:h-[18rem] md:w-[18rem]",
+              "md:-translate-y-10 lg:h-[26rem] lg:w-[26rem]",
+              "[@media(max-height:600px)]:h-40 [@media(max-height:600px)]:w-40",
             ].join(" ")}
           >
             <span
               aria-hidden="true"
-              className="absolute inset-0 rounded-full border border-dashed border-line-strong opacity-70 motion-safe:animate-[spin_60s_linear_infinite]"
+              className="absolute inset-0 rounded-full border border-line opacity-60"
             />
             <span
               aria-hidden="true"
-              className="absolute inset-[12%] rounded-full border border-line"
-            />
-            <span
-              aria-hidden="true"
-              className="absolute inset-[18%] rounded-full shadow-glow-soft"
+              className="absolute inset-[10%] rounded-full shadow-glow-soft"
             />
 
             <div
               className={[
-                "relative h-40 w-40 sm:h-52 sm:w-52 lg:h-[22rem] lg:w-[22rem]",
-                "[@media(max-height:600px)]:h-36 [@media(max-height:600px)]:w-36",
+                "relative h-40 w-40 sm:h-52 sm:w-52 md:h-[13rem] md:w-[13rem] lg:h-[19rem] lg:w-[19rem]",
+                "[@media(max-height:600px)]:h-32 [@media(max-height:600px)]:w-32",
               ].join(" ")}
             >
               <Image
@@ -83,7 +85,7 @@ export default function Hero() {
                 alt="Dhaka College IT Club crest"
                 fill
                 priority
-                sizes="(min-width: 1024px) 352px, (min-width: 640px) 256px, 192px"
+                sizes="(min-width: 1024px) 304px, (min-width: 768px) 208px, 160px"
                 className="object-contain"
               />
             </div>

@@ -12,8 +12,8 @@ const variants = {
 };
 
 const sizes = {
-  sm: "h-10 px-4",
-  md: "h-12 px-6",
+  sm: "h-10 px-4 [--skew-height:2.5rem]",
+  md: "h-12 px-6 [--skew-height:3rem]",
 };
 
 type ButtonProps = {
@@ -54,7 +54,7 @@ export default function Button({
     variants[variant],
     sizes[size],
     fullWidth ? "w-full" : "",
-    skew ? "edge-skew" : "",
+    skew ? "edge-skew edge-skew-optical" : "",
     className,
   ]
     .filter(Boolean)
