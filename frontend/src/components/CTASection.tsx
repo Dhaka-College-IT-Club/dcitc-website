@@ -6,7 +6,7 @@ export default function CTASection() {
     <Section id="join" seam className="overflow-hidden">
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(50%_60%_at_50%_0%,rgba(34,211,238,0.08),transparent_70%)]"
+        className="haze-layer pointer-events-none absolute inset-0"
       />
       <Container className="relative text-center">
         <h2 className="type-h2 uppercase">

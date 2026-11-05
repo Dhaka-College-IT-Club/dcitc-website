@@ -20,11 +20,15 @@ export default function Hero() {
     >
       <div
         aria-hidden="true"
-        className="tech-grid pointer-events-none absolute inset-0 opacity-[0.15]"
+        className="tech-grid grid-fade pointer-events-none absolute inset-0 opacity-[0.15]"
       />
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(55%_45%_at_78%_18%,rgba(34,211,238,0.10),transparent_70%)]"
+        className="haze-layer pointer-events-none absolute inset-0"
+      />
+      <div
+        aria-hidden="true"
+        className="scanlines pointer-events-none absolute inset-0 hidden md:block"
       />
 
       <Container>
@@ -65,7 +69,7 @@ export default function Hero() {
             />
             <span
               aria-hidden="true"
-              className="absolute inset-[24%] rounded-full bg-accent-soft opacity-70 blur-2xl"
+              className="absolute inset-[18%] rounded-full shadow-glow-soft"
             />
 
             <div

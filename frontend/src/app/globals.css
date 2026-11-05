@@ -71,18 +71,7 @@
 
   --ease-signal: cubic-bezier(0.2, 0.8, 0.2, 1);
 
-  --animate-breathe: breathe 7s ease-in-out infinite;
   --animate-scan: scan 9s linear infinite;
-
-  @keyframes breathe {
-    0%,
-    100% {
-      opacity: 0.72;
-    }
-    50% {
-      opacity: 1;
-    }
-  }
 
   /* Transform-only drift: the pattern is a background, so moving the layer
      composites without repainting it. */
@@ -296,6 +285,12 @@
   animation-direction: alternate;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .scanlines {
+    display: none;
+  }
+}
+
 /* System readout for micro labels. One tracking value, one tick. */
 .readout {
   display: inline-flex;
@@ -328,7 +323,7 @@
 }
 
 /* Section separator: one hairline, so stacked sections do not read as a
-   single black field. */
+   single black field. The centre stop is the signal — one line, one accent. */
 .section-seam {
   position: relative;
 }
@@ -342,7 +337,9 @@
   background: linear-gradient(
     to right,
     transparent,
-    var(--color-line-strong),
+    var(--color-line-strong) 34%,
+    var(--color-accent-line) 50%,
+    var(--color-line-strong) 66%,
     transparent
   );
 }

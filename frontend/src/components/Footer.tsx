@@ -15,10 +15,10 @@ const Footer: React.FC = () => {
   ];
 
   return (
-    <footer className="bg-bg border-t border-line relative overflow-hidden">
+    <footer className="bg-bg section-seam relative overflow-hidden">
       <div
         aria-hidden="true"
-        className="tech-grid pointer-events-none absolute inset-0 opacity-[0.04]"
+        className="tech-grid grid-fade pointer-events-none absolute inset-0 opacity-[0.04]"
       />
 
       <div className="max-w-7xl mx-auto px-6 py-16 relative z-10">
