@@ -6,7 +6,7 @@
    Spec: openspec/changes/ui-design-system-redesign/
    ========================================================================== */
 
-@theme {
+@theme static {
   /* --- colour tokens ---------------------------------------------------- */
   --color-bg: #05070a;
   --color-surface: #0b0f14;
