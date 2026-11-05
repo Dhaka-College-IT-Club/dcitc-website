@@ -114,6 +114,7 @@ const GetInTouch: React.FC = () => {
                 <Card
                   key={label}
                   padding="p-4"
+                  tick
                   className="flex items-start gap-4"
                 >
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center border border-line-strong text-accent">
@@ -208,8 +209,6 @@ const GetInTouch: React.FC = () => {
           </Card>
         </div>
       </div>
-
-      <div aria-hidden="true" className="pointer-events-none absolute right-0 top-1/4 h-32 w-32 rounded-full bg-accent-soft blur-3xl" />
     </section>
   );
 };

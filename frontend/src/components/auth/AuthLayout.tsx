@@ -13,10 +13,9 @@ export default function AuthLayout({
   return (
     <div className="relative min-h-screen bg-bg text-muted lg:grid lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]">
       <aside className="relative hidden overflow-hidden border-r border-line lg:flex lg:flex-col lg:justify-between lg:p-12 xl:p-16">
-        <div className="tech-grid pointer-events-none absolute inset-0 opacity-40" />
+        <div className="tech-grid grid-fade pointer-events-none absolute inset-0 opacity-40" />
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-bg/20 to-bg" />
-        <div className="pointer-events-none absolute -left-28 top-1/3 h-80 w-80 rounded-full bg-surface-2 blur-[100px]" />
-        <div className="pointer-events-none absolute -right-16 bottom-24 h-56 w-56 rounded-full bg-surface-2 blur-[90px]" />
+        <div className="haze-layer pointer-events-none absolute inset-0" />
 
         <div className="relative z-10">
           <Logo />
