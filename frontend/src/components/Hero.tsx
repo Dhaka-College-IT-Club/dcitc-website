@@ -12,7 +12,11 @@ export default function Hero() {
   return (
     <section
       id="hero"
-      className="relative flex min-h-[calc(100svh-4rem)] items-center overflow-hidden py-12 md:py-16"
+      className={[
+        "relative flex min-h-[100svh] items-center overflow-hidden",
+        "pt-24 pb-16 sm:pt-20 sm:pb-14 md:pt-28 md:pb-20",
+        "[@media(max-height:600px)]:pt-[4.5rem] [@media(max-height:600px)]:pb-0",
+      ].join(" ")}
     >
       <div
         aria-hidden="true"
@@ -44,7 +48,13 @@ export default function Hero() {
             </div>
           </div>
 
-          <div className="relative mx-auto flex h-52 w-52 items-center justify-center sm:h-80 sm:w-80 md:mx-0 md:ml-auto lg:h-[24rem] lg:w-[24rem]">
+          <div
+            className={[
+              "relative mx-auto flex h-52 w-52 items-center justify-center",
+              "sm:h-64 sm:w-64 md:mx-0 md:ml-auto md:-translate-y-10 lg:h-[24rem] lg:w-[24rem]",
+              "[@media(max-height:600px)]:h-44 [@media(max-height:600px)]:w-44",
+            ].join(" ")}
+          >
             <span
               aria-hidden="true"
               className="absolute inset-0 rounded-full border border-dashed border-line-strong opacity-70 motion-safe:animate-[spin_60s_linear_infinite]"
@@ -58,7 +68,12 @@ export default function Hero() {
               className="absolute inset-[24%] rounded-full bg-accent-soft opacity-70 blur-2xl"
             />
 
-            <div className="relative h-40 w-40 sm:h-64 sm:w-64 lg:h-80 lg:w-80">
+            <div
+              className={[
+                "relative h-40 w-40 sm:h-52 sm:w-52 lg:h-80 lg:w-80",
+                "[@media(max-height:600px)]:h-36 [@media(max-height:600px)]:w-36",
+              ].join(" ")}
+            >
               <Image
                 src="/logo.png"
                 alt="Dhaka College IT Club crest"

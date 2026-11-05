@@ -16,7 +16,7 @@ export function Section({
     <section
       id={id}
       className={[
-        "relative py-16 md:py-24",
+        "relative scroll-mt-20 py-16 md:py-24",
         seam ? "section-seam" : "",
         className,
       ]

@@ -73,7 +73,7 @@ const GetInTouch: React.FC = () => {
   return (
     <section
       id="contact"
-      className="section-seam relative overflow-hidden bg-bg py-16 md:py-24"
+      className="section-seam relative scroll-mt-20 overflow-hidden bg-bg py-16 md:py-24"
     >
       {success && (
         <div

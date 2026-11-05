@@ -23,7 +23,7 @@ const Logo: React.FC = () => (
     aria-label="Dhaka College IT Club - Home"
     className="flex items-center gap-3 group relative z-10"
   >
-    <div className="relative h-11 w-11">
+    <div className="relative h-12 w-12 md:h-14 md:w-14">
       <Image
         src="/logo.png"
         alt="Dhaka College IT Club logo"
