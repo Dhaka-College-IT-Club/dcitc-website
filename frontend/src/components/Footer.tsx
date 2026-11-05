@@ -15,7 +15,7 @@ const Footer: React.FC = () => {
   ];
 
   return (
-    <footer className="bg-bg section-seam relative overflow-hidden">
+    <footer className="section-seam relative overflow-hidden">
       <div
         aria-hidden="true"
         className="tech-grid grid-fade pointer-events-none absolute inset-0 opacity-[0.04]"

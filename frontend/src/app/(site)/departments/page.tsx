@@ -25,7 +25,7 @@ export const metadata: Metadata = {
 
 export default function DepartmentsPage() {
   return (
-    <div className="min-h-screen bg-bg pb-16 pt-28 text-muted md:pb-24">
+    <div className="min-h-screen pb-16 pt-28 text-muted md:pb-24">
       <div className="mx-auto w-full max-w-[1200px] px-6">
         <Breadcrumbs
           items={[

@@ -43,7 +43,7 @@ export default async function IntelsPage() {
   ]);
 
   return (
-    <div className="min-h-screen bg-bg text-muted pt-32 pb-16">
+    <div className="min-h-screen text-muted pt-32 pb-16">
       <JsonLd data={breadcrumbs} />
       <div className="mx-auto w-full max-w-[1200px] px-6">
         <header className="mb-10">

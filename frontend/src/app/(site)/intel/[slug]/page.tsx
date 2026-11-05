@@ -131,7 +131,7 @@ export default async function IntelDetailPage({
   ]);
 
   return (
-    <div className="min-h-screen bg-bg pb-24 text-muted">
+    <div className="min-h-screen pb-24 text-muted">
       <JsonLd data={articleJsonLd} />
       <JsonLd data={breadcrumbs} />
       <ReadingProgress />

@@ -6,7 +6,7 @@ import Card from "@/components/ui/Card";
 
 export default function IntelError({ retry }: { error: unknown; retry: () => void }) {
   return (
-    <div className="flex min-h-[70vh] items-center justify-center bg-bg px-5 text-muted">
+    <div className="flex min-h-[70vh] items-center justify-center px-5 text-muted">
       <Card className="w-full max-w-lg">
         <p className="type-overline uppercase tracking-[0.28em] text-faint">
           Intel

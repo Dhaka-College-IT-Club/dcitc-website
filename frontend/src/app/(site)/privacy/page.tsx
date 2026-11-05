@@ -23,7 +23,7 @@ export const metadata: Metadata = {
 
 export default function PrivacyPolicyPage() {
   return (
-    <div className="min-h-screen bg-bg pb-16 pt-28 text-muted md:pb-24">
+    <div className="min-h-screen pb-16 pt-28 text-muted md:pb-24">
       <div className="mx-auto w-full max-w-[720px] px-6">
         <header className="mb-12">
           <p className="mb-3 type-overline uppercase tracking-[0.3em] text-faint">
