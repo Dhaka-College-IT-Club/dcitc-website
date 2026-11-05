@@ -19,7 +19,7 @@ export default function Departments() {
             {DEPARTMENTS.map((department) => {
               const Icon = department.icon;
               return (
-                <Card key={department.title} as="article" interactive>
+                <Card key={department.title} as="article" interactive tick>
                   <div
                     className="mb-5 flex h-12 w-12 items-center justify-center border border-line-strong bg-surface-2"
                     style={{ color: department.color }}

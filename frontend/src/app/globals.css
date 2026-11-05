@@ -313,6 +313,28 @@
   background: var(--color-accent-line);
 }
 
+/* Corner tick: one 1px L in the card corner, drawn only where a panel is a
+   content card (never over photography, never in the console). */
+.card-tick::before,
+.card-tick::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: var(--color-accent-line);
+  pointer-events: none;
+}
+
+.card-tick::before {
+  width: 1.25rem;
+  height: 1px;
+}
+
+.card-tick::after {
+  width: 1px;
+  height: 1.25rem;
+}
+
 /* Edge language: the parallelogram. Container skews, contents counter-skew. */
 .edge-skew {
   transform: skewX(-10deg);

@@ -34,7 +34,7 @@ export default function WhyJoin() {
 
           <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {benefits.map(({ icon: Icon, title, desc }) => (
-              <Card key={title} as="article" interactive>
+              <Card key={title} as="article" interactive tick>
                 <div className="mb-5 flex h-12 w-12 items-center justify-center border border-line-strong bg-surface-2 text-accent">
                   <Icon className="h-5 w-5" aria-hidden="true" />
                 </div>

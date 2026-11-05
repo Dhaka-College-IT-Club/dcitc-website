@@ -36,7 +36,7 @@ export default function Card({
     padding,
     tick ? "card-tick" : "",
     interactive
-      ? "transition-colors duration-200 hover:border-line-strong hover:bg-surface-2"
+      ? "transition-[background-color,border-color,box-shadow] duration-200 hover:border-line-strong hover:bg-surface-2 hover:shadow-glow-accent focus-visible:shadow-glow-accent"
       : "",
     className,
   ]

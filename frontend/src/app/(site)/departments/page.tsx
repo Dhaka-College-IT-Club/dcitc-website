@@ -49,7 +49,7 @@ export default function DepartmentsPage() {
 
         <div className="grid gap-6 md:grid-cols-2">
           {DEPARTMENTS.map((department) => (
-            <Card as="section" key={department.title}>
+            <Card as="section" key={department.title} tick>
               <h2 className="mb-3 type-h3 font-bold text-text">
                 {department.title}
               </h2>

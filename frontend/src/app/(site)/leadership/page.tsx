@@ -100,6 +100,7 @@ export default async function LeadershipPage() {
                         as="li"
                         key={`${member.batch}-${member.name}`}
                         padding="p-5"
+                        tick
                       >
                         <h3 className="type-h4 font-bold tracking-wider text-text">
                           {member.name}
