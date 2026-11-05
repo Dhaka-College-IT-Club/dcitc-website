@@ -81,6 +81,14 @@ export default async function IntelsPage() {
               No intelligence reports available at this time.
             </p>
           </div>
+        ) : intels.length < 3 ? (
+          <div className="flex flex-wrap justify-center gap-6">
+            {intels.map((intel) => (
+              <div key={intel.id} className="w-full max-w-sm">
+                <IntelCard intel={intel} />
+              </div>
+            ))}
+          </div>
         ) : (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {intels.map((intel) => (
