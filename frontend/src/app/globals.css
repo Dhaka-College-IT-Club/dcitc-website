@@ -377,6 +377,18 @@
   }
 }
 
+/* Hex frames cannot carry a box-shadow — clip-path clips it. The filter
+   traces the clipped shape instead, and only while the card is hovered. */
+.hex-glow {
+  transition: filter 300ms var(--ease-signal),
+    border-color 300ms var(--ease-signal);
+}
+
+.group:hover .hex-glow,
+.group:focus-visible .hex-glow {
+  filter: drop-shadow(0 0 14px rgba(34, 211, 238, 0.35));
+}
+
 /* Edge language: the parallelogram. Container skews, contents counter-skew. */
 .edge-skew {
   transform: skewX(-10deg);

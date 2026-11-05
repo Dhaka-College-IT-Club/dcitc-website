@@ -80,7 +80,7 @@ const Leadership: React.FC<{ members?: Leader[] }> = ({ members = [] }) => {
       <div className="group relative flex h-full flex-col items-center">
         <div className={`relative ${sizeClasses[size]} mb-4 overflow-hidden`}>
           <div
-            className="absolute inset-0 border border-line bg-linear-to-br from-surface-2 to-transparent transition-colors duration-300 group-hover:border-accent/40"
+            className="hex-glow absolute inset-0 border border-line bg-linear-to-br from-surface-2 to-transparent group-hover:border-accent"
             style={{
               clipPath:
                 "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)",
@@ -296,9 +296,6 @@ const Leadership: React.FC<{ members?: Leader[] }> = ({ members = [] }) => {
           </>
         )}
       </div>
-
-      <div aria-hidden="true" className="pointer-events-none absolute left-0 top-1/4 h-32 w-32 rounded-full bg-accent-soft blur-3xl" />
-      <div aria-hidden="true" className="pointer-events-none absolute bottom-1/4 right-0 h-48 w-48 rounded-full bg-accent-soft blur-3xl" />
     </section >
   );
 };
