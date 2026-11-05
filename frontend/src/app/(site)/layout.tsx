@@ -1,5 +1,6 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import WordmarkBand from "@/components/WordmarkBand";
 import JsonLd from "@/components/seo/JsonLd";
 import { CLUB, LEGAL, SOCIAL_URLS } from "@/constants";
 import { SITE_DESCRIPTION, SITE_URL } from "@/lib/site";
@@ -46,6 +47,7 @@ export default function SiteLayout({
       <JsonLd data={SITE_JSON_LD} />
       <Navbar />
       <main className="grow">{children}</main>
+      <WordmarkBand />
       <Footer />
     </>
   );

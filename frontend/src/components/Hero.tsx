@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Button from "./ui/Button";
+import GlyphBackground from "./ui/backgrounds-glyph";
 import { Container } from "./ui/Section";
 import { CLUB } from "../constants";
 
@@ -19,6 +20,14 @@ export default function Hero() {
         "md:min-h-[100svh] md:pt-28 md:pb-16 lg:pt-32",
       ].join(" ")}
     >
+      <div aria-hidden="true" className="absolute inset-0 hidden md:block">
+        <GlyphBackground
+          className="h-full w-full opacity-70"
+          glowColor="#22d3ee"
+          shapeColor="#67e8f9"
+          fontSize={9}
+        />
+      </div>
       <div
         aria-hidden="true"
         className="tech-grid grid-fade pointer-events-none absolute inset-0 opacity-[0.15]"
