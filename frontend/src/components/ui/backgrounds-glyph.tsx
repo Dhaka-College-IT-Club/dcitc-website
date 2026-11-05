@@ -340,24 +340,11 @@ function GlyphBackgroundContent({
     optionsRef.current = options;
   });
 
-  const spawn = (x: number, y: number) => {
-    const kind = 1 + Math.floor(Math.random() * 2);
-    const phase = Math.random() * Math.PI * 2;
-    for (const [delay, strength] of [
-      [0, 1],
-      [WAVE_GAP, 0.55],
-    ] as const) {
-      const wave: Wave = { x, y, kind, phase, strength, age: motionValue(0) };
-      wavesRef.current = [...wavesRef.current.slice(1 - MAX_WAVES), wave];
-      animate(wave.age, WAVE_LIFE, {
-        duration: WAVE_LIFE,
-        delay,
-        ease: "linear",
-      }).then(() => {
-        wavesRef.current = wavesRef.current.filter((w) => w !== wave);
-      });
-    }
-  };
+  // Interaction flags for the window listeners, which must not re-subscribe.
+  const latestRef = React.useRef({ interactive, reduce });
+  React.useEffect(() => {
+    latestRef.current = { interactive, reduce };
+  });
 
   React.useEffect(() => {
     const canvas = canvasRef.current;
@@ -460,6 +447,71 @@ function GlyphBackgroundContent({
       });
     };
 
+    // The field usually sits behind the page, so pointer events never reach
+    // the canvas itself. Listen on the window and map into canvas space.
+    const toLocal = (event: PointerEvent) => {
+      const box = canvas.getBoundingClientRect();
+      return [event.clientX - box.left, event.clientY - box.top] as const;
+    };
+    const inside = (x: number, y: number) =>
+      x > -60 && y > -60 && x < width + 60 && y < height + 60;
+
+    const spawnWave = (x: number, y: number) => {
+      const kind = 1 + Math.floor(Math.random() * 2);
+      const phase = Math.random() * Math.PI * 2;
+      for (const [delay, strength] of [
+        [0, 1],
+        [WAVE_GAP, 0.55],
+      ] as const) {
+        const wave: Wave = { x, y, kind, phase, strength, age: motionValue(0) };
+        wavesRef.current = [...wavesRef.current.slice(1 - MAX_WAVES), wave];
+        animate(wave.age, WAVE_LIFE, {
+          duration: WAVE_LIFE,
+          delay,
+          ease: "linear",
+        }).then(() => {
+          wavesRef.current = wavesRef.current.filter((w) => w !== wave);
+        });
+      }
+    };
+
+    const onMove = (event: PointerEvent) => {
+      if (!latestRef.current.interactive || latestRef.current.reduce) return;
+      const [x, y] = toLocal(event);
+      if (!inside(x, y)) return;
+      const now = timeRef.current;
+      const tail = trailRef.current;
+      const last = tail[tail.length - 1];
+      const energy = activityRef.current;
+      const current =
+        energy.value * Math.exp(-Math.max(0, now - energy.at) / ACTIVITY_DECAY);
+      activityRef.current = {
+        value: Math.min(
+          1,
+          current + (last ? Math.hypot(x - last.x, y - last.y) : 0) / 600
+        ),
+        at: now,
+      };
+      if (last && Math.hypot(x - last.x, y - last.y) < 18) return;
+      trailRef.current = [
+        ...tail.filter((p) => now - p.t < TRAIL_LIFE).slice(1 - TRAIL),
+        { x, y, t: now },
+      ];
+    };
+
+    const onDown = (event: PointerEvent) => {
+      if (!latestRef.current.interactive || latestRef.current.reduce) return;
+      const target = event.target as HTMLElement | null;
+      // A wave behind a link or a control is noise, not feedback.
+      if (target?.closest?.("a,button,input,textarea,select,label")) return;
+      const [x, y] = toLocal(event);
+      if (!inside(x, y)) return;
+      spawnWave(x, y);
+    };
+
+    window.addEventListener("pointermove", onMove, { passive: true });
+    window.addEventListener("pointerdown", onDown, { passive: true });
+
     drawRef.current = draw;
     resizeRef.current = resize;
     resize();
@@ -470,6 +522,8 @@ function GlyphBackgroundContent({
     });
     observer.observe(container);
     return () => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerdown", onDown);
       observer.disconnect();
       drawRef.current = () => {};
       resizeRef.current = () => {};
@@ -495,47 +549,14 @@ function GlyphBackgroundContent({
     return () => cancelFrame(tick);
   }, [playing]);
 
-  const point = (event: React.PointerEvent<HTMLDivElement>) => {
-    const rect = event.currentTarget.getBoundingClientRect();
-    return { x: event.clientX - rect.left, y: event.clientY - rect.top };
-  };
-
   return (
     <div
       ref={containerRef}
       data-slot="glyph-background"
       className={cn("relative size-full overflow-hidden", className)}
       {...props}
-      onPointerMove={(event) => {
-        onPointerMove?.(event);
-        if (!interactive || reduce) return;
-        const { x, y } = point(event);
-        const now = timeRef.current;
-        const tail = trailRef.current;
-        const last = tail[tail.length - 1];
-        const energy = activityRef.current;
-        const current =
-          energy.value *
-          Math.exp(-Math.max(0, now - energy.at) / ACTIVITY_DECAY);
-        activityRef.current = {
-          value: Math.min(
-            1,
-            current + (last ? Math.hypot(x - last.x, y - last.y) : 0) / 600
-          ),
-          at: now,
-        };
-        if (last && Math.hypot(x - last.x, y - last.y) < 18) return;
-        trailRef.current = [
-          ...tail.filter((p) => now - p.t < TRAIL_LIFE).slice(1 - TRAIL),
-          { x, y, t: now },
-        ];
-      }}
-      onPointerDown={(event) => {
-        onPointerDown?.(event);
-        if (!interactive || reduce) return;
-        const { x, y } = point(event);
-        spawn(x, y);
-      }}
+      onPointerMove={onPointerMove}
+      onPointerDown={onPointerDown}
     >
       <canvas
         ref={canvasRef}

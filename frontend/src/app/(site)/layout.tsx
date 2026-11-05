@@ -49,7 +49,7 @@ export default function SiteLayout({
       {/* One field for the whole public site, fixed behind the content. */}
       <div aria-hidden="true" className="fixed inset-0 z-0">
         <GlyphBackground
-          className="h-full w-full opacity-50"
+          className="h-full w-full opacity-65"
           glowColor="#22d3ee"
           shapeColor="#67e8f9"
           fontSize={9}
