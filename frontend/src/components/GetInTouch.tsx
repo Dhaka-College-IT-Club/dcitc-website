@@ -106,7 +106,7 @@ const GetInTouch: React.FC = () => {
           subtitle="Reach out to the DCITC team"
         />
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-start">
+        <div className="mt-12 grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-start">
           <div className="space-y-8">
             <div className="space-y-4">
               {contacts.map(({ icon: Icon, label, value }) => (
