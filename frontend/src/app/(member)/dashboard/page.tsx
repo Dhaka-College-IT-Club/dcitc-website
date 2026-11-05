@@ -130,9 +130,7 @@ export default function DashboardPage() {
   return (
     <DashboardShell user={user} onLogout={signOut} signingOut={signingOut}>
       <header className="mb-7">
-        <p className="type-overline uppercase tracking-[0.28em] text-faint">
-          Member portal
-        </p>
+        <p className="readout">Member portal</p>
         <h1 className="type-h1 mt-2">
           Welcome, <span className="break-words text-text">{user.name}</span>
         </h1>
@@ -182,6 +180,13 @@ export default function DashboardPage() {
         aria-labelledby="membership-title"
         className=" relative overflow-hidden border border-line-strong bg-surface-2 p-5 sm:p-7"
       >
+        {user.hscBatch || since ? (
+          <p className="readout mb-3">
+            {[user.hscBatch, since ? `Member since ${since}` : null]
+              .filter(Boolean)
+              .join("  ·  ")}
+          </p>
+        ) : null}
         <h2
           id="membership-title"
           className="type-h3 font-bold tracking-tight text-text"

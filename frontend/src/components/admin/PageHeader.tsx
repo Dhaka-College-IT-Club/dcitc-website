@@ -13,7 +13,7 @@ export default function PageHeader({
     <div className="flex flex-col gap-4 border-b border-line pb-5 sm:flex-row sm:items-end sm:justify-between">
       <div>
         {eyebrow ? (
-          <p className="type-overline mb-1.5 text-accent">
+          <p className="readout mb-2">
             {eyebrow}
           </p>
         ) : null}

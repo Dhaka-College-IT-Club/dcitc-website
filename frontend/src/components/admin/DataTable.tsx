@@ -107,7 +107,7 @@ export default function DataTable<T>({
           >
             {caption ? <caption className="sr-only">{caption}</caption> : null}
             <thead>
-              <tr className="border-b border-line">
+              <tr className="border-b border-accent-line">
                 {columns.map((column) => (
                   <th
                     key={column.key}
