@@ -120,9 +120,25 @@ const GetInTouch: React.FC = () => {
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center border border-line-strong text-accent">
                     <Icon className="h-5 w-5" aria-hidden="true" />
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <p className="type-overline mb-1 text-faint">{label}</p>
-                    <p className="type-body break-all text-text">{value}</p>
+                    <p
+                      className={`text-text ${
+                        value.includes("@")
+                          ? "type-body-sm [overflow-wrap:anywhere]"
+                          : "type-body break-words"
+                      }`}
+                    >
+                      {value.includes("@") ? (
+                        <>
+                          {value.slice(0, value.indexOf("@") + 1)}
+                          <wbr />
+                          {value.slice(value.indexOf("@") + 1)}
+                        </>
+                      ) : (
+                        value
+                      )}
+                    </p>
                   </div>
                 </Card>
               ))}
