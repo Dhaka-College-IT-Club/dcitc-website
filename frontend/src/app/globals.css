@@ -270,14 +270,16 @@
   );
 }
 
-/* For short sections: the gradient dissolves instead of ending on a band. */
+/* For short sections: the gradient dissolves instead of ending on a band.
+   closest-side puts the mask's zero exactly on the nearest box edge, so no
+   section boundary can cut the glow. */
 .haze-fade {
   -webkit-mask-image: radial-gradient(
-    72% 72% at 50% 45%,
-    #000 28%,
+    closest-side,
+    #000 30%,
     transparent 100%
   );
-  mask-image: radial-gradient(72% 72% at 50% 45%, #000 28%, transparent 100%);
+  mask-image: radial-gradient(closest-side, #000 30%, transparent 100%);
 }
 
 /* System readout for micro labels. One tracking value, one tick. */
