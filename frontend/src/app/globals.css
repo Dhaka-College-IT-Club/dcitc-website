@@ -57,6 +57,43 @@
   --shadow-glow: 0 0 22px rgba(248, 250, 252, 0.28);
   --shadow-glow-accent: 0 0 0 1px rgba(34, 211, 238, 0.35),
     0 0 24px rgba(34, 211, 238, 0.16);
+
+  /* --- atmosphere (neon-noir-interface-vibe) ---------------------------
+     Haze is a separate budget from accent coverage: alpha <= 0.10, max two
+     layers per page, gradient only — never a blur filter.
+     -------------------------------------------------------------------- */
+  --color-haze-cyan: rgba(34, 211, 238, 0.10);
+  --color-accent-line: rgba(34, 211, 238, 0.55); /* 3.86:1 on bg */
+  --color-accent-dim: #67e8f9; /* 13.91:1 on bg — accent text over haze */
+  --color-grid: rgba(255, 255, 255, 0.06);
+
+  --shadow-glow-soft: 0 0 48px -12px rgba(34, 211, 238, 0.18);
+
+  --ease-signal: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  --animate-breathe: breathe 7s ease-in-out infinite;
+  --animate-scan: scan 9s linear infinite;
+
+  @keyframes breathe {
+    0%,
+    100% {
+      opacity: 0.72;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+
+  /* Transform-only drift: the pattern is a background, so moving the layer
+     composites without repainting it. */
+  @keyframes scan {
+    from {
+      transform: translate3d(0, -4%, 0);
+    }
+    to {
+      transform: translate3d(0, 4%, 0);
+    }
+  }
 }
 
 /* Fonts come from next/font on <html>, so the family must stay inline. */
@@ -223,9 +260,62 @@
 
 /* The single grid background. Opacity is set by the consumer. */
 .tech-grid {
-  background-image: linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+  background-image: linear-gradient(var(--color-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--color-grid) 1px, transparent 1px);
   background-size: 48px 48px;
+}
+
+/* Modifier for .tech-grid: the grid dissolves instead of ending on a tile edge. */
+.grid-fade {
+  -webkit-mask-image: radial-gradient(
+    78% 70% at 50% 42%,
+    #000 40%,
+    transparent 100%
+  );
+  mask-image: radial-gradient(78% 70% at 50% 42%, #000 40%, transparent 100%);
+}
+
+/* One depth moment: two soft radials on one layer, no filter. */
+.haze-layer {
+  background-image: radial-gradient(
+      58% 46% at 78% 16%,
+      var(--color-haze-cyan),
+      transparent 70%
+    ),
+    radial-gradient(42% 38% at 10% 84%, var(--color-haze-cyan), transparent 72%);
+}
+
+/* Hero only, desktop only, decoration only. No text may sit inside it. */
+.scanlines {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    rgba(248, 250, 252, 0.03) 0 1px,
+    transparent 1px 3px
+  );
+  animation: var(--animate-scan);
+  animation-direction: alternate;
+}
+
+/* System readout for micro labels. One tracking value, one tick. */
+.readout {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-orbitron), ui-monospace, monospace;
+  font-size: 0.6875rem;
+  line-height: 1.45;
+  font-weight: 600;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--color-faint);
+}
+
+.readout::before {
+  content: "";
+  flex: none;
+  width: 0.75rem;
+  height: 1px;
+  background: var(--color-accent-line);
 }
 
 /* Edge language: the parallelogram. Container skews, contents counter-skew. */
