@@ -12,7 +12,7 @@ export default function IntelCard({ intel }: { intel: Intel }) {
     <Card
       href={`/intel/${intel.slug}`}
       padding=""
-      className="group flex h-full min-w-0 flex-col overflow-hidden transition-colors duration-200 hover:border-line-strong hover:bg-surface-2"
+      className="group scan-sweep flex h-full min-w-0 flex-col overflow-hidden transition-colors duration-200 hover:border-line-strong hover:bg-surface-2"
     >
       <div className="relative aspect-video overflow-hidden">
         <IntelImage

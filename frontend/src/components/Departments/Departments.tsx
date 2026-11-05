@@ -20,11 +20,20 @@ export default function Departments() {
               const Icon = department.icon;
               return (
                 <Card key={department.title} as="article" interactive tick>
-                  <div
-                    className="mb-5 flex h-12 w-12 items-center justify-center border border-line-strong bg-surface-2"
-                    style={{ color: department.color }}
-                  >
-                    <Icon className="h-5 w-5" aria-hidden="true" />
+                  <div className="relative mb-5 h-12 w-12">
+                    <span
+                      aria-hidden="true"
+                      className="pointer-events-none absolute -inset-2 rounded-full"
+                      style={{
+                        backgroundImage: `radial-gradient(closest-side, ${department.color}1a, transparent)`,
+                      }}
+                    />
+                    <div
+                      className="relative flex h-12 w-12 items-center justify-center border border-line-strong bg-surface-2"
+                      style={{ color: department.color }}
+                    >
+                      <Icon className="h-5 w-5" aria-hidden="true" />
+                    </div>
                   </div>
                   <h3 className="type-h3">{department.title}</h3>
                   <p className="type-body-sm mt-2 text-subtle">

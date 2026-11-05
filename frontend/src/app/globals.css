@@ -335,6 +335,48 @@
   height: 1.25rem;
 }
 
+/* One pass of light across a link card on hover: transform only, once. */
+.scan-sweep::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  background: linear-gradient(
+    100deg,
+    transparent 38%,
+    var(--color-haze-cyan) 50%,
+    transparent 62%
+  );
+  transform: translateX(-100%);
+}
+
+.scan-sweep:hover::after,
+.scan-sweep:focus-visible::after {
+  animation: sweep 900ms var(--ease-signal) 1 both;
+}
+
+@keyframes sweep {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scan-sweep:hover::after,
+  .scan-sweep:focus-visible::after {
+    animation: none;
+  }
+}
+
 /* Edge language: the parallelogram. Container skews, contents counter-skew. */
 .edge-skew {
   transform: skewX(-10deg);
