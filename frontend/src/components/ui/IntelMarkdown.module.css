@@ -5,7 +5,7 @@
   font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   font-size: 18px;
   line-height: 1.75;
-  color: #dbe3ec;
+  color: var(--color-muted);
   overflow-wrap: break-word;
 }
 
@@ -27,15 +27,15 @@
 .article h3,
 .article h4 {
   font-family: var(--font-orbitron), sans-serif;
-  color: #ffffff;
+  color: var(--color-text);
   line-height: 1.25;
   scroll-margin-top: 7rem;
 }
 
 .article h2 {
   margin: 2.5em 0 0.75em;
-  padding-left: 0.7rem;
-  border-left: 3px solid #66fcf1;
+  padding-top: 0.65rem;
+  border-top: 1px solid var(--color-accent-line);
   font-size: 1.875rem;
   font-weight: 700;
 }
@@ -54,7 +54,7 @@
 }
 
 .article strong {
-  color: #ffffff;
+  color: var(--color-text);
   font-weight: 600;
 }
 
@@ -63,14 +63,14 @@
 }
 
 .article a {
-  color: #8ff7f0;
+  color: var(--color-accent);
   text-decoration: underline;
   text-decoration-thickness: 1px;
   text-underline-offset: 3px;
 }
 
 .article a:hover {
-  color: #ffffff;
+  color: var(--color-text);
 }
 
 .article ul,
@@ -93,7 +93,7 @@
 }
 
 .article li::marker {
-  color: #66fcf1;
+  color: var(--color-accent);
 }
 
 .article li > ul,
@@ -103,8 +103,8 @@
 
 .article blockquote {
   margin: 1.75em 0;
-  border-left: 3px solid #66fcf1;
-  background: rgba(102, 252, 241, 0.06);
+  border-left: 3px solid var(--color-accent);
+  background: var(--color-accent-soft);
   padding: 0.75em 1.25em;
   color: #e8f0f7;
 }
@@ -116,7 +116,7 @@
 .article code {
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: 0.875em;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--color-line);
   padding: 0.15em 0.35em;
   border-radius: 3px;
 }
@@ -156,7 +156,7 @@
 
 .article th,
 .article td {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid var(--color-line);
   padding: 0.6em 0.9em;
   text-align: left;
   vertical-align: top;
@@ -164,7 +164,7 @@
 
 .article th {
   background: rgba(255, 255, 255, 0.04);
-  color: #ffffff;
+  color: var(--color-text);
   font-family: var(--font-orbitron), sans-serif;
   font-size: 0.8em;
   letter-spacing: 0.1em;

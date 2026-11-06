@@ -5,6 +5,7 @@ import { DEFAULT_OG_IMAGE } from "@/lib/site";
 import { breadcrumbList } from "@/lib/structured-data";
 import JsonLd from "@/components/seo/JsonLd";
 import IntelCard from "@/components/ui/IntelCard";
+import Card from "@/components/ui/Card";
 import type { Intel } from "@/lib/api-types";
 
 export const revalidate = 60;
@@ -42,43 +43,51 @@ export default async function IntelsPage() {
   ]);
 
   return (
-    <div className="min-h-screen bg-black text-slate-200 pt-32 pb-16">
+    <div className="min-h-screen text-muted pt-32 pb-16">
       <JsonLd data={breadcrumbs} />
-      <div className="max-w-6xl mx-auto px-6">
+      <div className="mx-auto w-full max-w-[1200px] px-6">
         <header className="mb-10">
-          <p className="text-xs font-orbitron tracking-[0.3em] text-slate-500 uppercase mb-3">
+          <p className="type-overline tracking-[0.3em] text-faint uppercase mb-3">
             Intelligence Briefing
           </p>
-          <h1 className="text-4xl md:text-5xl font-orbitron font-bold text-white mb-4">
+          <h1 className="type-h1 mb-4">
             Intel
           </h1>
-          <p className="text-slate-400 font-rajdhani text-lg">
+          <p className="text-subtle type-body">
             Articles, insights, and updates from the Dhaka College IT Club
             (DCITC) team
           </p>
         </header>
 
         {failed ? (
-          <div className="border border-white/10 bg-white/[0.02] px-6 py-16 text-center">
-            <p className="font-orbitron text-xs uppercase tracking-[0.24em] text-slate-500">
+          <Card padding="px-6 py-16" className="text-center">
+            <p className="type-overline uppercase tracking-[0.24em] text-faint">
               Content unavailable
             </p>
-            <p className="mt-3 font-rajdhani text-lg text-slate-400">
+            <p className="mt-3 type-body text-subtle">
               We couldn&apos;t load Intel right now. This is not an empty
               archive — check again in a moment.
             </p>
             <Link
               href="/intel"
-              className="mt-5 inline-block font-orbitron text-[10px] uppercase tracking-[0.2em] text-white underline-offset-4 hover:underline"
+              className="mt-5 inline-block type-overline uppercase tracking-[0.2em] text-text underline-offset-4 hover:underline"
             >
               Try again
             </Link>
-          </div>
+          </Card>
         ) : intels.length === 0 ? (
           <div className="text-center py-20">
-            <p className="text-slate-500 font-rajdhani text-xl">
+            <p className="text-faint type-subhead">
               No intelligence reports available at this time.
             </p>
+          </div>
+        ) : intels.length < 3 ? (
+          <div className="flex flex-wrap justify-center gap-6">
+            {intels.map((intel) => (
+              <div key={intel.id} className="w-full max-w-sm">
+                <IntelCard intel={intel} />
+              </div>
+            ))}
           </div>
         ) : (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">

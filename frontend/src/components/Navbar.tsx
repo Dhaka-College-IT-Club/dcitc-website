@@ -10,6 +10,7 @@ import { apiFetch } from "@/lib/api";
 import type { User } from "@/lib/api-types";
 import { initials } from "@/lib/initials";
 import ConfirmDialog from "./ui/ConfirmDialog";
+import Button from "./ui/Button";
 
 type AuthState =
   | { status: "loading" }
@@ -22,7 +23,7 @@ const Logo: React.FC = () => (
     aria-label="Dhaka College IT Club - Home"
     className="flex items-center gap-3 group relative z-10"
   >
-    <div className="relative w-20 h-20 sm:w-20 sm:h-20 md:w-24 md:h-24 transition-all duration-300 -my-2">
+    <div className="relative h-12 w-12 md:h-14 md:w-14">
       <Image
         src="/logo.png"
         alt="Dhaka College IT Club logo"
@@ -36,21 +37,15 @@ const Logo: React.FC = () => (
 );
 
 const ApplyButton: React.FC = () => (
-  <Link
-    href="/signup"
-    className="px-6 py-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-orbitron text-sm tracking-wider rounded-none backdrop-blur-sm transition-all hover:shadow-[0_0_15px_rgba(255,255,255,0.3)] -skew-x-10"
-  >
-    <span className="skew-x-10 inline-block cursor-pointer">JOIN DCITC</span>
-  </Link>
+  <Button href="/signup" size="sm">
+    JOIN DCITC
+  </Button>
 );
 
 const LoginButton: React.FC = () => (
-  <Link
-    href="/login"
-    className="px-6 py-2 border border-white/20 text-slate-300 hover:text-white hover:border-white/40 font-orbitron text-sm tracking-wider rounded-none transition-all -skew-x-10"
-  >
-    <span className="skew-x-10 inline-block cursor-pointer">LOGIN</span>
-  </Link>
+  <Button href="/login" size="sm" variant="secondary">
+    LOGIN
+  </Button>
 );
 
 interface AccountMenuProps {
@@ -93,7 +88,7 @@ const AccountMenu: React.FC<AccountMenuProps> = ({ user, signingOut, onLogout })
         aria-expanded={open}
         aria-label={`Account menu for ${user.name}`}
         title={user.name}
-        className="flex h-9 w-9 items-center justify-center rounded-full border border-white/30 bg-white/10 font-orbitron text-[11px] tracking-wide text-white transition-colors hover:bg-white/20 hover:border-white/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+        className="flex h-9 w-9 items-center justify-center rounded-full border border-line-strong bg-surface-2 type-overline tracking-wide text-text transition-colors hover:bg-surface-2 hover:border-line-strong/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
       >
         {initials(user.name)}
       </button>
@@ -106,13 +101,13 @@ const AccountMenu: React.FC<AccountMenuProps> = ({ user, signingOut, onLogout })
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.15 }}
-            className="absolute right-0 top-full z-50 mt-3 w-44 border border-white/15 bg-black shadow-xl"
+            className="absolute right-0 top-full z-50 mt-3 w-44 border border-line-strong bg-bg shadow-xl"
           >
             <Link
               href="/dashboard"
               role="menuitem"
               onClick={() => setOpen(false)}
-              className="flex items-center gap-2.5 px-4 py-3 font-rajdhani font-semibold text-base tracking-wide text-slate-200 transition-colors hover:bg-white/10 hover:text-white"
+              className="type-body flex items-center gap-2.5 px-4 py-3 font-semibold tracking-wide text-muted transition-colors hover:bg-surface-2 hover:text-text"
             >
               <LayoutDashboard className="h-4 w-4" aria-hidden="true" />
               Dashboard
@@ -125,7 +120,7 @@ const AccountMenu: React.FC<AccountMenuProps> = ({ user, signingOut, onLogout })
                 onLogout();
               }}
               disabled={signingOut}
-              className="flex w-full items-center gap-2.5 border-t border-white/10 px-4 py-3 text-left font-rajdhani font-semibold text-base tracking-wide text-slate-200 transition-colors hover:bg-white/10 hover:text-white disabled:opacity-50"
+              className="type-body flex w-full items-center gap-2.5 border-t border-line px-4 py-3 text-left font-semibold tracking-wide text-muted transition-colors hover:bg-surface-2 hover:text-text disabled:opacity-50"
             >
               <LogOut className="h-4 w-4" aria-hidden="true" />
               {signingOut ? "Logging out…" : "Log out"}
@@ -145,7 +140,7 @@ interface AuthControlsProps {
 
 const AuthControls: React.FC<AuthControlsProps> = ({ auth, signingOut, onLogout }) => {
   if (auth.status === "loading") {
-    return <span className="block h-9 w-[250px] animate-pulse bg-white/10" aria-hidden="true" />;
+    return <span className="block h-9 w-[212px] animate-pulse bg-surface-2" aria-hidden="true" />;
   }
   if (auth.status === "in") {
     return <AccountMenu user={auth.user} signingOut={signingOut} onLogout={onLogout} />;
@@ -175,11 +170,17 @@ const DesktopNav: React.FC<DesktopNavProps> = ({ pathname, auth, signingOut, onL
         <Link
           key={item.label}
           href={item.href}
-          className={`font-rajdhani font-semibold text-lg transition-colors relative group tracking-wider ${isActive ? "text-white" : "text-slate-400 hover:text-white"
-            }`}
+          className={`type-body-sm relative font-medium transition-colors ${
+            isActive ? "text-text" : "text-subtle hover:text-text"
+          }`}
         >
           {item.label}
-          <span className={`absolute -bottom-1 left-0 h-0.5 bg-white transition-all ${isActive ? "w-full" : "w-0 group-hover:w-full"}`}></span>
+          <span
+            aria-hidden="true"
+            className={`absolute -bottom-1.5 left-0 h-px bg-accent transition-all ${
+              isActive ? "w-full" : "w-0 group-hover:w-full"
+            }`}
+          />
         </Link>
       );
     })}
@@ -198,7 +199,7 @@ const MobileMenuButton: React.FC<MobileMenuButtonProps> = ({
   setIsOpen,
 }) => (
   <button
-    className="md:hidden text-white z-[60] relative"
+    className="md:hidden text-text z-[60] relative"
     onClick={() => setIsOpen(!isOpen)}
     aria-label={isOpen ? "Close menu" : "Open menu"}
   >
@@ -229,7 +230,7 @@ const MobileNavMenu: React.FC<MobileNavMenuProps> = ({
     exit={{ opacity: 0, y: -20 }}
     transition={{ duration: 0.2 }}
     style={{ top, height: `calc(100vh - ${top})` }}
-    className="md:hidden fixed left-0 w-full bg-black border-t border-white/10 shadow-xl overflow-y-auto"
+    className="fixed left-0 w-full overflow-y-auto border-t border-line bg-bg shadow-elev-2 md:hidden"
   >
     <div className="flex flex-col p-6 gap-6">
       {NAV_ITEMS.map((item) => {
@@ -241,8 +242,9 @@ const MobileNavMenu: React.FC<MobileNavMenuProps> = ({
             key={item.label}
             href={item.href}
             onClick={onClose}
-            className={`font-rajdhani font-bold text-2xl border-b border-white/10 pb-3 last:border-b-0 transition-colors tracking-wider ${isActive ? "text-white" : "text-slate-200 hover:text-white"
-              }`}
+            className={`type-h3 border-b border-line pb-3 tracking-wide transition-colors last:border-b-0 ${
+              isActive ? "text-accent" : "text-muted hover:text-text"
+            }`}
           >
             {item.label}
           </Link>
@@ -250,13 +252,13 @@ const MobileNavMenu: React.FC<MobileNavMenuProps> = ({
       })}
 
       {auth.status === "loading" ? (
-        <span className="block h-9 w-full animate-pulse bg-white/10" aria-hidden="true" />
+        <span className="block h-9 w-full animate-pulse bg-surface-2" aria-hidden="true" />
       ) : auth.status === "in" ? (
         <div className="flex flex-col gap-6">
           <Link
             href="/dashboard"
             onClick={onClose}
-            className="font-rajdhani font-bold text-2xl tracking-wider text-slate-200 transition-colors hover:text-white"
+            className="type-subhead font-bold tracking-wider text-muted transition-colors hover:text-text"
           >
             Dashboard
           </Link>
@@ -264,7 +266,7 @@ const MobileNavMenu: React.FC<MobileNavMenuProps> = ({
             type="button"
             onClick={onLogout}
             disabled={signingOut}
-            className="text-left font-rajdhani font-bold text-2xl tracking-wider text-slate-200 transition-colors hover:text-white disabled:opacity-50"
+            className="type-subhead text-left font-bold tracking-wider text-muted transition-colors hover:text-text disabled:opacity-50"
           >
             {signingOut ? "Logging out…" : "Log out"}
           </button>
@@ -334,14 +336,12 @@ const Navbar: React.FC = () => {
     setConfirmOpen(true);
   }
 
-  const mobileMenuTop = `3.5rem`;
+  const mobileMenuTop = `4rem`;
 
   return (
     <>
-      <nav
-        className={`bg-black fixed w-full z-50 transition-all duration-300 glass-panel border-b border-white/10`}
-      >
-        <div className="max-w-7xl mx-auto px-6 py-1 sm:py-0 flex justify-between items-center">
+      <nav className="fixed z-50 w-full border-b border-line bg-bg/90 backdrop-blur">
+        <div className="mx-auto flex h-16 w-full max-w-[1200px] items-center justify-between px-6">
           <Logo />
 
           <DesktopNav

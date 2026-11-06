@@ -10,18 +10,18 @@ export default function PageHeader({
   actions?: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col gap-4 border-b border-white/10 pb-5 sm:flex-row sm:items-end sm:justify-between">
+    <div className="flex flex-col gap-4 border-b border-line pb-5 sm:flex-row sm:items-end sm:justify-between">
       <div>
         {eyebrow ? (
-          <p className="mb-1.5 font-orbitron text-[10px] uppercase tracking-[0.28em] text-slate-500">
+          <p className="readout mb-2">
             {eyebrow}
           </p>
         ) : null}
-        <h1 className="font-orbitron text-xl font-bold tracking-tight text-white sm:text-2xl">
+        <h1 className="type-h3 font-bold tracking-tight text-text">
           {title}
         </h1>
         {description ? (
-          <p className="mt-1.5 max-w-xl font-rajdhani text-sm leading-snug text-slate-400">
+          <p className="mt-1.5 max-w-xl type-body-sm leading-snug text-subtle">
             {description}
           </p>
         ) : null}

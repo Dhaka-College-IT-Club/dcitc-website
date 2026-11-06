@@ -22,9 +22,9 @@ export default function ReadingProgress() {
   }, []);
 
   return (
-    <div aria-hidden="true" className="fixed inset-x-0 top-0 z-50 h-[3px] bg-white/5">
+    <div aria-hidden="true" className="fixed inset-x-0 top-0 z-50 h-[3px] bg-line">
       <div
-        className="h-full bg-[#66fcf1] transition-[width] duration-150 ease-out"
+        className="h-full bg-accent transition-[width] duration-150 ease-out"
         style={{ width: `${progress * 100}%` }}
       />
     </div>

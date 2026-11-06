@@ -1,41 +1,43 @@
 import Link from "next/link";
-import MotionSection from "./MotionSection";
 import IntelCard from "./ui/IntelCard";
+import Reveal from "./ui/Reveal";
+import { Container, Section } from "./ui/Section";
+import SectionTitle from "./ui/SectionTitle";
 import type { Intel } from "@/lib/api-types";
 
 const BlogPreview = ({ items = [] }: { items?: Intel[] }) => {
   return (
-    <MotionSection
-      id="intel"
-      title="Intel"
-      subtitle="Latest Insights from the DCITC"
-      className="py-24 bg-black relative"
-    >
-      {items.length === 0 ? (
-        <div className="text-center py-10">
-          <p className="text-slate-500 font-rajdhani text-lg">
-            No intelligence reports available at this time.
-          </p>
-        </div>
-      ) : (
-        <>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {items.map((post) => (
-              <IntelCard key={post.id} intel={post} />
-            ))}
-          </div>
+    <Section id="intel" seam>
+      <Container>
+        <Reveal>
+          <SectionTitle title="Intel" subtitle="Latest insights from the DCITC" />
 
-          <div className="text-center mt-16">
-            <Link
-              href="/intel"
-              className="px-8 py-3 border-2 border-white/30 text-white font-orbitron font-bold tracking-wider hover:bg-white/10 transition-colors duration-300 -skew-x-12 inline-flex"
-            >
-              View All Intel<span className="sr-only"> articles</span>
-            </Link>
-          </div>
-        </>
-      )}
-    </MotionSection>
+          {items.length === 0 ? (
+            <p className="type-body-sm mt-10 text-center text-subtle">
+              No intelligence reports available at this time.
+            </p>
+          ) : (
+            <>
+              <div className="mt-12 grid gap-6 md:grid-cols-3">
+                {items.map((post) => (
+                  <IntelCard key={post.id} intel={post} />
+                ))}
+              </div>
+
+              <div className="mt-10 text-center">
+                <Link
+                  href="/intel"
+                  className="type-body-sm inline-flex items-center gap-2 text-muted underline-offset-4 transition-colors hover:text-accent hover:underline"
+                >
+                  View all Intel
+                  <span aria-hidden="true">→</span>
+                </Link>
+              </div>
+            </>
+          )}
+        </Reveal>
+      </Container>
+    </Section>
   );
 };
 

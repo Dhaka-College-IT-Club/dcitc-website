@@ -49,16 +49,16 @@ export default function ForgotEmailPage() {
     >
       {submitted ? (
         <div className="space-y-5">
-          <div className="flex items-start gap-3 border border-white/15 bg-white/[0.04] p-4">
+          <div className="flex items-start gap-3 border border-line-strong bg-surface-2 p-4">
             <MailCheck
-              className="mt-0.5 h-5 w-5 shrink-0 text-slate-300"
+              className="mt-0.5 h-5 w-5 shrink-0 text-muted"
               aria-hidden="true"
             />
             <div>
-              <p className="font-orbitron text-xs uppercase tracking-[0.16em] text-white">
+              <p className="type-overline uppercase tracking-[0.16em] text-text">
                 Check your inbox
               </p>
-              <p className="mt-1.5 font-rajdhani text-sm leading-snug text-slate-400">
+              <p className="mt-1.5 type-body-sm leading-snug text-subtle">
                 If a member matches {name.trim() || "those details"}{" "}
                 {hscBatch.trim() ? `in ${hscBatch.trim()}` : ""}, the email on
                 file will receive a recovery message shortly.
@@ -66,12 +66,12 @@ export default function ForgotEmailPage() {
             </div>
           </div>
 
-          <p className="font-rajdhani text-sm text-slate-500">
+          <p className="type-body-sm text-faint">
             For privacy, we show the same message whether or not an account
             matches.
           </p>
 
-          <div className="flex flex-col gap-2 border-t border-white/10 pt-4">
+          <div className="flex flex-col gap-2 border-t border-line pt-4">
             <Button href="/login" fullWidth>
               Back to sign in
             </Button>
@@ -81,7 +81,7 @@ export default function ForgotEmailPage() {
                 setSubmitted(false);
                 setError("");
               }}
-              className="font-rajdhani text-sm text-slate-500 underline-offset-4 transition-colors hover:text-white hover:underline"
+              className="type-body-sm text-faint underline-offset-4 transition-colors hover:text-text hover:underline"
             >
               Try different details
             </button>
@@ -119,11 +119,11 @@ export default function ForgotEmailPage() {
             {pending ? "Checking" : "Recover my email"}
           </Button>
 
-          <p className="border-t border-white/10 pt-4 text-center font-rajdhani text-sm text-slate-500">
+          <p className="border-t border-line pt-4 text-center type-body-sm text-faint">
             Know your email?{" "}
             <Link
               href="/login"
-              className="text-white underline-offset-4 hover:underline"
+              className="text-text underline-offset-4 hover:underline"
             >
               Back to sign in
             </Link>

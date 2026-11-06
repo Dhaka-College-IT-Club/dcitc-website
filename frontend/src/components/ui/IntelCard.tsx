@@ -1,4 +1,5 @@
-import Link from "next/link";
+import { Badge } from "./Eyebrow";
+import Card from "./Card";
 import IntelImage from "./IntelImage";
 import { cleanTitle, formatShortDate } from "@/lib/intel";
 import type { Intel } from "@/lib/api-types";
@@ -8,9 +9,10 @@ export default function IntelCard({ intel }: { intel: Intel }) {
   const title = cleanTitle(intel.title);
 
   return (
-    <Link
+    <Card
       href={`/intel/${intel.slug}`}
-      className="group flex h-full min-w-0 flex-col overflow-hidden border border-white/10 bg-white/[0.015] transition-colors duration-300 hover:border-white/30 hover:bg-white/[0.03]"
+      padding=""
+      className="group scan-sweep flex h-full min-w-0 flex-col overflow-hidden transition-colors duration-200 hover:border-line-strong hover:bg-surface-2"
     >
       <div className="relative aspect-video overflow-hidden">
         <IntelImage
@@ -21,24 +23,26 @@ export default function IntelCard({ intel }: { intel: Intel }) {
           sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
           className="transition-transform duration-500 group-hover:scale-105"
         />
-        {/* Fades the image into the card so the two read as one surface. */}
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-linear-to-t from-black via-black/60 to-transparent" />
-        <span className="absolute bottom-3 left-4 inline-flex border border-white/20 bg-black/60 px-2.5 py-1 font-orbitron text-[10px] uppercase tracking-[0.2em] text-white backdrop-blur-sm">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-linear-to-t from-surface via-surface/60 to-transparent"
+        />
+        <Badge className="absolute bottom-3 left-4 bg-surface/90 backdrop-blur-sm">
           {intel.tag}
-        </span>
+        </Badge>
       </div>
 
-      <div className="flex grow flex-col px-5 pb-5 pt-4">
-        <p className="font-rajdhani text-[13px] tracking-wide text-slate-400">
+      <div className="flex grow flex-col p-5">
+        <p className="type-caption text-faint">
           By {intel.author} · {formatShortDate(intel.date)}
         </p>
-        <h3 className="mt-2 line-clamp-2 font-orbitron text-xl font-bold leading-snug text-white transition-colors group-hover:text-slate-200">
+        <h3 className="type-h3 mt-2 line-clamp-2 transition-colors group-hover:text-accent">
           {title}
         </h3>
-        <p className="mt-2 line-clamp-2 font-rajdhani text-[15px] leading-relaxed text-slate-400">
+        <p className="type-body-sm mt-2 line-clamp-2 text-subtle">
           {intel.excerpt}
         </p>
-        <span className="mt-4 inline-flex items-center gap-1.5 font-rajdhani text-sm font-semibold tracking-wide text-slate-300 transition-colors group-hover:text-white">
+        <span className="type-body-sm mt-4 inline-flex items-center gap-1.5 text-muted transition-colors group-hover:text-accent">
           Read more
           <span className="sr-only">: {title}</span>
           <span
@@ -49,6 +53,6 @@ export default function IntelCard({ intel }: { intel: Intel }) {
           </span>
         </span>
       </div>
-    </Link>
+    </Card>
   );
 }

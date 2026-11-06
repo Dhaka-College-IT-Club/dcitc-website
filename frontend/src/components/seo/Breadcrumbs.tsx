@@ -8,7 +8,7 @@ export default function Breadcrumbs({ items }: { items: BreadcrumbItem[] }) {
       <JsonLd data={breadcrumbList(items)} />
       <nav
         aria-label="Breadcrumb"
-        className="mb-6 font-orbitron text-[10px] uppercase tracking-[0.2em] text-slate-500"
+        className="mb-6 type-overline uppercase tracking-[0.2em] text-faint"
       >
         <ol className="flex flex-wrap items-center gap-2">
           {items.map((item, index) => {
@@ -16,11 +16,11 @@ export default function Breadcrumbs({ items }: { items: BreadcrumbItem[] }) {
             return (
               <li key={item.path} className="flex items-center gap-2">
                 {last ? (
-                  <span aria-current="page" className="text-slate-300">
+                  <span aria-current="page" className="text-muted">
                     {item.name}
                   </span>
                 ) : (
-                  <Link href={item.path} className="transition-colors hover:text-white">
+                  <Link href={item.path} className="transition-colors hover:text-text">
                     {item.name}
                   </Link>
                 )}

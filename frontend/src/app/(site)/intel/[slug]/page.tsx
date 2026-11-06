@@ -131,7 +131,7 @@ export default async function IntelDetailPage({
   ]);
 
   return (
-    <div className="min-h-screen bg-black pb-24 text-slate-200">
+    <div className="min-h-screen pb-24 text-muted">
       <JsonLd data={articleJsonLd} />
       <JsonLd data={breadcrumbs} />
       <ReadingProgress />
@@ -140,12 +140,12 @@ export default async function IntelDetailPage({
         <article className="mx-auto max-w-6xl px-5 sm:px-8">
           <Link
             href="/intel"
-            className="inline-flex items-center gap-2 font-orbitron text-[11px] uppercase tracking-[0.2em] text-slate-500 transition-colors hover:text-white"
+            className="inline-flex items-center gap-2 type-overline uppercase tracking-[0.2em] text-faint transition-colors hover:text-text"
           >
             <span aria-hidden="true">←</span> Back to Intel
           </Link>
 
-          <div className="relative mt-6 aspect-video w-full overflow-hidden border border-white/10 xl:aspect-[21/9]">
+          <div className="relative mt-6 aspect-video w-full overflow-hidden border border-line xl:aspect-[21/9]">
             <IntelImage
               src={intel.image}
               alt={title}
@@ -154,16 +154,16 @@ export default async function IntelDetailPage({
               sizes="(min-width: 1280px) 1152px, 100vw"
               priority
             />
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-linear-to-t from-black to-transparent" />
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-linear-to-t from-bg to-transparent" />
           </div>
 
           <div className="mx-auto mt-8 max-w-[1000px]">
             <header className="max-w-[720px]">
               <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-                <span className="border border-white/20 bg-white/[0.06] px-2.5 py-1 font-orbitron text-[10px] uppercase tracking-[0.2em] text-white">
+                <span className="border border-line-strong bg-surface-2 px-2.5 py-1 type-overline uppercase tracking-[0.2em] text-text">
                   {intel.tag}
                 </span>
-                <span className="font-rajdhani text-sm text-slate-400">
+                <span className="type-body-sm text-subtle">
                   By {intel.author} ·{" "}
                   {publishedIso ? (
                     <time dateTime={publishedIso}>
@@ -176,11 +176,11 @@ export default async function IntelDetailPage({
                 </span>
               </div>
 
-              <h1 className="mt-4 text-balance font-orbitron text-3xl font-bold leading-tight text-white md:text-5xl">
+              <h1 className="type-h3 mt-4 text-balance font-bold leading-tight text-text">
                 {title}
               </h1>
               {shouldShowStandfirst(intel.excerpt, intel.content) ? (
-                <p className="mt-4 font-rajdhani text-lg leading-relaxed text-slate-300 md:text-xl">
+                <p className="mt-4 type-body leading-relaxed text-muted">
                   {intel.excerpt}
                 </p>
               ) : null}
@@ -188,13 +188,13 @@ export default async function IntelDetailPage({
 
             <div className="mt-10 flex justify-center gap-14">
               <div className="w-full min-w-0 max-w-[720px]">
-                <div className="border-t border-white/10 pt-8">
+                <div className="border-t border-line pt-8">
                   <IntelMarkdown content={intel.content} />
                 </div>
 
                 {related.length > 0 ? (
-                  <section className="mt-16 border-t border-white/10 pt-8">
-                    <h2 className="font-orbitron text-xs uppercase tracking-[0.28em] text-slate-500">
+                  <section className="mt-16 border-t border-line pt-8">
+                    <h2 className="type-overline uppercase tracking-[0.28em] text-faint">
                       More Intel
                     </h2>
                     <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">

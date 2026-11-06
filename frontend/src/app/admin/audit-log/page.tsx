@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import DataTable, { type Column } from "@/components/admin/DataTable";
 import PageHeader from "@/components/admin/PageHeader";
 import Alert from "@/components/ui/Alert";
+import Card from "@/components/ui/Card";
 import { apiFetch } from "@/lib/api";
 import type { AuditEntry } from "@/lib/api-types";
 
@@ -87,10 +88,10 @@ export default function AdminAuditLogPage() {
       mobilePrimary: true,
       render: (entry) => (
         <span className="flex flex-col">
-          <span className="font-rajdhani text-sm font-semibold text-white">
+          <span className="type-body-sm font-semibold text-text">
             {humanAction(entry.action)}
           </span>
-          <span className="mt-0.5 font-orbitron text-[9px] uppercase tracking-[0.12em] text-slate-500">
+          <span className="mt-0.5 type-overline uppercase tracking-[0.12em] text-faint">
             {entry.action}
           </span>
         </span>
@@ -100,7 +101,7 @@ export default function AdminAuditLogPage() {
       key: "actor",
       header: "Actor",
       render: (entry) => (
-        <span className="font-rajdhani text-sm text-slate-300">
+        <span className="type-body-sm text-muted">
           {entry.actorAdminId === null ? "System" : `Admin ${entry.actorAdminId.slice(0, 8)}`}
         </span>
       ),
@@ -110,19 +111,19 @@ export default function AdminAuditLogPage() {
       header: "Target",
       render: (entry) =>
         entry.targetType ? (
-          <span className="font-rajdhani text-sm text-slate-400">
+          <span className="type-body-sm text-subtle">
             {entry.targetType}
             {entry.targetId !== null ? ` #${entry.targetId}` : ""}
           </span>
         ) : (
-          <span className="font-rajdhani text-sm text-slate-500">—</span>
+          <span className="type-body-sm text-faint">—</span>
         ),
     },
     {
       key: "time",
       header: "When",
       render: (entry) => (
-        <span className="whitespace-nowrap font-rajdhani text-sm text-slate-400">
+        <span className="whitespace-nowrap type-body-sm text-subtle">
           {formatStamp(entry.createdAt)}
         </span>
       ),
@@ -139,15 +140,15 @@ export default function AdminAuditLogPage() {
 
       {error ? <Alert variant="error">{error}</Alert> : null}
 
-      <div className="flex flex-wrap items-center justify-between gap-2 border border-white/10 bg-white/[0.02] px-4 py-2.5">
-        <p className="font-rajdhani text-sm text-slate-400">
-          <span className="font-orbitron text-xs text-white">{items.length}</span>{" "}
+      <Card padding="px-4 py-2.5" className="flex flex-wrap items-center justify-between gap-2">
+        <p className="type-body-sm text-subtle">
+          <span className="type-overline text-text">{items.length}</span>{" "}
           recorded {items.length === 1 ? "entry" : "entries"}
         </p>
-        <p className="font-orbitron text-[9px] uppercase tracking-[0.16em] text-slate-500">
+        <p className="type-overline uppercase tracking-[0.16em] text-faint">
           Read only
         </p>
-      </div>
+      </Card>
 
       <DataTable
         columns={columns}

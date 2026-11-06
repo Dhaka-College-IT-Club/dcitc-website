@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Breadcrumbs from "@/components/seo/Breadcrumbs";
+import Card from "@/components/ui/Card";
 import { DEPARTMENTS } from "@/constants";
 import { DEFAULT_OG_IMAGE } from "@/lib/site";
 
@@ -24,8 +25,8 @@ export const metadata: Metadata = {
 
 export default function DepartmentsPage() {
   return (
-    <div className="min-h-screen bg-black pb-24 pt-32 text-slate-200">
-      <div className="mx-auto max-w-5xl px-6">
+    <div className="min-h-screen pb-16 pt-28 text-muted md:pb-24">
+      <div className="mx-auto w-full max-w-[1200px] px-6">
         <Breadcrumbs
           items={[
             { name: "Home", path: "/" },
@@ -34,13 +35,13 @@ export default function DepartmentsPage() {
         />
 
         <header className="mb-12">
-          <p className="mb-3 font-orbitron text-xs uppercase tracking-[0.3em] text-slate-500">
+          <p className="mb-3 type-overline uppercase tracking-[0.3em] text-faint">
             Specialized teams
           </p>
-          <h1 className="mb-4 font-orbitron text-4xl font-bold leading-tight text-white md:text-5xl">
+          <h1 className="type-h1 mb-4">
             Departments
           </h1>
-          <p className="max-w-2xl font-rajdhani text-lg leading-relaxed text-slate-400">
+          <p className="max-w-2xl type-body leading-relaxed text-subtle">
             The six teams where Dhaka College IT Club (DCITC) members build,
             design, write, secure, and compete.
           </p>
@@ -48,32 +49,29 @@ export default function DepartmentsPage() {
 
         <div className="grid gap-6 md:grid-cols-2">
           {DEPARTMENTS.map((department) => (
-            <section
-              key={department.title}
-              className="border border-white/10 bg-white/[0.02] p-6"
-            >
-              <h2 className="mb-3 font-orbitron text-xl font-bold text-white">
+            <Card as="section" key={department.title} tick>
+              <h2 className="mb-3 type-h3 font-bold text-text">
                 {department.title}
               </h2>
-              <p className="font-rajdhani text-lg leading-relaxed text-slate-400">
+              <p className="type-body leading-relaxed text-subtle">
                 {department.description}
               </p>
-            </section>
+            </Card>
           ))}
         </div>
 
-        <p className="mt-10 font-rajdhani text-lg text-slate-400">
+        <p className="mt-10 type-body text-subtle">
           Ready to pick a team?{" "}
           <Link
             href="/signup"
-            className="text-white underline-offset-4 hover:underline"
+            className="text-text underline-offset-4 hover:underline"
           >
             Join DCITC
           </Link>{" "}
           or{" "}
           <Link
             href="/about"
-            className="text-white underline-offset-4 hover:underline"
+            className="text-text underline-offset-4 hover:underline"
           >
             read more about the club
           </Link>

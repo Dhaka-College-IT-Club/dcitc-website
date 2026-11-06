@@ -49,48 +49,49 @@ export const FOOTER_LINKS: NavItem[] = [
   { label: "Intel", href: "/intel" },
 ];
 
+/* Department hues: one lightness band, icons only (see design.md). */
 export const DEPARTMENTS: DomainFeature[] = [
   {
     title: "Web Development",
     description:
       "Engineering modern, responsive web platforms and digital experiences that power DCITC's online presence.",
     icon: Globe,
-    color: "text-cyan-300",
+    color: "#22D3EE",
   },
   {
     title: "Graphics & Design",
     description:
       "Designing visual identities, event collateral, and digital assets that represent the club across all media.",
     icon: Palette,
-    color: "text-pink-300",
+    color: "#FB7185",
   },
   {
     title: "Content Writing & Publication",
     description:
       "Crafting compelling technical and creative content, publications, and communications that shape the voice of DCITC.",
     icon: PenLine,
-    color: "text-yellow-300",
+    color: "#FBBF24",
   },
   {
     title: "Cyber Security",
     description:
       "Safeguarding the club's digital infrastructure through cybersecurity practices and awareness.",
     icon: ShieldCheck,
-    color: "text-red-300",
+    color: "#FB923C",
   },
   {
     title: "Robotics & Programming",
     description:
       "Building software and robotics projects, from algorithms to autonomous systems, powering innovation at DCITC.",
     icon: Bot,
-    color: "text-purple-300",
+    color: "#A78BFA",
   },
   {
     title: "Competitive Programming",
     description:
       "Sharpening algorithmic problem-solving skills through contests, training sessions, and collaborative practice.",
     icon: Braces,
-    color: "text-orange-300",
+    color: "#34D399",
   },
 ];
 

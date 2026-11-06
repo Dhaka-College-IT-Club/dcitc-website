@@ -36,8 +36,8 @@ export default function TextField({
         </label>
         {counter ? (
           <span
-            className={`font-rajdhani text-xs tabular-nums ${
-              counter.over ? "text-red-300" : "text-slate-500"
+            className={`type-caption tabular-nums ${
+              counter.over ? "text-red-300" : "text-faint"
             }`}
           >
             {counter.text}
@@ -63,7 +63,7 @@ export default function TextField({
         <p
           id={errorId}
           role="alert"
-          className="mt-1.5 flex items-start gap-1.5 font-rajdhani text-sm text-red-300"
+          className="mt-1.5 flex items-start gap-1.5 type-body-sm text-red-300"
         >
           <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
           {error}
@@ -72,7 +72,7 @@ export default function TextField({
       {hint && !error ? (
         <p
           id={hintId}
-          className="mt-1.5 font-rajdhani text-sm text-slate-500"
+          className="mt-1.5 type-body-sm text-faint"
         >
           {hint}
         </p>

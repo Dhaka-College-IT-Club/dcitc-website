@@ -219,14 +219,14 @@ export default function AdminLeadershipPage() {
             <img
               src={item.image}
               alt=""
-              className="h-9 w-9 shrink-0 border border-white/10 object-cover"
+              className="h-9 w-9 shrink-0 border border-line object-cover"
             />
           ) : (
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center border border-white/10 bg-white/[0.04] font-orbitron text-[9px] text-slate-400">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center border border-line bg-surface-2 type-overline text-subtle">
               {initials(item.name)}
             </span>
           )}
-          <span className="font-rajdhani text-sm font-semibold text-white">
+          <span className="type-body-sm font-semibold text-text">
             {item.name}
           </span>
         </div>
@@ -236,14 +236,14 @@ export default function AdminLeadershipPage() {
       key: "role",
       header: "Role",
       render: (item) => (
-        <span className="font-rajdhani text-sm text-slate-300">{item.role}</span>
+        <span className="type-body-sm text-muted">{item.role}</span>
       ),
     },
     {
       key: "tier",
       header: "Tier",
       render: (item) => (
-        <span className="inline-flex border border-white/10 px-1.5 py-0.5 font-orbitron text-[9px] uppercase tracking-[0.12em] text-slate-400">
+        <span className="inline-flex border border-line px-1.5 py-0.5 type-overline uppercase tracking-[0.12em] text-subtle">
           {tierLabels[item.tier]}
         </span>
       ),
@@ -252,7 +252,7 @@ export default function AdminLeadershipPage() {
       key: "batch",
       header: "Batch",
       render: (item) => (
-        <span className="font-orbitron text-[10px] tracking-[0.1em] text-slate-400">
+        <span className="type-overline tracking-[0.1em] text-subtle">
           {item.batch}
         </span>
       ),
@@ -268,7 +268,7 @@ export default function AdminLeadershipPage() {
           { href: item.portfolio, Icon: Globe, label: "Portfolio" },
         ].filter((link) => Boolean(link.href));
         if (links.length === 0) {
-          return <span className="font-rajdhani text-xs text-slate-500">—</span>;
+          return <span className="type-caption text-faint">—</span>;
         }
         return (
           <span className="flex gap-1.5">
@@ -279,7 +279,7 @@ export default function AdminLeadershipPage() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={`${item.name} ${label}`}
-                className="text-slate-500 transition-colors hover:text-white"
+                className="text-faint transition-colors hover:text-text"
               >
                 <Icon className="h-3.5 w-3.5" aria-hidden="true" />
               </a>
@@ -307,15 +307,15 @@ export default function AdminLeadershipPage() {
       {error ? <Alert variant="error">{error}</Alert> : null}
 
       <div className="flex flex-wrap items-center gap-2">
-        <div className="inline-flex flex-wrap items-center gap-1 rounded-full border border-white/10 bg-white/[0.03] p-1 backdrop-blur-sm">
+        <div className="inline-flex flex-wrap items-center gap-1 rounded-full border border-line bg-surface p-1 backdrop-blur-sm">
           <button
             type="button"
             onClick={() => setActiveBatch("all")}
             aria-pressed={activeBatch === "all"}
-            className={`rounded-full px-4 py-1.5 font-orbitron text-[10px] uppercase tracking-[0.16em] transition-all sm:px-5 sm:py-2 ${
+            className={`rounded-full px-4 py-1.5 type-overline uppercase tracking-[0.16em] transition-all sm:px-5 sm:py-2 ${
               activeBatch === "all"
-                ? "bg-white text-black shadow-[0_0_20px_rgba(255,255,255,0.25)]"
-                : "text-slate-400 hover:text-white"
+                ? "bg-accent text-bg"
+                : "text-subtle hover:text-text"
             }`}
           >
             All
@@ -326,17 +326,17 @@ export default function AdminLeadershipPage() {
               type="button"
               onClick={() => setActiveBatch(batch)}
               aria-pressed={activeBatch === batch}
-              className={`rounded-full px-4 py-1.5 font-orbitron text-[10px] uppercase tracking-[0.16em] transition-all sm:px-5 sm:py-2 ${
+              className={`rounded-full px-4 py-1.5 type-overline uppercase tracking-[0.16em] transition-all sm:px-5 sm:py-2 ${
                 activeBatch === batch
-                  ? "bg-white text-black shadow-[0_0_20px_rgba(255,255,255,0.25)]"
-                  : "text-slate-400 hover:text-white"
+                  ? "bg-accent text-bg"
+                  : "text-subtle hover:text-text"
               }`}
             >
               {batch}
             </button>
           ))}
         </div>
-        <span className="font-rajdhani text-xs text-slate-500">
+        <span className="type-caption text-faint">
           {items.length} member{items.length === 1 ? "" : "s"} listed
         </span>
       </div>
@@ -444,7 +444,7 @@ export default function AdminLeadershipPage() {
             </div>
           </div>
 
-          <div className="border-t border-white/10 pt-5">
+          <div className="border-t border-line pt-5">
             <ImageUpload
               label="Photo"
               value={form.image}
@@ -455,8 +455,8 @@ export default function AdminLeadershipPage() {
             />
           </div>
 
-          <div className="border-t border-white/10 pt-5">
-            <p className="font-orbitron text-[10px] uppercase tracking-[0.2em] text-slate-500">
+          <div className="border-t border-line pt-5">
+            <p className="type-overline uppercase tracking-[0.2em] text-faint">
               Social links (optional)
             </p>
             <div className="mt-3 grid gap-4 sm:grid-cols-2">
@@ -503,7 +503,7 @@ export default function AdminLeadershipPage() {
             </div>
           </div>
 
-          <div className="flex flex-col-reverse gap-2 border-t border-white/10 pt-5 sm:flex-row sm:justify-end">
+          <div className="flex flex-col-reverse gap-2 border-t border-line pt-5 sm:flex-row sm:justify-end">
             <Button
               type="button"
               variant="secondary"

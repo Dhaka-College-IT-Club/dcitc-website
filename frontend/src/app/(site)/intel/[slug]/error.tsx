@@ -2,18 +2,19 @@
 
 import Link from "next/link";
 import Button from "@/components/ui/Button";
+import Card from "@/components/ui/Card";
 
 export default function IntelError({ retry }: { error: unknown; retry: () => void }) {
   return (
-    <div className="flex min-h-[70vh] items-center justify-center bg-black px-5 text-slate-200">
-      <div className="w-full max-w-lg border border-white/10 bg-white/[0.02] p-6">
-        <p className="font-orbitron text-[10px] uppercase tracking-[0.28em] text-slate-500">
+    <div className="flex min-h-[70vh] items-center justify-center px-5 text-muted">
+      <Card className="w-full max-w-lg">
+        <p className="type-overline uppercase tracking-[0.28em] text-faint">
           Intel
         </p>
-        <h1 className="mt-2 font-orbitron text-2xl font-bold text-white">
+        <h1 className="type-h3 mt-2 font-bold text-text">
           This article could not be loaded
         </h1>
-        <p className="mt-3 font-rajdhani text-base leading-snug text-slate-400">
+        <p className="mt-3 type-body leading-snug text-subtle">
           The content service did not respond. This is not a missing article —
           try again in a moment.
         </p>
@@ -25,13 +26,13 @@ export default function IntelError({ retry }: { error: unknown; retry: () => voi
             Back to Intel
           </Button>
         </div>
-        <p className="mt-4 font-rajdhani text-xs text-slate-500">
-          <Link href="/" className="text-white underline-offset-4 hover:underline">
+        <p className="mt-4 type-caption text-faint">
+          <Link href="/" className="text-text underline-offset-4 hover:underline">
             Return to the public site
           </Link>
           .
         </p>
-      </div>
+      </Card>
     </div>
   );
 }

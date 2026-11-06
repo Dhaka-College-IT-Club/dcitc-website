@@ -28,10 +28,10 @@ export default function Logo({
       </span>
       {!compact && (
         <span className="flex flex-col leading-none">
-          <span className="font-orbitron text-sm font-bold tracking-[0.22em] text-white">
+          <span className="type-h4 font-bold tracking-[0.22em] text-text">
             DCITC
           </span>
-          <span className="mt-1 font-rajdhani text-[10px] uppercase tracking-[0.18em] text-slate-500">
+          <span className="type-caption mt-1 uppercase tracking-[0.18em] text-faint">
             Dhaka College IT Club
           </span>
         </span>

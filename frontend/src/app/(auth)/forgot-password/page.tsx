@@ -194,11 +194,11 @@ export default function ForgotPasswordPage() {
           <Button type="submit" fullWidth loading={pending}>
             {pending ? "Sending code" : "Send reset code"}
           </Button>
-          <p className="text-center font-rajdhani text-sm text-slate-500">
+          <p className="text-center type-body-sm text-faint">
             Remembered it?{" "}
             <Link
               href="/login"
-              className="text-white underline-offset-4 hover:underline"
+              className="text-text underline-offset-4 hover:underline"
             >
               Back to sign in
             </Link>
@@ -248,12 +248,12 @@ export default function ForgotPasswordPage() {
             {pending ? "Updating password" : "Update password"}
           </Button>
 
-          <div className="flex flex-col items-center gap-2 border-t border-white/10 pt-4 text-center">
+          <div className="flex flex-col items-center gap-2 border-t border-line pt-4 text-center">
             <button
               type="button"
               onClick={resend}
               disabled={resendIn > 0 || pending}
-              className="font-rajdhani text-sm text-slate-300 underline-offset-4 transition-colors hover:text-white hover:underline disabled:cursor-not-allowed disabled:text-slate-500 disabled:no-underline"
+              className="type-body-sm text-muted underline-offset-4 transition-colors hover:text-text hover:underline disabled:cursor-not-allowed disabled:text-faint disabled:no-underline"
             >
               {resendIn > 0 ? `Resend code in ${resendIn}s` : "Resend code"}
             </button>
@@ -266,7 +266,7 @@ export default function ForgotPasswordPage() {
                 setError("");
                 setFieldErrors({});
               }}
-              className="font-rajdhani text-sm text-slate-500 underline-offset-4 transition-colors hover:text-white hover:underline"
+              className="type-body-sm text-faint underline-offset-4 transition-colors hover:text-text hover:underline"
             >
               Use a different email
             </button>

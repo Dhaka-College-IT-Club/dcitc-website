@@ -1,7 +1,8 @@
-"use client";
-import React from "react";
 import { Code2, Users, Trophy, Rocket, BookOpen, Network } from "lucide-react";
 import { CLUB } from "../constants";
+import Card from "./ui/Card";
+import Reveal from "./ui/Reveal";
+import { Container, Section } from "./ui/Section";
 import SectionTitle from "./ui/SectionTitle";
 
 const benefits = [
@@ -13,42 +14,37 @@ const benefits = [
   { icon: Network, title: "Network", desc: "Connect with alumni, sponsors, and the wider tech ecosystem." },
 ];
 
-const WhyJoin: React.FC = () => {
+export default function WhyJoin() {
   return (
-    <section id="why-join" className="py-24 bg-black relative overflow-hidden border-t border-white/5">
-      <div className="max-w-7xl mx-auto px-6 relative z-10">
-        <SectionTitle title="Why Join DCITC" subtitle="What you gain by being part of the club" />
+    <Section id="why-join" seam>
+      <Container>
+        <Reveal>
+          <SectionTitle
+            eyebrow="Why join"
+            title="Why Join DCITC"
+            subtitle="What you gain by being part of the club"
+          />
 
-        <p className="mx-auto mb-12 max-w-3xl text-center font-rajdhani text-lg leading-relaxed tracking-wide text-slate-400">
-          Dhaka College IT Club (DCITC) is a student technology club at Dhaka
-          College in Dhaka, Bangladesh. Also known as the Dhaka College
-          Information Technology Club, its mission is clear: {CLUB.MISSION.STATEMENT}{" "}
-          This website is the club&apos;s public home.
-        </p>
+          <p className="type-body mt-8 max-w-3xl text-center text-subtle max-md:mx-0 max-md:max-w-[34rem] max-md:text-left md:mx-auto">
+            Dhaka College IT Club (DCITC) is a student technology club at Dhaka
+            College in Dhaka, Bangladesh. Also known as the Dhaka College
+            Information Technology Club, its mission is clear:{" "}
+            {CLUB.MISSION.STATEMENT} This website is the club&apos;s public home.
+          </p>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {benefits.map(({ icon: Icon, title, desc }) => (
-            <div
-              key={title}
-              className="group border border-white/10 bg-white/[0.02] p-6 hover:border-white/30 hover:bg-white/[0.05] transition-all duration-300"
-            >
-              <div className="w-12 h-12 flex items-center justify-center border border-white/20 text-slate-300 mb-4 group-hover:text-white group-hover:border-white/40 transition-colors">
-                <Icon className="w-6 h-6" />
-              </div>
-              <h3 className="font-orbitron text-white text-sm md:text-base font-bold tracking-wider uppercase mb-2">
-                {title}
-              </h3>
-              <p className="font-rajdhani text-slate-400 text-base tracking-wide">
-                {desc}
-              </p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/3 blur-3xl rounded-full pointer-events-none" />
-    </section>
+          <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {benefits.map(({ icon: Icon, title, desc }) => (
+              <Card key={title} as="article" interactive tick>
+                <div className="mb-5 flex h-12 w-12 items-center justify-center border border-line-strong bg-surface-2 text-accent">
+                  <Icon className="h-5 w-5" aria-hidden="true" />
+                </div>
+                <h3 className="type-h4 uppercase tracking-wide">{title}</h3>
+                <p className="type-body-sm mt-2 text-subtle">{desc}</p>
+              </Card>
+            ))}
+          </div>
+        </Reveal>
+      </Container>
+    </Section>
   );
-};
-
-export default WhyJoin;
+}

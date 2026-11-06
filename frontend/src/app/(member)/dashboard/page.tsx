@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import DashboardShell from "@/components/dashboard/DashboardShell";
 import Alert from "@/components/ui/Alert";
 import Button from "@/components/ui/Button";
+import Card from "@/components/ui/Card";
 import { apiFetch } from "@/lib/api";
 import type { PublicSettings, User } from "@/lib/api-types";
 
@@ -73,18 +74,18 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black text-slate-200">
-        <div className="border-b border-white/10 px-4 py-3 sm:px-6">
+      <div className="min-h-screen bg-bg text-muted">
+        <div className="border-b border-line px-4 py-3 sm:px-6">
           <div className="mx-auto flex max-w-5xl items-center justify-between">
-            <span className="h-10 w-24 animate-pulse bg-white/10" />
-            <span className="h-9 w-24 animate-pulse bg-white/[0.07]" />
+            <span className="h-10 w-24 animate-pulse bg-surface-2" />
+            <span className="h-9 w-24 animate-pulse bg-surface-2" />
           </div>
         </div>
         <div className="mx-auto max-w-5xl space-y-6 px-4 py-10 sm:px-6">
-          <span className="block h-3 w-28 animate-pulse bg-white/10" />
-          <span className="block h-9 w-2/3 max-w-md animate-pulse bg-white/10" />
-          <span className="block h-20 animate-pulse bg-white/[0.05]" />
-          <span className="block h-64 animate-pulse bg-white/[0.04]" />
+          <span className="block h-3 w-28 animate-pulse bg-surface-2" />
+          <span className="block h-9 w-2/3 max-w-md animate-pulse bg-surface-2" />
+          <span className="block h-20 animate-pulse bg-surface-2" />
+          <span className="block h-64 animate-pulse bg-surface-2" />
         </div>
       </div>
     );
@@ -92,9 +93,9 @@ export default function DashboardPage() {
 
   if (error && !user) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-black px-4 text-slate-200">
-        <div className="w-full max-w-lg border border-white/10 bg-white/[0.02] p-6">
-          <p className="font-orbitron text-[10px] uppercase tracking-[0.28em] text-slate-500">
+      <div className="flex min-h-screen items-center justify-center bg-bg px-4 text-muted">
+        <Card className="w-full max-w-lg">
+          <p className="type-overline uppercase tracking-[0.28em] text-faint">
             Member portal
           </p>
           <div className="mt-4">
@@ -112,7 +113,7 @@ export default function DashboardPage() {
               Retry
             </Button>
           </div>
-        </div>
+        </Card>
       </div>
     );
   }
@@ -129,85 +130,92 @@ export default function DashboardPage() {
   return (
     <DashboardShell user={user} onLogout={signOut} signingOut={signingOut}>
       <header className="mb-7">
-        <p className="font-orbitron text-[10px] uppercase tracking-[0.28em] text-slate-500">
-          Member portal
-        </p>
-        <h1 className="mt-2 font-orbitron text-3xl font-bold leading-tight tracking-tight text-white sm:text-4xl md:text-5xl">
-          Welcome, <span className="break-words text-white">{user.name}</span>
+        <p className="readout">Member portal</p>
+        <h1 className="type-h1 mt-2">
+          Welcome, <span className="break-words text-text">{user.name}</span>
         </h1>
-        <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 font-rajdhani text-sm text-slate-400">
+        <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 type-body-sm text-subtle">
           {user.hscBatch ? (
-            <span className="inline-flex items-center gap-1.5 border border-white/15 px-2 py-0.5 font-orbitron text-[9px] uppercase tracking-[0.16em] text-slate-300">
+            <span className="inline-flex items-center gap-1.5 border border-line-strong px-2 py-0.5 type-overline uppercase tracking-[0.16em] text-muted">
               <GraduationCap className="h-3 w-3" aria-hidden="true" />
               {user.hscBatch}
             </span>
           ) : null}
           {since ? (
             <span className="inline-flex items-center gap-1.5">
-              <CalendarDays className="h-3.5 w-3.5 text-slate-500" aria-hidden="true" />
+              <CalendarDays className="h-3.5 w-3.5 text-faint" aria-hidden="true" />
               Account created {since}
             </span>
           ) : null}
         </div>
       </header>
 
-      <section
+      <Card
+        as="section"
         aria-label="Account"
-        className="mb-4 border border-white/10 bg-white/[0.02] px-5 py-4"
+        padding="px-5 py-4"
+        className="mb-4"
       >
-        <p className="font-orbitron text-[9px] uppercase tracking-[0.2em] text-slate-500">
+        <p className="type-overline uppercase tracking-[0.2em] text-faint">
           Account
         </p>
         <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6">
-          <p className="min-w-0 break-all font-rajdhani text-base text-slate-200">
+          <p className="min-w-0 break-all type-body text-muted">
             {user.email}
           </p>
-          <p className="font-rajdhani text-sm text-slate-500">
+          <p className="type-body-sm text-faint">
             Need a detail changed?{" "}
             <Link
               href="/#contact"
-              className="text-white underline-offset-4 transition-colors hover:underline"
+              className="text-text underline-offset-4 transition-colors hover:underline"
             >
               Contact a club executive
             </Link>
             .
           </p>
         </div>
-      </section>
+      </Card>
 
       <section
         aria-labelledby="membership-title"
-        className="clip-notch relative overflow-hidden border border-white/30 bg-white/[0.05] p-5 sm:p-7"
+        className=" relative overflow-hidden border border-line-strong bg-surface-2 p-5 sm:p-7"
       >
+        {user.hscBatch || since ? (
+          <p className="readout mb-3">
+            {[user.hscBatch, since ? `Member since ${since}` : null]
+              .filter(Boolean)
+              .join("  ·  ")}
+          </p>
+        ) : null}
         <h2
           id="membership-title"
-          className="font-orbitron text-xl font-bold tracking-tight text-white sm:text-2xl"
+          className="type-h3 font-bold tracking-tight text-text"
         >
           Membership
         </h2>
-        <p className="mt-4 font-orbitron text-3xl font-bold leading-none text-white sm:text-4xl">
+        <p className="type-h3 mt-4 font-bold leading-none text-text">
           {price}
-          <span className="ml-2 font-orbitron text-base font-medium tracking-[0.16em] text-slate-400">
+          <span className="ml-2 type-h4 font-medium tracking-[0.16em] text-subtle">
             BDT
           </span>
         </p>
-        <p className="mt-3 max-w-xl font-rajdhani text-base leading-snug tracking-wide text-slate-300">
+        <p className="mt-3 max-w-xl type-body leading-snug tracking-wide text-muted">
           One-time registration fee. Membership lasts through your HSC years.
           Some workshops and events may carry a separate fee.
         </p>
 
         <div className="mt-6">
           {formUrl ? (
-            <Button href={formUrl} target="_blank" rel="noopener noreferrer" size="lg">
+            <Button href={formUrl} target="_blank" rel="noopener noreferrer" size="md">
               Become a Member
               <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
             </Button>
           ) : (
             <>
-              <Button type="button" size="lg" disabled>
+              <Button type="button" size="md" disabled>
                 Membership closed
               </Button>
-              <p className="mt-3 max-w-xl font-rajdhani text-sm text-slate-400">
+              <p className="mt-3 max-w-xl type-body-sm text-subtle">
                 Membership is closed right now. The club will publish the form
                 here when enrolment opens.
               </p>
@@ -216,7 +224,7 @@ export default function DashboardPage() {
         </div>
 
         {formUrl ? (
-          <p className="mt-3 font-rajdhani text-xs text-slate-500">
+          <p className="mt-3 type-caption text-faint">
             Takes about two minutes.
           </p>
         ) : null}

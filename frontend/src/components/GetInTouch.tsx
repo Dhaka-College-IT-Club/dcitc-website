@@ -2,6 +2,8 @@
 import React, { useEffect, useState } from "react";
 import { MapPin, Mail, Send, X } from "lucide-react";
 import SectionTitle from "./ui/SectionTitle";
+import Button from "./ui/Button";
+import Card from "./ui/Card";
 
 const CONFIRMATION_MS = 6000;
 
@@ -67,59 +69,78 @@ const GetInTouch: React.FC = () => {
     { icon: Mail, label: "Email", value: "dhakacollegeitclubofficial@gmail.com" },
   ];
 
-  const inputClass =
-    "w-full bg-white/[0.03] border border-white/10 px-4 py-3 text-white font-rajdhani text-base placeholder:text-slate-600 focus:outline-none focus:border-white/40 transition-colors";
-  const errorClass = "border-red-500/60 focus:border-red-500/80";
+  const inputClass = "dc-input";
 
   return (
-    <section id="contact" className="py-24 bg-black relative overflow-hidden border-t border-white/10">
+    <section
+      id="contact"
+      className="section-seam relative scroll-mt-20 overflow-hidden py-16 md:py-24"
+    >
       {success && (
-        <div className="fixed top-6 left-6 z-[100] flex max-w-sm items-start gap-3 border border-white/20 bg-black/90 px-5 py-4 backdrop-blur-sm shadow-[0_0_20px_rgba(255,255,255,0.1)]">
-          <p className="font-rajdhani text-white text-base tracking-wide">
+        <div
+          role="status"
+          className="fixed left-6 top-6 z-[100] flex max-w-sm items-start gap-3 border border-accent/40 bg-surface px-5 py-4 shadow-elev-2"
+        >
+          <p className="type-body-sm text-text">
             Your message is sent to the DCITC team
           </p>
           <button
             type="button"
             onClick={() => setSuccess(false)}
             aria-label="Dismiss confirmation"
-            className="-mr-1 -mt-1 inline-flex h-6 w-6 shrink-0 items-center justify-center text-slate-400 transition-colors hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            className="-mr-1 -mt-1 inline-flex h-6 w-6 shrink-0 items-center justify-center text-subtle transition-colors hover:text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
           >
             <X className="h-4 w-4" aria-hidden="true" />
           </button>
         </div>
       )}
 
-      <div className="absolute inset-0 opacity-5">
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage:
-              "linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)",
-            backgroundSize: "50px 50px",
-          }}
+      <div
+        aria-hidden="true"
+        className="tech-grid pointer-events-none absolute inset-0 opacity-[0.04]"
+      />
+
+      <div className="relative z-10 mx-auto w-full max-w-[1200px] px-6">
+        <SectionTitle
+          eyebrow="Contact"
+          title="Get In Touch"
+          subtitle="Reach out to the DCITC team"
         />
-      </div>
 
-      <div className="max-w-7xl mx-auto px-6 relative z-10">
-        <SectionTitle title="Get In Touch" subtitle="Reach out to the DCITC team" />
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-start">
+        <div className="mt-12 grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-start">
           <div className="space-y-8">
             <div className="space-y-4">
               {contacts.map(({ icon: Icon, label, value }) => (
-                <div key={label} className="flex items-start gap-4 p-4 border border-white/10 bg-white/[0.02]">
-                  <div className="w-10 h-10 flex items-center justify-center border border-white/20 text-slate-300 shrink-0">
-                    <Icon className="w-5 h-5" />
+                <Card
+                  key={label}
+                  padding="p-4"
+                  tick
+                  className="flex items-start gap-4"
+                >
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center border border-line-strong text-accent">
+                    <Icon className="h-5 w-5" aria-hidden="true" />
                   </div>
-                  <div>
-                    <p className="font-orbitron text-xs tracking-widest text-slate-500 uppercase mb-1">
-                      {label}
-                    </p>
-                    <p className="font-rajdhani text-white text-base tracking-wide break-all">
-                      {value}
+                  <div className="min-w-0">
+                    <p className="type-overline mb-1 text-faint">{label}</p>
+                    <p
+                      className={`text-text ${
+                        value.includes("@")
+                          ? "type-body-sm [overflow-wrap:anywhere]"
+                          : "type-body break-words"
+                      }`}
+                    >
+                      {value.includes("@") ? (
+                        <>
+                          {value.slice(0, value.indexOf("@") + 1)}
+                          <wbr />
+                          {value.slice(value.indexOf("@") + 1)}
+                        </>
+                      ) : (
+                        value
+                      )}
                     </p>
                   </div>
-                </div>
+                </Card>
               ))}
             </div>
 
@@ -130,12 +151,14 @@ const GetInTouch: React.FC = () => {
                     type="text"
                     name="name"
                     placeholder="Your Name"
+                    aria-label="Your name"
+                    aria-invalid={nameError ? true : undefined}
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className={`${inputClass} ${nameError ? errorClass : ""}`}
+                    className={`${inputClass} `}
                   />
                   {nameError && (
-                    <p className="mt-1 text-sm text-red-400 font-rajdhani tracking-wide">
+                    <p className="mt-1 type-caption mt-1.5 text-danger">
                       {nameError}
                     </p>
                   )}
@@ -145,12 +168,14 @@ const GetInTouch: React.FC = () => {
                     type="text"
                     name="email"
                     placeholder="Your Email"
+                    aria-label="Your email"
+                    aria-invalid={emailError ? true : undefined}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className={`${inputClass} ${emailError ? errorClass : ""}`}
+                    className={`${inputClass} `}
                   />
                   {emailError && (
-                    <p className="mt-1 text-sm text-red-400 font-rajdhani tracking-wide">
+                    <p className="mt-1 type-caption mt-1.5 text-danger">
                       {emailError}
                     </p>
                   )}
@@ -160,34 +185,30 @@ const GetInTouch: React.FC = () => {
                 <textarea
                   name="message"
                   placeholder="Your Message"
+                  aria-label="Your message"
+                  aria-invalid={messageError ? true : undefined}
                   rows={4}
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
-                  className={`${inputClass} resize-none ${messageError ? errorClass : ""}`}
+                  className={`${inputClass} resize-none `}
                 />
                 {messageError && (
-                  <p className="mt-1 text-sm text-red-400 font-rajdhani tracking-wide">
+                  <p className="mt-1 type-caption mt-1.5 text-danger">
                     {messageError}
                   </p>
                 )}
               </div>
               {formError && (
-                <p className="text-sm text-red-400 font-rajdhani tracking-wide">{formError}</p>
+                <p className="type-caption mt-1.5 text-danger">{formError}</p>
               )}
-              <button
-                type="submit"
-                disabled={pending}
-                className="px-6 py-3 bg-white text-black font-orbitron font-bold tracking-wider hover:bg-slate-200 transition-all duration-300 flex items-center justify-center gap-2 -skew-x-10 group disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <span className="skew-x-10 flex items-center gap-2">
-                  {pending ? "SENDING…" : "SEND MESSAGE"}
-                  <Send className="w-4 h-4" />
-                </span>
-              </button>
+              <Button type="submit" loading={pending} className="gap-2">
+                Send message
+                <Send className="h-4 w-4" aria-hidden="true" />
+              </Button>
             </form>
           </div>
 
-          <div className="w-full border border-white/10 overflow-hidden bg-white/[0.02]">
+          <Card padding="" className="w-full overflow-hidden">
             <div className="relative w-full aspect-[4/3] lg:aspect-auto lg:h-[520px]">
               <iframe
                 src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d6441.9394693764025!2d90.38087734965688!3d23.734180404014626!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3755b8c8e1ea9fd1%3A0xa6e274882fdbce53!2sDhaka%20College!5e0!3m2!1sen!2sbd!4v1793377737693!5m2!1sen!2sbd"
@@ -201,11 +222,9 @@ const GetInTouch: React.FC = () => {
                 title="DCITC Location - Dhaka College"
               />
             </div>
-          </div>
+          </Card>
         </div>
       </div>
-
-      <div className="absolute top-1/4 right-0 w-32 h-32 bg-white/5 blur-3xl rounded-full pointer-events-none" />
     </section>
   );
 };
