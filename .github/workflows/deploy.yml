@@ -1,0 +1,38 @@
+name: Deploy frontend (production)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-frontend
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build
+      - name: Link Vercel project
+        run: |
+          mkdir -p .vercel
+          cat > .vercel/project.json <<'EOF'
+          {"projectId": "${{ secrets.VERCEL_PROJECT_ID }}", "orgId": "${{ secrets.VERCEL_ORG_ID }}"}
+          EOF
+      - name: Deploy to Vercel (production)
+        run: npx vercel deploy --prebuilt --prod --yes --token "${{ secrets.VERCEL_TOKEN }}" 2>&1 | tee deploy-url.log
