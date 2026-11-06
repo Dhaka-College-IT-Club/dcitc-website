@@ -20,23 +20,9 @@ export interface HalftonePalette {
 
 export type HalftonePreset = "night" | "paper" | "ember" | "cobalt";
 
-export interface FooterLink {
-  label: string;
-  href?: string;
-}
-
-export interface FooterColumn {
-  title: string;
-  links: FooterLink[];
-}
-
 export interface HalftoneWordmarkFooterProps {
   /** The giant word printed in dots. Lowercase reads best. */
   wordmark?: string;
-  label?: string;
-  meta?: string;
-  columns?: FooterColumn[];
-  backToTop?: boolean;
   preset?: HalftonePreset;
   palette?: { background?: string; ink?: string; warm?: string };
   dotGap?: number;
@@ -139,45 +125,11 @@ const HWF_CSS = `
   background: var(--hwf-bg); color: var(--hwf-ink); -webkit-font-smoothing: antialiased;
 }
 .hwf-root canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; max-width: none; }
-.hwf-top {
-  position: relative; z-index: 1; display: grid; grid-template-columns: minmax(0, 1.25fr) repeat(3, minmax(0, 1fr));
-  gap: 24px; padding: clamp(22px, 3.4vw, 40px) clamp(20px, 3.4vw, 44px) 0;
-  font-family: var(--hwf-mono); font-size: 10.5px; letter-spacing: .18em; text-transform: uppercase; line-height: 1.75;
-}
-.hwf-brand strong { display: block; font-weight: 500; }
-.hwf-brand span { opacity: .45; }
-.hwf-col h3 { margin: 0; font: inherit; opacity: .4; font-weight: 500; }
-.hwf-col ul { list-style: none; margin: 0; padding: 0; }
-.hwf-col a, .hwf-up {
-  color: inherit; text-decoration: none; opacity: .78; background: none; border: 0; padding: 0;
-  font: inherit; letter-spacing: inherit; text-transform: inherit; cursor: pointer;
-  background-image: linear-gradient(currentColor, currentColor); background-size: 0% 1px;
-  background-repeat: no-repeat; background-position: 0 100%; transition: opacity .25s ease, background-size .35s cubic-bezier(.2,.7,.1,1);
-}
-.hwf-col a:hover, .hwf-up:hover { opacity: 1; background-size: 100% 1px; }
-.hwf-col a:focus-visible, .hwf-up:focus-visible { outline: 1px solid currentColor; outline-offset: 3px; opacity: 1; }
-.hwf-rule {
-  position: relative; z-index: 1; display: flex; justify-content: flex-end; align-items: center; gap: 16px;
-  margin: clamp(18px, 2.6vw, 30px) clamp(20px, 3.4vw, 44px) 0; padding-top: 12px;
-  border-top: 0.5px solid color-mix(in srgb, var(--hwf-ink) 16%, transparent);
-  font-family: var(--hwf-mono); font-size: 10.5px; letter-spacing: .18em; text-transform: uppercase;
-}
 .hwf-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-@media (max-width: 720px) {
-  .hwf-top { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); row-gap: 18px; }
-  .hwf-brand { grid-column: 1 / -1; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .hwf-col a, .hwf-up { transition: none; }
-}
 `;
 
 export default function HalftoneWordmarkFooter({
   wordmark = "dcitc",
-  label = "Dhaka College IT Club",
-  meta = "Dhaka College · Dhaka, Bangladesh",
-  columns = [],
-  backToTop = true,
   preset = "night",
   palette,
   dotGap = 6,
@@ -479,10 +431,6 @@ export default function HalftoneWordmarkFooter({
     };
   }, [key]);
 
-  const toTop = () => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
   return (
     <div
       ref={rootRef}
@@ -499,31 +447,6 @@ export default function HalftoneWordmarkFooter({
       <style>{HWF_CSS}</style>
       <canvas ref={canvasRef} aria-hidden="true" />
       <span className="hwf-sr">{wordmark}</span>
-      <div className="hwf-top">
-        <div className="hwf-brand">
-          <strong>{label}</strong>
-          <span>{meta}</span>
-        </div>
-        {columns.map((col) => (
-          <nav className="hwf-col" key={col.title} aria-label={col.title}>
-            <h3>{col.title}</h3>
-            <ul>
-              {col.links.map((l) => (
-                <li key={l.label}>
-                  <a href={l.href || "#"}>{l.label}</a>
-                </li>
-              ))}
-            </ul>
-          </nav>
-        ))}
-      </div>
-      <div className="hwf-rule">
-        {backToTop ? (
-          <button type="button" className="hwf-up" onClick={toTop}>
-            Back to top ↑
-          </button>
-        ) : null}
-      </div>
     </div>
   );
 }
