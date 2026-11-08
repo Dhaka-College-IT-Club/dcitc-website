@@ -1,0 +1,25 @@
+name: Keep API awake
+
+# The Render service runs on the Free plan: it spins down after 15 minutes
+# without inbound traffic and its edge throttles wake attempts (429
+# "hibernate-rate-limited"). A ping every 5 minutes keeps it under that window.
+# GitHub disables scheduled workflows after 60 days without repo activity —
+# re-enable from the Actions tab if it goes quiet.
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping health endpoint
+        run: |
+          # Do not fail the job: a red mark every 5 minutes is notification noise,
+          # and the visible symptom (empty site) already reports the outage.
+          curl -sS --max-time 120 --retry 2 --retry-delay 20 \
+            -w '\nHTTP %{http_code}\n' \
+            https://api.dcitc.org/api/v2/health || true
