@@ -2,12 +2,14 @@ name: Keep API awake
 
 # The Render service runs on the Free plan: it spins down after 15 minutes
 # without inbound traffic and its edge throttles wake attempts (429
-# "hibernate-rate-limited"). A ping every 5 minutes keeps it under that window.
+# "hibernate-rate-limited"). A 50s cold start also breaks the site's 5s
+# server-side fetch (lib/public-content.ts), which shows empty sections — so the
+# gap between pings must stay under 15 minutes, not equal to it.
 # GitHub disables scheduled workflows after 60 days without repo activity —
 # re-enable from the Actions tab if it goes quiet.
 on:
   schedule:
-    - cron: "*/5 * * * *"
+    - cron: "*/10 * * * *"
   workflow_dispatch:
 
 permissions: {}
